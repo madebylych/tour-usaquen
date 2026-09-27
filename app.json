@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "tour-usaquen",
+    "name": "Tour Usaquén",
     "slug": "tour-usaquen",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,6 +19,19 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-audio",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "La app usa tu ubicación para mostrarte dónde estás en el mapa y qué lugares del tour tienes cerca."
+        }
+      ],
+      "expo-asset"
+    ],
+    "scheme": "tourusaquen"
   }
 }
