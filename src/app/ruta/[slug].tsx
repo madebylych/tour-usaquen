@@ -24,9 +24,9 @@ export default function RouteScreen() {
   const download = useRouteDownload(slug);
 
   if (state.status === 'loading') return <StateMessage loading />;
-  if (state.status === 'error') return <StateMessage message="No se pudo cargar el recorrido." />;
+  if (state.status === 'error') return <StateMessage message="No se pudo cargar el recorrido. Revisa tu conexión." showHomeButton />;
   const route = state.data;
-  if (!route) return <StateMessage message="Este recorrido no existe." />;
+  if (!route) return <StateMessage message="Este recorrido no existe." showHomeButton />;
 
   return (
     <View style={styles.screen}>

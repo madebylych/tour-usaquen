@@ -23,5 +23,7 @@ export function useData<T>(load: () => Promise<T>, key: string): State<T> {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  return result?.key === key ? result.state : { status: 'loading' };
+  // Ojo: no usar `result?.key === key`. Si result es null y key llega
+  // undefined, esa comparación da true y se lee result.state de null.
+  return result !== null && result.key === key ? result.state : { status: 'loading' };
 }

@@ -46,8 +46,10 @@ export default function TourScreen() {
   const places = state.status === 'ready' && state.data ? state.data.places : NO_PLACES;
   useProximity(places, location, celebrate);
 
+  if (!slug) return <StateMessage message="No se sabe qué recorrido abrir." showHomeButton />;
   if (state.status === 'loading') return <StateMessage loading />;
-  if (state.status === 'error' || !state.data) return <StateMessage message="No se pudo abrir el tour." />;
+  if (state.status === 'error' || !state.data)
+    return <StateMessage message="No se pudo abrir el tour." showHomeButton />;
   const route = state.data;
 
   const selectedIndex = route.places.findIndex((p) => p.id === selectedId);

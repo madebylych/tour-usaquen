@@ -1,10 +1,18 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
 
+import Button from '@/components/Button';
 import Txt from '@/components/Txt';
 import { colors, space } from '@/theme';
 
+type Props = {
+  message?: string;
+  loading?: boolean;
+  showHomeButton?: boolean; // para errores sin salida (falta la ruta, no existe)
+};
+
 // Mensaje centrado para estados de carga, error o "no encontrado".
-export default function StateMessage({ message, loading = false }: { message?: string; loading?: boolean }) {
+export default function StateMessage({ message, loading = false, showHomeButton = false }: Props) {
   return (
     <View style={styles.container}>
       {loading ? <ActivityIndicator color={colors.primary} size="large" /> : null}
@@ -13,6 +21,7 @@ export default function StateMessage({ message, loading = false }: { message?: s
           {message}
         </Txt>
       ) : null}
+      {showHomeButton ? <Button label="Volver al inicio" variant="secondary" onPress={() => router.replace('/')} /> : null}
     </View>
   );
 }

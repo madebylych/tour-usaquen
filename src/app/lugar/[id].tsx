@@ -27,10 +27,11 @@ export default function PlaceScreen() {
   const { discovered } = useProgress();
   const celebrate = useDiscoveryFeedback();
 
+  if (!routeSlug || !id) return <StateMessage message="No se sabe qué parada abrir." showHomeButton />;
   if (state.status === 'loading') return <StateMessage loading />;
-  if (state.status === 'error') return <StateMessage message="No se pudo cargar la parada." />;
+  if (state.status === 'error') return <StateMessage message="No se pudo cargar la parada." showHomeButton />;
   const place = state.data;
-  if (!place) return <StateMessage message="Esta parada no existe." />;
+  if (!place) return <StateMessage message="Esta parada no existe." showHomeButton />;
 
   const isDiscovered = place.id in discovered;
   // "Ya estoy aquí": respaldo para cuando el GPS no detecta la llegada.

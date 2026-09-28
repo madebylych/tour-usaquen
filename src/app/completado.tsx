@@ -20,8 +20,10 @@ export default function CompleteScreen() {
   const state = useData(() => getRoute(slug), slug);
   const { discovered } = useProgress();
 
+  if (!slug) return <StateMessage message="No se sabe qué recorrido resumir." showHomeButton />;
   if (state.status === 'loading') return <StateMessage loading />;
-  if (state.status === 'error' || !state.data) return <StateMessage message="No se pudo cargar el resumen." />;
+  if (state.status === 'error' || !state.data)
+    return <StateMessage message="No se pudo cargar el resumen." showHomeButton />;
   const route = state.data;
 
   const ids = route.places.map((p) => p.id);
