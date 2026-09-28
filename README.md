@@ -33,22 +33,30 @@ Para probar o presentar sin estar en Usaquén: en la pantalla del tour, **manten
 
 Funciona también en el APK (está escondido a propósito, no desactivado).
 
-## Contenido y descarga offline
+## Contenido (Supabase) y descarga offline
 
-Sin servidor de contenido, la app usa los datos de prueba incluidos (sin fotos ni audios, sin descarga). Para probar la descarga offline con contenido de prueba en la red local:
+El contenido (rutas, paradas, imágenes, audios, mapas) vive en **Supabase**: tablas `routes`, `places`, `route_places` y el bucket público `media`. La estructura está en `supabase/schema.sql` (se ejecuta una vez en el SQL Editor).
+
+Variables en `.env.local` (no se sube a git):
+
+```
+EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...   # va en la app; solo lee lo publicado
+SUPABASE_SECRET_KEY=sb_secret_...                          # SOLO para el script de carga
+```
+
+Para los APK, las dos variables públicas van en `eas.json`. La clave secreta nunca va en la app ni en git.
+
+Sin esas variables, la app usa los datos de prueba incluidos (sin fotos ni audios, sin descarga).
+
+Cargar contenido de prueba:
 
 ```sh
-python scripts/generar_contenido_prueba.py               # crea content/ (no se sube a git)
-python scripts/servir_contenido.py                        # sirve content/ en el puerto 8088
+python scripts/generar_contenido_prueba.py     # crea content/ (no se sube a git)
+python scripts/subir_contenido_supabase.py     # sube archivos y filas; se puede repetir
 ```
 
-y en `.env.local` (no se sube a git):
-
-```
-EXPO_PUBLIC_CONTENT_BASE_URL=http://IP-DEL-COMPUTADOR:8088
-```
-
-Reiniciar con `npx expo start --clear`. Funciona en Expo Go; el APK no permite servidores `http://` sin cifrar (en la fase 9 el contenido pasa a Supabase, con `https://`).
+Para que la app ofrezca "Actualizar" a quien ya descargó una ruta, subir el número `version` de la ruta.
 
 Las rutas descargadas quedan en el almacenamiento de la app (`routes/{slug}/`) y se leen sin conexión.
 

@@ -43,8 +43,8 @@ ROUTE = {
     "map_image_path": "maps/usaquen-centro.png",
     # [[lat_norte, lon_oeste], [lat_sur, lon_este]] de la imagen del mapa.
     "map_bounds": [[4.6965, -74.0335], [4.6925, -74.0285]],
-    # Versión 2: agrega el mapa ilustrado (sirve para probar "Actualizar").
-    "version": 2,
+    # Versión 3: primera versión servida desde Supabase (sirve para probar "Actualizar").
+    "version": 3,
     "published": True,
     "updated_at": UPDATED_AT,
 }
