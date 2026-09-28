@@ -5,7 +5,11 @@
       "android": {
         "buildType": "apk"
       },
-      "environment": "preview"
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://wlsgpwrundauzbfqtlqx.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_9BUtYrb53ywc1xHWvlh_YQ_uG5a8d7A"
+      }
     }
   }
 }
