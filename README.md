@@ -40,6 +40,10 @@ Requiere una cuenta gratuita de Expo. Ver `eas.json`.
 src/
   app/          pantallas (Expo Router: cada archivo es una pantalla)
   components/   componentes reutilizables
+  data/         acceso a datos (source.ts es la única puerta de entrada)
+    local/      datos de prueba con la forma de las tablas de Supabase
+  utils/        funciones auxiliares (formato)
+  types.ts      tipos del modelo de datos
   theme.ts      colores, espacios y tipografía
 ```
 
