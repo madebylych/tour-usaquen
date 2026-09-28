@@ -18,6 +18,10 @@ npx expo start
 
 Escanear el código QR con Expo Go. El celular y el computador deben estar en la misma red wifi.
 
+## Mapa
+
+MapLibre GL JS + tiles de [OpenFreeMap](https://openfreemap.org/) (datos de OpenStreetMap), dentro de un WebView. No necesita API key ni cuenta. La página del mapa está en `src/components/map/mapHtml.ts`.
+
 ## Modo simulación
 
 Para probar o presentar sin estar en Usaquén: en la pantalla del tour, **mantener presionada** la píldora de ubicación que está sobre el mapa. Se pone fucsia y dice "Simulación". Desde ahí, tocar el mapa mueve tu posición. Otra pulsación larga vuelve al GPS real.
@@ -48,7 +52,7 @@ npx expo-doctor      # dependencias y configuración
 npx eas-cli@latest build -p android --profile preview
 ```
 
-Requiere una cuenta gratuita de Expo. Ver `eas.json`.
+Requiere una cuenta gratuita de Expo (no necesita Google Cloud ni tarjeta). Ver `eas.json`.
 
 ## Estructura
 

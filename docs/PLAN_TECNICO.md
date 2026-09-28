@@ -44,7 +44,7 @@ Todas son módulos de Expo o librerías recomendadas por Expo. Se instalan siemp
 |---|---|---|
 | Expo SDK 57 + Expo Router | Base de la app y navegación entre pantallas por archivos. | Instalado |
 | TypeScript | Atrapa errores en el modelo de datos (rutas, paradas, progreso). | Fase 0 |
-| react-native-maps | Mapa, marcadores, línea de ruta y `Overlay` para el mapa ilustrado. Funciona en Expo Go sin configuración. | Instalado |
+| react-native-webview + MapLibre GL JS 5.x + OpenFreeMap | Mapa sin API key ni tarjeta: MapLibre dibuja los tiles vectoriales gratuitos de OpenFreeMap (datos de OpenStreetMap) dentro de un WebView. Funciona en Expo Go. Reemplazó a react-native-maps (decisión 2026-09-27: Google Maps exigía registrar tarjeta). | Instalado |
 | expo-location | GPS: permiso y posición mientras se camina. | Instalado |
 | expo-audio | Reproducir los audios de cada parada. | Instalado |
 | expo-file-system | Descargar y guardar archivos de la ruta en el celular. | Fase 7 |
@@ -211,9 +211,11 @@ Durante el tour, imágenes, audios y mapa se cargan desde `file://` en el celula
 
 ## 5. Estrategia de mapas
 
-**Restricción:** la política de los tiles oficiales de OpenStreetMap prohíbe descargarlos por adelantado para uso offline (https://operations.osmfoundation.org/policies/tiles/). Y el mapa base de Google Maps no garantiza estar disponible sin conexión.
+**Restricción:** la política de los tiles oficiales de OpenStreetMap prohíbe descargarlos por adelantado para uso offline (https://operations.osmfoundation.org/policies/tiles/). Los tiles de OpenFreeMap tampoco están disponibles sin conexión (se piden en vivo).
 
-**Solución: mapa ilustrado georreferenciado** con el componente `Overlay` de react-native-maps. Es una imagen anclada por dos esquinas; el punto del GPS cae en el lugar correcto. Se descarga con la ruta, así que funciona offline. El mapa base de Google se ve debajo cuando hay conexión.
+**Solución: mapa ilustrado georreferenciado** como fuente de imagen (`image` source) de MapLibre. Es una imagen anclada por sus cuatro esquinas; el punto del GPS cae en el lugar correcto. Se descarga con la ruta, así que funciona offline. El mapa base de OpenFreeMap se ve debajo cuando hay conexión.
+
+Para que el mapa funcione sin conexión también hay que empaquetar MapLibre GL JS dentro de la app (hoy se carga desde CDN).
 
 No es solo la opción barata: **un mapa ilustrado del distrito es parte de la identidad visual del proyecto.** Lo pueden trabajar juntas ilustración (creación digital) y arquitectura (lectura del territorio, recorridos, hitos).
 
@@ -222,7 +224,7 @@ Requisitos del mapa en imagen:
 - Área pequeña (~1 km), así que la proyección plana no genera error visible.
 - Peso objetivo: menos de 1 MB.
 
-**API key de Google Maps:** en Expo Go el mapa funciona sin configurar nada. En el APK, Android necesita una API key de Google Maps (el SDK para Android es gratis e ilimitado en móvil, pero hay que crear un proyecto en Google Cloud, que puede pedir tarjeta). Si eso es un problema, la alternativa es MapLibre (sin API key), a costa de más configuración. Se decide en la fase 6.
+**Sin API key:** OpenFreeMap es gratis, sin registro ni límite de visitas, con uso comercial permitido (https://openfreemap.org/). Solo exige atribución, que MapLibre muestra automáticamente. Se usa MapLibre 5.x (un solo archivo) y no 6.x (módulos separados, más frágil en un WebView).
 
 ---
 
@@ -270,7 +272,7 @@ Decisiones de UX:
 | `TourContext` | Ruta activa, progreso, posición actual, parada más cercana. |
 | `useLocation` | Permiso, `watchPositionAsync`, estados (pidiendo, activo, denegado, sin señal), precisión. En simulación devuelve la posición simulada. |
 | `useProximity` | Distancia a cada parada, siguiente parada, detecta la entrada al radio (con tolerancia para no disparar dos veces por saltos del GPS). |
-| `TourMap` | react-native-maps: mapa ilustrado (`Overlay`) + marcadores + línea de ruta + punto del usuario. |
+| `TourMap` | Envía el estado (paradas, selección, descubiertas, usuario) a la página del mapa (`map/mapHtml.ts`) y recibe toques. `map/MapSurface` es un WebView en la app y un iframe en la vista previa web. |
 | `DownloadButton` | Estados: no descargada, descargando (n de m), descargada, desactualizada, error. |
 | `AudioPlayer` | Reproduce el audio local, play/pausa, progreso, créditos. |
 | `DiscoveryCard` | Tarjeta al descubrir una parada; dispara vibración y sonido. |
@@ -318,9 +320,9 @@ Cada fase termina con una prueba concreta. No se avanza si la prueba falla. Dura
 | 3 | `useLocation` + modo simulación | El punto se mueve al caminar y al tocar el mapa en simulación |
 | 4 | `useProximity` + descubrimiento (vibración, sonido) + botón manual + pantalla encendida | Entrar al radio (real o simulado) dispara la tarjeta una sola vez |
 | 5 | Progreso guardado + pasaporte + pantalla final | Cerrar y abrir la app conserva el progreso |
-| 6 | **Primer APK** con EAS Build (incluye API key de Google Maps) | El APK se instala en un Android y el mapa se ve |
+| 6 | **Primer APK** con EAS Build (solo requiere cuenta de Expo) | El APK se instala en un Android y el mapa se ve |
 | 7 | Descarga de ruta al celular + lectura desde archivos locales | Modo avión: se ven fichas, imágenes y suenan los audios |
-| 8 | Mapa ilustrado con `Overlay` | Modo avión: se ve el mapa y el punto cae donde es |
+| 8 | Mapa ilustrado como imagen georreferenciada en MapLibre + MapLibre empaquetado en la app | Modo avión: se ve el mapa y el punto cae donde es |
 | 9 | Supabase: `schema.sql`, bucket, `source.ts` lee de Supabase | Cambiar un texto en Supabase, actualizar la ruta y verlo en la app |
 | 10 | Identidad visual y sonidos de interfaz | Revisión de diseño + prueba real en Usaquén |
 | 11 | APK final | Instalación limpia en un Android y recorrido completo |
@@ -335,7 +337,7 @@ La prueba real en Usaquén conviene hacerla **después de la fase 5**: es donde 
 
 1. **Contenido del grupo a tiempo** (textos, audios, fotos, coordenadas). Es el cuello de botella, no el código.
 2. **GPS impreciso** en calles estrechas: se mitiga con radios de 30-50 m y el botón manual.
-3. **API key de Google Maps** para el APK: requiere cuenta de Google Cloud. Alternativa: MapLibre.
+3. **Mapa en línea:** hoy el mapa (librería y tiles) necesita internet. Sin conexión se muestra un aviso y la lista de paradas sigue funcionando; el mapa offline es la fase 8.
 4. **Supabase gratis se pausa tras 7 días sin actividad.** Una ruta ya descargada sigue funcionando, pero una descarga nueva fallaría. Antes de la presentación: entrar al panel y comprobar que el proyecto está activo (https://supabase.com/docs/guides/platform/free-project-pausing).
 5. **Fecha de entrega sin confirmar:** define cuántas fases se alcanzan.
 6. **iPhone:** sin cuenta de Apple Developer, en iPhone solo se puede mostrar con Expo Go.

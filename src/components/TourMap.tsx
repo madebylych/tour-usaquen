@@ -1,8 +1,10 @@
-import { useRef } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import MapView, { Circle, MapStyleElement, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { FromMap, ToMap } from '@/components/map/bridge';
+import { buildMapHtml } from '@/components/map/mapHtml';
+import MapSurface, { MapSurfaceHandle } from '@/components/map/MapSurface';
 import Txt from '@/components/Txt';
 import { Coordinates } from '@/geo/distance';
 import { Place } from '@/types';
@@ -19,8 +21,9 @@ type Props = {
   onMapPress: (coordinate: Coordinates) => void;
 };
 
-// Mapa del tour (Android / iOS). En web se usa TourMap.web.tsx.
-// El mapa ilustrado (fase 8) se agrega aquí.
+// Mapa del tour: MapLibre + OpenFreeMap (OpenStreetMap), sin API key.
+// El dibujo ocurre en una página web embebida (map/mapHtml.ts); este
+// componente le envía el estado y recibe los toques.
 export default function TourMap({
   places,
   selectedId,
@@ -31,98 +34,59 @@ export default function TourMap({
   simulated,
   onMapPress,
 }: Props) {
-  const mapRef = useRef<MapView>(null);
-  const coordinates = places.map((p) => ({ latitude: p.latitude, longitude: p.longitude }));
+  const html = useMemo(() => buildMapHtml(), []);
+  const surface = useRef<MapSurfaceHandle>(null);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Encuadra todas las paradas cuando el mapa termina de cargar.
-  const fitRoute = () => {
-    mapRef.current?.fitToCoordinates(coordinates, {
-      edgePadding: { top: 80, right: 60, bottom: 160, left: 60 },
-      animated: false,
-    });
-  };
+  const state: ToMap = useMemo(
+    () => ({
+      type: 'state',
+      places: places.map((p, i) => ({ id: p.id, n: i + 1, lat: p.latitude, lng: p.longitude })),
+      selectedId,
+      discovered: Object.keys(discoveredIds),
+      user: userPosition
+        ? { lat: userPosition.latitude, lng: userPosition.longitude, accuracy: userAccuracy, simulated }
+        : null,
+    }),
+    [places, selectedId, discoveredIds, userPosition, userAccuracy, simulated]
+  );
+
+  // Cada cambio de estado se envía completo; la página actualiza lo necesario.
+  useEffect(() => {
+    if (ready) surface.current?.send(state);
+  }, [ready, state]);
+
+  const handleMessage = useCallback(
+    (msg: FromMap) => {
+      if (msg.type === 'ready') {
+        setReady(true);
+        setError(null);
+      } else if (msg.type === 'select') onSelect(msg.id);
+      else if (msg.type === 'press') onMapPress({ latitude: msg.lat, longitude: msg.lng });
+      else if (msg.type === 'error') setError(msg.message);
+    },
+    [onSelect, onMapPress]
+  );
 
   const centerOnUser = () => {
-    if (!userPosition) return;
-    mapRef.current?.animateToRegion(
-      { ...userPosition, latitudeDelta: 0.004, longitudeDelta: 0.004 },
-      400
-    );
+    if (userPosition) {
+      surface.current?.send({ type: 'center', lat: userPosition.latitude, lng: userPosition.longitude });
+    }
   };
 
   return (
     <View style={StyleSheet.absoluteFill}>
-      <MapView
-        ref={mapRef}
-        // En Android se usa Google Maps (necesita la API key en el APK).
-        // En iOS se deja Apple Maps, que no necesita key.
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-        style={StyleSheet.absoluteFill}
-        initialRegion={regionFor(coordinates)}
-        onMapReady={fitRoute}
-        onPress={(event) => onMapPress(event.nativeEvent.coordinate)}
-        customMapStyle={MUTED_STYLE}
-        showsPointsOfInterests={false}
-        toolbarEnabled={false}
-      >
-        <Polyline coordinates={coordinates} strokeColor={colors.primary} strokeWidth={5} />
+      <MapSurface ref={surface} html={html} onMessage={handleMessage} />
 
-        {places.map((place, index) => {
-          const selected = place.id === selectedId;
-          const discovered = place.id in discoveredIds;
-          return (
-            <Marker
-              key={place.id}
-              coordinate={{ latitude: place.latitude, longitude: place.longitude }}
-              onPress={() => onSelect(place.id)}
-              anchor={{ x: 0.5, y: 0.5 }}
-              accessibilityLabel={`Parada ${index + 1}: ${place.name}`}
-              // Con pocas paradas el costo es mínimo, y así el marcador
-              // se redibuja cuando cambia la selección.
-              tracksViewChanges
-            >
-              <View style={[styles.pin, selected && styles.pinSelected]}>
-                <Txt variant="label" color={selected ? colors.primary : colors.onPrimary}>
-                  {index + 1}
-                </Txt>
-                {discovered ? (
-                  <View style={styles.check}>
-                    <Ionicons name="checkmark" size={11} color={colors.onPrimary} />
-                  </View>
-                ) : null}
-              </View>
-            </Marker>
-          );
-        })}
-
-        {userPosition && userAccuracy != null ? (
-          // Círculo de precisión: "estás en algún lugar dentro de esto".
-          <Circle
-            center={userPosition}
-            radius={userAccuracy}
-            fillColor="rgba(209, 0, 111, 0.10)"
-            strokeColor="rgba(209, 0, 111, 0.30)"
-            strokeWidth={1}
-          />
-        ) : null}
-
-        {userPosition ? (
-          <Marker
-            // Cambiar de key al entrar/salir de la simulación recrea el
-            // marcador, porque con tracksViewChanges={false} no se redibuja solo.
-            key={simulated ? 'user-simulated' : 'user-real'}
-            coordinate={userPosition}
-            anchor={{ x: 0.5, y: 0.5 }}
-            accessibilityLabel={simulated ? 'Tu posición simulada' : 'Tu posición'}
-            tracksViewChanges={false}
-            zIndex={10}
-          >
-            <View style={[styles.user, simulated && styles.userSimulated]}>
-              {simulated ? <Ionicons name="flask" size={12} color={colors.onPrimary} /> : null}
-            </View>
-          </Marker>
-        ) : null}
-      </MapView>
+      {error && !ready ? (
+        <View style={[StyleSheet.absoluteFill, styles.errorBox]}>
+          <Ionicons name="cloud-offline-outline" size={36} color={colors.primary} />
+          <Txt variant="caption" color={colors.primary} style={styles.errorText}>
+            No se pudo cargar el mapa. Revisa tu conexión. La lista de paradas sigue funcionando.
+          </Txt>
+        </View>
+      ) : null}
 
       {userPosition ? (
         <Pressable
@@ -138,79 +102,15 @@ export default function TourMap({
   );
 }
 
-// Región inicial que contiene todas las paradas (antes de que cargue el mapa).
-function regionFor(coords: Coordinates[]) {
-  const lats = coords.map((c) => c.latitude);
-  const lons = coords.map((c) => c.longitude);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-  const minLon = Math.min(...lons);
-  const maxLon = Math.max(...lons);
-  return {
-    latitude: (minLat + maxLat) / 2,
-    longitude: (minLon + maxLon) / 2,
-    latitudeDelta: Math.max((maxLat - minLat) * 1.8, 0.004),
-    longitudeDelta: Math.max((maxLon - minLon) * 1.8, 0.004),
-  };
-}
-
-// Estilo apagado para Google Maps (Android): menos color y menos comercios,
-// para que las paradas y la ruta en fucsia sean lo que se destaca.
-// En iOS (Apple Maps) no aplica; ahí se ocultan los puntos de interés con
-// showsPointsOfInterests.
-const MUTED_STYLE: MapStyleElement[] = [
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { elementType: 'geometry', stylers: [{ saturation: -80 }] },
-  { featureType: 'road', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-];
-
 const styles = StyleSheet.create({
-  pin: {
-    width: 34,
-    height: 34,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-    borderWidth: 3,
-    borderColor: colors.surface,
+  errorBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: shadow.card,
+    gap: space.s,
+    padding: space.l,
+    backgroundColor: colors.primarySoft,
   },
-  pinSelected: {
-    backgroundColor: colors.surface,
-    borderColor: colors.primary,
-    transform: [{ scale: 1.2 }],
-  },
-  check: {
-    position: 'absolute',
-    top: -7,
-    right: -7,
-    width: 18,
-    height: 18,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primaryDark,
-    borderWidth: 2,
-    borderColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  user: {
-    width: 20,
-    height: 20,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primaryDark,
-    borderWidth: 3,
-    borderColor: colors.surface,
-    boxShadow: '0px 0px 0px 6px rgba(209, 0, 111, 0.25)',
-  },
-  userSimulated: {
-    width: 26,
-    height: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-  },
+  errorText: { textAlign: 'center' },
   centerButton: {
     position: 'absolute',
     top: space.m + 52,
