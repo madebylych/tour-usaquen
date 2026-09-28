@@ -5,11 +5,12 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useDiscoveryFeedback } from '@/audio/useDiscoveryFeedback';
+import AudioPlayer from '@/components/AudioPlayer';
 import BackButton from '@/components/BackButton';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import Chip from '@/components/Chip';
-import ImagePlaceholder from '@/components/ImagePlaceholder';
+import MediaImage from '@/components/MediaImage';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
@@ -21,8 +22,8 @@ import { categoryIcon } from '@/utils/categories';
 // Ficha del lugar. Orden deliberado: primero la consigna de observación
 // (mirar el lugar real), después el audio y al final los textos largos.
 export default function PlaceScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const state = useData(() => getPlace(id), id);
+  const { id, route: routeSlug } = useLocalSearchParams<{ id: string; route: string }>();
+  const state = useData(() => getPlace(routeSlug, id), `${routeSlug}/${id}`);
   const { discovered } = useProgress();
   const celebrate = useDiscoveryFeedback();
 
@@ -39,7 +40,6 @@ export default function PlaceScreen() {
 
   const credits = [
     place.image_credit ? `Imagen: ${place.image_credit}` : null,
-    place.audio_credit ? `Audio: ${place.audio_credit}` : null,
     place.sources ? `Fuentes: ${place.sources}` : null,
   ].filter(Boolean);
 
@@ -49,8 +49,7 @@ export default function PlaceScreen() {
       <StatusBar style="dark" />
       <BackButton />
       <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE }}>
-        {/* La imagen real se carga desde los archivos descargados (fase 7). */}
-        <ImagePlaceholder category={place.category} style={styles.hero} iconSize={72} />
+        <MediaImage uri={place.media.image} category={place.category} style={styles.hero} iconSize={72} label={place.name} />
 
         <View style={styles.sheet}>
           <View style={styles.chipRow}>
@@ -67,19 +66,7 @@ export default function PlaceScreen() {
             </View>
           ) : null}
 
-          {/* El reproductor se conecta cuando haya audios (de prueba o reales). */}
-          <View style={styles.audio}>
-            <View style={[styles.playButton, !place.audio_path && styles.playDisabled]}>
-              <Ionicons name="play" size={26} color={colors.onPrimary} />
-            </View>
-            <View style={styles.grow}>
-              <Txt variant="label">Escucha este lugar</Txt>
-              <Txt variant="caption">
-                {place.audio_path ? (place.audio_title ?? 'Experiencia sonora') : 'Audio pendiente'}
-              </Txt>
-            </View>
-            <Ionicons name="headset-outline" size={22} color={colors.textMuted} />
-          </View>
+          <AudioPlayer uri={place.media.audio} title={place.audio_title} credit={place.audio_credit} />
 
           {place.history ? <Section icon="time-outline" title="Historia" text={place.history} /> : null}
           {place.architecture ? (
@@ -167,25 +154,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySoft,
   },
   promptText: { flex: 1, color: colors.primaryDark },
-  audio: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.m - 2,
-    padding: space.m - 2,
-    borderRadius: radius.m,
-    backgroundColor: colors.surface,
-    boxShadow: shadow.card,
-  },
-  playButton: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingLeft: 3, // centra ópticamente el triángulo de play
-  },
-  playDisabled: { opacity: 0.35 },
   grow: { flex: 1 },
   card: {
     padding: space.m + 2,

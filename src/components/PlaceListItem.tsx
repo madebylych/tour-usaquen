@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import ImagePlaceholder from '@/components/ImagePlaceholder';
+import MediaImage from '@/components/MediaImage';
 import Txt from '@/components/Txt';
-import { Place } from '@/types';
+import { PlaceWithMedia } from '@/types';
 import { colors, radius, shadow, space } from '@/theme';
 import { formatDistance } from '@/utils/format';
 
 type Props = {
-  place: Place;
+  place: PlaceWithMedia;
   position: number;
   onPress: () => void;
   distance?: number | null; // metros desde el usuario, si se conoce
@@ -25,7 +25,7 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View>
-        <ImagePlaceholder category={place.category} iconSize={28} style={styles.image} />
+        <MediaImage uri={place.media.image} category={place.category} iconSize={28} style={styles.image} label={place.name} />
         <View style={styles.badge}>
           <Txt variant="caption" color={colors.onPrimary} style={styles.badgeText}>
             {position}

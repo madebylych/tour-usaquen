@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
 import Chip from '@/components/Chip';
-import ImagePlaceholder from '@/components/ImagePlaceholder';
+import MediaImage from '@/components/MediaImage';
 import PlaceCard from '@/components/PlaceCard';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
@@ -62,7 +62,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.featured}>
-        <ImagePlaceholder style={styles.featuredImage} iconSize={48} />
+        <MediaImage uri={route.media.cover} style={styles.featuredImage} iconSize={48} label={route.name} />
         <View style={styles.featuredBody}>
           <Txt variant="caption" color={colors.primary}>
             RECORRIDO DESTACADO
@@ -109,7 +109,7 @@ export default function HomeScreen() {
           <PlaceCard
             place={item.place}
             position={item.position}
-            onPress={() => router.push(`/lugar/${item.place.id}`)}
+            onPress={() => router.push(`/lugar/${item.place.id}?route=${route.slug}`)}
           />
         )}
       />

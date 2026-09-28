@@ -9,7 +9,7 @@ import { useDiscoveryFeedback } from '@/audio/useDiscoveryFeedback';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import DiscoveryCard from '@/components/DiscoveryCard';
-import ImagePlaceholder from '@/components/ImagePlaceholder';
+import MediaImage from '@/components/MediaImage';
 import LocationStatus from '@/components/LocationStatus';
 import Passport from '@/components/Passport';
 import PlaceListItem from '@/components/PlaceListItem';
@@ -23,10 +23,10 @@ import { distanceInMeters } from '@/geo/distance';
 import { simulator } from '@/geo/simulator';
 import { useLocation } from '@/geo/useLocation';
 import { useProximity } from '@/geo/useProximity';
-import { Place } from '@/types';
+import { Place, PlaceWithMedia } from '@/types';
 import { colors, radius, shadow, space } from '@/theme';
 
-const NO_PLACES: Place[] = [];
+const NO_PLACES: PlaceWithMedia[] = [];
 
 // Tour activo: mapa con la ruta, las paradas y tu ubicación; detección de
 // llegada a cada parada; pasaporte; lista de paradas con distancia y estado.
@@ -52,7 +52,7 @@ export default function TourScreen() {
 
   const selectedIndex = route.places.findIndex((p) => p.id === selectedId);
   const selected = selectedIndex >= 0 ? route.places[selectedIndex] : null;
-  const openPlace = (id: string) => router.push(`/lugar/${id}`);
+  const openPlace = (id: string) => router.push(`/lugar/${id}?route=${route.slug}`);
   const complete = countDiscovered(route.places.map((p) => p.id), discovered) === route.places.length;
   const finish = () => router.push({ pathname: '/completado', params: { route: route.slug } });
   const distanceTo = (place: Place) =>
@@ -141,7 +141,7 @@ function SelectedPlace({
   onImHere,
   onClose,
 }: {
-  place: Place;
+  place: PlaceWithMedia;
   position: number;
   discovered: boolean;
   onOpen: () => void;
@@ -157,7 +157,7 @@ function SelectedPlace({
           onPress={onOpen}
           style={styles.floatingMain}
         >
-          <ImagePlaceholder category={place.category} iconSize={26} style={styles.floatingImage} />
+          <MediaImage uri={place.media.image} category={place.category} iconSize={26} style={styles.floatingImage} label={place.name} />
           <View style={styles.grow}>
             <Txt variant="caption" color={colors.primary}>
               {discovered ? `PARADA ${position}, DESCUBIERTA` : `PARADA ${position}`}

@@ -28,6 +28,25 @@ Para probar o presentar sin estar en Usaquén: en la pantalla del tour, **manten
 
 Funciona también en el APK (está escondido a propósito, no desactivado).
 
+## Contenido y descarga offline
+
+Sin servidor de contenido, la app usa los datos de prueba incluidos (sin fotos ni audios, sin descarga). Para probar la descarga offline con contenido de prueba en la red local:
+
+```sh
+python scripts/generar_contenido_prueba.py               # crea content/ (no se sube a git)
+python -m http.server 8088 --bind 0.0.0.0 --directory content
+```
+
+y en `.env.local` (no se sube a git):
+
+```
+EXPO_PUBLIC_CONTENT_BASE_URL=http://IP-DEL-COMPUTADOR:8088
+```
+
+Reiniciar con `npx expo start --clear`. Funciona en Expo Go; el APK no permite servidores `http://` sin cifrar (en la fase 9 el contenido pasa a Supabase, con `https://`).
+
+Las rutas descargadas quedan en el almacenamiento de la app (`routes/{slug}/`) y se leen sin conexión.
+
 ## Sonidos provisionales
 
 `assets/sounds/ui/discovery.wav` (sonido al descubrir una parada) es provisional y se genera con:

@@ -48,7 +48,18 @@ export type RoutePlace = {
   position: number;
 };
 
-// Lo que usa la app: una ruta con sus paradas ya ordenadas.
+// Ubicación real de un archivo para mostrarlo o reproducirlo: una URL
+// remota (en línea) o un archivo descargado en el celular (file://).
+// null si el lugar no tiene ese archivo.
+export type MediaUri = string | null;
+
+export type PlaceWithMedia = Place & {
+  media: { image: MediaUri; audio: MediaUri };
+};
+
+// Lo que usa la app: una ruta con sus paradas ya ordenadas y los archivos
+// resueltos.
 export type RouteWithPlaces = Route & {
-  places: Place[];
+  places: PlaceWithMedia[];
+  media: { cover: MediaUri; map: MediaUri };
 };

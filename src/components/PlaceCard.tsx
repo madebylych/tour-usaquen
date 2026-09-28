@@ -1,12 +1,12 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import ImagePlaceholder from '@/components/ImagePlaceholder';
+import MediaImage from '@/components/MediaImage';
 import Txt from '@/components/Txt';
-import { Place } from '@/types';
+import { PlaceWithMedia } from '@/types';
 import { colors, radius, shadow, space } from '@/theme';
 
 type Props = {
-  place: Place;
+  place: PlaceWithMedia;
   position: number;
   onPress: () => void;
 };
@@ -21,7 +21,7 @@ export default function PlaceCard({ place, position, onPress }: Props) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View>
-        <ImagePlaceholder category={place.category} style={styles.image} />
+        <MediaImage uri={place.media.image} category={place.category} style={styles.image} label={place.name} />
         <View style={styles.badge}>
           <Txt variant="label" color={colors.onPrimary}>
             {position}

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { setAudioModeAsync } from 'expo-audio';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   Nunito_400Regular,
@@ -14,6 +15,10 @@ import {
 import { colors, fonts } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
+
+// Los audios del tour suenan aunque el iPhone esté en modo silencio:
+// el visitante los reproduce a propósito.
+setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({

@@ -6,20 +6,22 @@ import BackButton from '@/components/BackButton';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import Chip from '@/components/Chip';
-import ImagePlaceholder from '@/components/ImagePlaceholder';
+import DownloadButton from '@/components/DownloadButton';
+import MediaImage from '@/components/MediaImage';
 import PlaceListItem from '@/components/PlaceListItem';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
+import { useRouteDownload } from '@/data/useRouteDownload';
 import { colors, radius, space } from '@/theme';
 import { formatDistance, formatDuration } from '@/utils/format';
 
-// Detalle de la ruta: datos generales y paradas en orden.
-// La descarga offline llega en la fase 7.
+// Detalle de la ruta: datos generales, paradas en orden y descarga offline.
 export default function RouteScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const state = useData(() => getRoute(slug), slug);
+  const download = useRouteDownload(slug);
 
   if (state.status === 'loading') return <StateMessage loading />;
   if (state.status === 'error') return <StateMessage message="No se pudo cargar el recorrido." />;
@@ -32,7 +34,7 @@ export default function RouteScreen() {
       <StatusBar style="dark" />
       <BackButton />
       <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE }}>
-        <ImagePlaceholder style={styles.hero} iconSize={64} />
+        <MediaImage uri={route.media.cover} style={styles.hero} iconSize={64} label={route.name} />
 
         <View style={styles.sheet}>
           <Txt variant="title">{route.name}</Txt>
@@ -56,7 +58,7 @@ export default function RouteScreen() {
                 key={place.id}
                 place={place}
                 position={index + 1}
-                onPress={() => router.push(`/lugar/${place.id}`)}
+                onPress={() => router.push(`/lugar/${place.id}?route=${route.slug}`)}
               />
             ))}
           </View>
@@ -64,7 +66,7 @@ export default function RouteScreen() {
       </ScrollView>
 
       <BottomBar>
-        <Button label="Descargar" icon="download-outline" variant="secondary" onPress={() => {}} />
+        <DownloadButton status={download.status} onDownload={download.start} onDelete={download.remove} />
         <View style={styles.grow}>
           <Button
             label="Comenzar tour"
