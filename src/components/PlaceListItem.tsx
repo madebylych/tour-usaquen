@@ -5,15 +5,17 @@ import ImagePlaceholder from '@/components/ImagePlaceholder';
 import Txt from '@/components/Txt';
 import { Place } from '@/types';
 import { colors, radius, shadow, space } from '@/theme';
+import { formatDistance } from '@/utils/format';
 
 type Props = {
   place: Place;
   position: number;
   onPress: () => void;
+  distance?: number | null; // metros desde el usuario, si se conoce
 };
 
 // Tarjeta horizontal de una parada dentro de una lista.
-export default function PlaceListItem({ place, position, onPress }: Props) {
+export default function PlaceListItem({ place, position, onPress, distance }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -40,6 +42,11 @@ export default function PlaceListItem({ place, position, onPress }: Props) {
           </Txt>
         ) : null}
       </View>
+      {distance != null ? (
+        <Txt variant="label" color={colors.primary}>
+          {formatDistance(distance)}
+        </Txt>
+      ) : null}
       <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
     </Pressable>
   );

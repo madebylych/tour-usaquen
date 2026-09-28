@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
+import { Coordinates } from '@/geo/distance';
 import { Place } from '@/types';
 import { colors, space } from '@/theme';
 
@@ -9,6 +10,10 @@ type Props = {
   places: Place[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  userPosition: Coordinates | null;
+  userAccuracy: number | null;
+  simulated: boolean;
+  onMapPress: (coordinate: Coordinates) => void;
 };
 
 // react-native-maps no funciona en web. La versión web no es parte del MVP,

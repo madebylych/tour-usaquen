@@ -18,6 +18,12 @@ npx expo start
 
 Escanear el código QR con Expo Go. El celular y el computador deben estar en la misma red wifi.
 
+## Modo simulación
+
+Para probar o presentar sin estar en Usaquén: en la pantalla del tour, **mantener presionada** la píldora de ubicación que está sobre el mapa. Se pone fucsia y dice "Simulación". Desde ahí, tocar el mapa mueve tu posición. Otra pulsación larga vuelve al GPS real.
+
+Funciona también en el APK (está escondido a propósito, no desactivado).
+
 ## Comprobaciones
 
 ```sh
@@ -40,6 +46,7 @@ Requiere una cuenta gratuita de Expo. Ver `eas.json`.
 src/
   app/          pantallas (Expo Router: cada archivo es una pantalla)
   components/   componentes reutilizables
+  geo/          ubicación, distancias y modo simulación
   data/         acceso a datos (source.ts es la única puerta de entrada)
     local/      datos de prueba con la forma de las tablas de Supabase
   utils/        funciones auxiliares (formato)

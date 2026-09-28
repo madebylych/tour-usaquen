@@ -7,22 +7,27 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
+import LocationStatus from '@/components/LocationStatus';
 import PlaceListItem from '@/components/PlaceListItem';
 import StateMessage from '@/components/StateMessage';
 import TourMap from '@/components/TourMap';
 import Txt from '@/components/Txt';
 import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
+import { distanceInMeters } from '@/geo/distance';
+import { simulator } from '@/geo/simulator';
+import { useLocation } from '@/geo/useLocation';
 import { Place } from '@/types';
 import { colors, radius, shadow, space } from '@/theme';
 
-// Tour activo: mapa con la ruta y las paradas + lista de paradas.
-// La ubicación llega en la fase 3 y el progreso en la 5.
+// Tour activo: mapa con la ruta, las paradas y tu ubicación + lista de
+// paradas con la distancia a cada una. El progreso llega en la fase 5.
 export default function TourScreen() {
   const { route: slug } = useLocalSearchParams<{ route: string }>();
   const state = useData(() => getRoute(slug), slug);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { height } = useWindowDimensions();
+  const location = useLocation();
 
   if (state.status === 'loading') return <StateMessage loading />;
   if (state.status === 'error' || !state.data) return <StateMessage message="No se pudo abrir el tour." />;
@@ -31,13 +36,31 @@ export default function TourScreen() {
   const selectedIndex = route.places.findIndex((p) => p.id === selectedId);
   const selected = selectedIndex >= 0 ? route.places[selectedIndex] : null;
   const openPlace = (id: string) => router.push(`/lugar/${id}`);
+  const distanceTo = (place: Place) =>
+    location.position ? distanceInMeters(location.position, place) : null;
+
+  // La simulación arranca unos 150 m al sur de la primera parada,
+  // para que haya que "caminar" hasta ella.
+  const toggleSimulation = () => {
+    const first = route.places[0];
+    if (first) simulator.toggle({ latitude: first.latitude - 0.0013, longitude: first.longitude });
+  };
 
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
 
       <View style={[styles.mapArea, { height: height * 0.5 }]}>
-        <TourMap places={route.places} selectedId={selectedId} onSelect={setSelectedId} />
+        <TourMap
+          places={route.places}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          userPosition={location.position}
+          userAccuracy={location.accuracy}
+          simulated={location.status === 'simulated'}
+          onMapPress={simulator.moveTo}
+        />
+        <LocationStatus location={location} onLongPress={toggleSimulation} />
         {selected ? (
           <SelectedPlace
             place={selected}
@@ -56,6 +79,7 @@ export default function TourScreen() {
               key={place.id}
               place={place}
               position={index + 1}
+              distance={distanceTo(place)}
               onPress={() => openPlace(place.id)}
             />
           ))}
