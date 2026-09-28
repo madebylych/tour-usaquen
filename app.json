@@ -17,7 +17,15 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.madebylych.tourusaquen"
+      "package": "com.madebylych.tourusaquen",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -37,6 +45,13 @@
       "expo-splash-screen",
       "expo-sqlite"
     ],
-    "scheme": "tourusaquen"
+    "scheme": "tourusaquen",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e05f9151-87a3-49ba-92b2-6e51afb0934d"
+      }
+    },
+    "owner": "madebylych"
   }
 }
