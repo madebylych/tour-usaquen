@@ -12,6 +12,7 @@ import PlaceCard from '@/components/PlaceCard';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { getRoute, listRoutes } from '@/data/source';
+import { countDiscovered, useProgress } from '@/data/progress';
 import { useData } from '@/data/useData';
 import { colors, radius, shadow, space } from '@/theme';
 import { categoryIcon } from '@/utils/categories';
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const state = useData(loadFeaturedRoute, 'featured');
   const [category, setCategory] = useState<string | null>(null);
+  const { discovered } = useProgress();
 
   if (state.status === 'loading') return <StateMessage loading />;
   if (state.status === 'error') return <StateMessage message="No se pudo cargar el contenido." />;
@@ -39,6 +41,7 @@ export default function HomeScreen() {
     .filter(({ place }) => !category || place.category === category);
 
   const openRoute = () => router.push(`/ruta/${route.slug}`);
+  const done = countDiscovered(route.places.map((p) => p.id), discovered);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: space.xl }}>
@@ -73,6 +76,9 @@ export default function HomeScreen() {
               <Chip icon="walk-outline" label={formatDistance(route.distance_m)} />
             ) : null}
             <Chip icon="flag-outline" label={`${route.places.length} paradas`} />
+            {done > 0 ? (
+              <Chip icon="checkmark-circle" label={`${done}/${route.places.length} descubiertas`} active />
+            ) : null}
           </View>
           <Button label="Ver recorrido" icon="arrow-forward" onPress={openRoute} />
         </View>
