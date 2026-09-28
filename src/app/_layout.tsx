@@ -1,24 +1,51 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import {
+  Nunito_400Regular,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+  useFonts,
+} from '@expo-google-fonts/nunito';
 
-import { colors } from '@/theme';
+import { colors, fonts } from '@/theme';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [loaded, error] = useFonts({
+    Nunito_400Regular,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
+  });
+
+  useEffect(() => {
+    if (loaded || error) SplashScreen.hideAsync();
+  }, [loaded, error]);
+
+  // Si la fuente falla, la app sigue con la fuente del sistema.
+  if (!loaded && !error) return null;
+
   return (
     <>
       <Stack
         screenOptions={{
-          headerTintColor: colors.accent,
+          headerShown: false,
           contentStyle: { backgroundColor: colors.background },
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: colors.onPrimary,
+          headerTitleStyle: { fontFamily: fonts.extrabold },
+          headerShadowVisible: false,
         }}
       >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="ruta/[slug]" options={{ title: 'Recorrido' }} />
-        <Stack.Screen name="tour" options={{ title: 'Tour' }} />
-        <Stack.Screen name="lugar/[id]" options={{ title: '' }} />
-        <Stack.Screen name="completado" options={{ headerShown: false }} />
+        <Stack.Screen name="tour" options={{ headerShown: true, title: 'Tu recorrido' }} />
       </Stack>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
     </>
   );
 }

@@ -30,7 +30,9 @@
           "locationWhenInUsePermission": "La app usa tu ubicación para mostrarte dónde estás en el mapa y qué lugares del tour tienes cerca."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-font",
+      "expo-splash-screen"
     ],
     "scheme": "tourusaquen"
   }

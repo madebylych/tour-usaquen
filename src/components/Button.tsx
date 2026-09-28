@@ -1,41 +1,47 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { ComponentProps } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-import { colors, fontSize, space } from '@/theme';
+import Txt from '@/components/Txt';
+import { colors, radius, space } from '@/theme';
 
 type Props = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'light';
+  icon?: ComponentProps<typeof Ionicons>['name'];
 };
 
-export default function Button({ label, onPress, variant = 'primary' }: Props) {
-  const primary = variant === 'primary';
+// Botón tipo píldora. `light` es para usar sobre fondo fucsia.
+export default function Button({ label, onPress, variant = 'primary', icon }: Props) {
+  const color = variant === 'primary' ? colors.onPrimary : colors.primary;
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.base,
-        primary ? styles.primary : styles.secondary,
-        pressed && styles.pressed,
-      ]}
+      style={({ pressed }) => [styles.base, styles[variant], pressed && styles.pressed]}
     >
-      <Text style={[styles.label, { color: primary ? colors.onAccent : colors.accent }]}>
+      {icon ? <Ionicons name={icon} size={20} color={color} /> : null}
+      <Txt variant="label" color={color} style={styles.label}>
         {label}
-      </Text>
+      </Txt>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: space.m - 2,
-    paddingHorizontal: space.l,
-    borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.s,
+    minHeight: 54,
+    paddingHorizontal: space.l,
+    borderRadius: radius.pill,
   },
-  primary: { backgroundColor: colors.accent },
-  secondary: { borderWidth: 1, borderColor: colors.accent },
-  pressed: { opacity: 0.7 },
-  label: { fontSize: fontSize.body, fontWeight: '600' },
+  primary: { backgroundColor: colors.primary },
+  secondary: { backgroundColor: colors.primarySoft },
+  light: { backgroundColor: colors.surface },
+  pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
+  label: { fontSize: 16 },
 });

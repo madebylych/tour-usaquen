@@ -1,7 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
+import ImagePlaceholder from '@/components/ImagePlaceholder';
+import Txt from '@/components/Txt';
 import { Place } from '@/types';
-import { colors, fontSize, space } from '@/theme';
+import { colors, radius, shadow, space } from '@/theme';
 
 type Props = {
   place: Place;
@@ -9,46 +12,64 @@ type Props = {
   onPress: () => void;
 };
 
-// Fila de una parada dentro de la lista de la ruta.
+// Tarjeta horizontal de una parada dentro de una lista.
 export default function PlaceListItem({ place, position, onPress }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={`Parada ${position}: ${place.name}`}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
-      <View style={styles.number}>
-        <Text style={styles.numberText}>{position}</Text>
+      <View>
+        <ImagePlaceholder category={place.category} iconSize={28} style={styles.image} />
+        <View style={styles.badge}>
+          <Txt variant="caption" color={colors.onPrimary} style={styles.badgeText}>
+            {position}
+          </Txt>
+        </View>
       </View>
       <View style={styles.texts}>
-        <Text style={styles.name}>{place.name}</Text>
-        <Text style={styles.meta}>{place.category}</Text>
-        {place.summary ? <Text style={styles.summary}>{place.summary}</Text> : null}
+        <Txt variant="label" numberOfLines={1}>
+          {place.name}
+        </Txt>
+        <Txt variant="caption">{place.category}</Txt>
+        {place.summary ? (
+          <Txt variant="caption" color={colors.text} numberOfLines={2}>
+            {place.summary}
+          </Txt>
+        ) : null}
       </View>
+      <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
+  card: {
     flexDirection: 'row',
-    gap: space.m,
-    paddingVertical: space.m,
-    borderBottomWidth: 1,
-    borderColor: colors.border,
+    alignItems: 'center',
+    gap: space.m - 4,
+    padding: space.s + 2,
+    backgroundColor: colors.surface,
+    borderRadius: radius.m,
+    boxShadow: shadow.card,
   },
-  pressed: { opacity: 0.6 },
-  number: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.accent,
+  pressed: { transform: [{ scale: 0.98 }] },
+  image: { width: 72, height: 72, borderRadius: radius.s },
+  badge: {
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    width: 24,
+    height: 24,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+    borderWidth: 2,
+    borderColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  numberText: { color: colors.onAccent, fontWeight: '700' },
+  badgeText: { fontSize: 12, lineHeight: 14 },
   texts: { flex: 1, gap: 2 },
-  name: { fontSize: fontSize.body, fontWeight: '600', color: colors.text },
-  meta: { fontSize: fontSize.small, color: colors.textMuted },
-  summary: { fontSize: fontSize.small, color: colors.text, marginTop: 2 },
 });

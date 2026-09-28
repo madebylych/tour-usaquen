@@ -1,11 +1,18 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { ComponentProps } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 
-import Screen from '@/components/Screen';
+import BackButton from '@/components/BackButton';
+import Chip from '@/components/Chip';
+import ImagePlaceholder from '@/components/ImagePlaceholder';
 import StateMessage from '@/components/StateMessage';
+import Txt from '@/components/Txt';
 import { getPlace } from '@/data/source';
 import { useData } from '@/data/useData';
-import { colors, fontSize, space } from '@/theme';
+import { colors, radius, shadow, space } from '@/theme';
+import { categoryIcon } from '@/utils/categories';
 
 // Ficha del lugar. Orden deliberado: primero la consigna de observación
 // (mirar el lugar real), después el audio y al final los textos largos.
@@ -25,74 +32,148 @@ export default function PlaceScreen() {
   ].filter(Boolean);
 
   return (
-    <Screen>
-      <Stack.Screen options={{ title: place.name }} />
+    <View style={styles.screen}>
+      {/* Barra de estado oscura sobre la imagen clara. */}
+      <StatusBar style="dark" />
+      <BackButton />
+      <ScrollView contentContainerStyle={{ paddingBottom: space.xl }}>
+        {/* La imagen real se carga desde los archivos descargados (fase 7). */}
+        <ImagePlaceholder category={place.category} style={styles.hero} iconSize={72} />
 
-      {/* La imagen se carga desde los archivos descargados (fase 7). */}
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.muted}>Imagen pendiente</Text>
-      </View>
+        <View style={styles.sheet}>
+          <View style={styles.chipRow}>
+            <Chip icon={categoryIcon(place.category)} label={place.category} />
+          </View>
+          <Txt variant="title">{place.name}</Txt>
 
-      <View>
-        <Text style={styles.title}>{place.name}</Text>
-        <Text style={styles.muted}>{place.category}</Text>
-      </View>
+          {place.observation_prompt ? (
+            <View style={styles.prompt}>
+              <Ionicons name="eye-outline" size={24} color={colors.primary} />
+              <Txt variant="heading" style={styles.promptText}>
+                {place.observation_prompt}
+              </Txt>
+            </View>
+          ) : null}
 
-      {place.observation_prompt ? (
-        <View style={styles.prompt}>
-          <Text style={styles.promptText}>{place.observation_prompt}</Text>
+          {/* El reproductor se conecta cuando haya audios (de prueba o reales). */}
+          <View style={styles.audio}>
+            <View style={[styles.playButton, !place.audio_path && styles.playDisabled]}>
+              <Ionicons name="play" size={26} color={colors.onPrimary} />
+            </View>
+            <View style={styles.grow}>
+              <Txt variant="label">Escucha este lugar</Txt>
+              <Txt variant="caption">
+                {place.audio_path ? (place.audio_title ?? 'Experiencia sonora') : 'Audio pendiente'}
+              </Txt>
+            </View>
+            <Ionicons name="headset-outline" size={22} color={colors.textMuted} />
+          </View>
+
+          {place.history ? <Section icon="time-outline" title="Historia" text={place.history} /> : null}
+          {place.architecture ? (
+            <Section icon="business-outline" title="Arquitectura" text={place.architecture} />
+          ) : null}
+
+          {place.did_you_know ? (
+            <View style={styles.fact}>
+              <View style={styles.factTitle}>
+                <Ionicons name="bulb" size={20} color={colors.onPrimary} />
+                <Txt variant="label" color={colors.onPrimary}>
+                  ¿Sabías que...?
+                </Txt>
+              </View>
+              <Txt variant="body" color={colors.onPrimary}>
+                {place.did_you_know}
+              </Txt>
+            </View>
+          ) : null}
+
+          {credits.length > 0 ? (
+            <Txt variant="caption" style={styles.credits}>
+              {credits.join('\n')}
+            </Txt>
+          ) : null}
         </View>
-      ) : null}
+      </ScrollView>
+    </View>
+  );
+}
 
-      <Text style={styles.section}>Escucha este lugar</Text>
-      {/* El reproductor se conecta cuando haya audios reales o de prueba. */}
-      <Text style={styles.muted}>{place.audio_path ? place.audio_title ?? 'Audio' : 'Audio pendiente'}</Text>
-
-      {place.history ? (
-        <>
-          <Text style={styles.section}>Historia</Text>
-          <Text style={styles.body}>{place.history}</Text>
-        </>
-      ) : null}
-
-      {place.architecture ? (
-        <>
-          <Text style={styles.section}>Arquitectura</Text>
-          <Text style={styles.body}>{place.architecture}</Text>
-        </>
-      ) : null}
-
-      {place.did_you_know ? (
-        <>
-          <Text style={styles.section}>¿Sabías que...?</Text>
-          <Text style={styles.body}>{place.did_you_know}</Text>
-        </>
-      ) : null}
-
-      {credits.length > 0 ? <Text style={styles.credits}>{credits.join('\n')}</Text> : null}
-    </Screen>
+function Section({
+  icon,
+  title,
+  text,
+}: {
+  icon: ComponentProps<typeof Ionicons>['name'];
+  title: string;
+  text: string;
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTitle}>
+        <Ionicons name={icon} size={20} color={colors.primary} />
+        <Txt variant="heading">{title}</Txt>
+      </View>
+      <Txt variant="body">{text}</Txt>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  imagePlaceholder: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: 10,
-    backgroundColor: colors.border,
+  screen: { flex: 1, backgroundColor: colors.background },
+  hero: { height: 320 },
+  sheet: {
+    marginTop: -radius.l,
+    padding: space.m + 4,
+    paddingTop: space.l,
+    gap: space.m,
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radius.l,
+    borderTopRightRadius: radius.l,
+  },
+  chipRow: { flexDirection: 'row' },
+  prompt: {
+    flexDirection: 'row',
+    gap: space.m - 4,
+    padding: space.m + 2,
+    borderRadius: radius.m,
+    backgroundColor: colors.primarySoft,
+  },
+  promptText: { flex: 1, color: colors.primaryDark },
+  audio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.m - 2,
+    padding: space.m - 2,
+    borderRadius: radius.m,
+    backgroundColor: colors.surface,
+    boxShadow: shadow.card,
+  },
+  playButton: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingLeft: 3, // centra ópticamente el triángulo de play
   },
-  title: { fontSize: fontSize.title, fontWeight: '700', color: colors.text },
-  muted: { fontSize: fontSize.body, color: colors.textMuted },
-  prompt: {
-    borderLeftWidth: 4,
-    borderColor: colors.accent,
-    paddingVertical: space.s,
-    paddingLeft: space.m,
+  playDisabled: { opacity: 0.35 },
+  grow: { flex: 1 },
+  card: {
+    padding: space.m + 2,
+    gap: space.s,
+    borderRadius: radius.m,
+    backgroundColor: colors.surface,
+    boxShadow: shadow.card,
   },
-  promptText: { fontSize: 18, lineHeight: 26, color: colors.text, fontStyle: 'italic' },
-  section: { fontSize: 18, fontWeight: '700', color: colors.text, marginTop: space.s },
-  body: { fontSize: fontSize.body, lineHeight: 24, color: colors.text },
-  credits: { fontSize: fontSize.small, color: colors.textMuted, marginTop: space.l },
+  cardTitle: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  fact: {
+    padding: space.m + 2,
+    gap: space.s,
+    borderRadius: radius.m,
+    backgroundColor: colors.primary,
+  },
+  factTitle: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  credits: { marginTop: space.s },
 });

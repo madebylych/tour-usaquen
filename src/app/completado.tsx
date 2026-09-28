@@ -1,22 +1,52 @@
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
-import Screen from '@/components/Screen';
-import { colors, fontSize, space } from '@/theme';
+import Txt from '@/components/Txt';
+import { colors, radius, space } from '@/theme';
 
-// Final del recorrido: pasaporte completo y créditos del equipo (fase 5).
+// Final del recorrido. El pasaporte y los créditos llegan en la fase 5.
 export default function CompleteScreen() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <Screen>
-      <Text style={styles.title}>Recorrido completado</Text>
-      <Text style={styles.muted}>Aquí irán el pasaporte y los créditos del equipo.</Text>
-      <Button label="Volver al inicio" onPress={() => router.dismissAll()} />
-    </Screen>
+    <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom + space.l }]}>
+      <StatusBar style="light" />
+      <View style={styles.center}>
+        <View style={styles.medal}>
+          <Ionicons name="ribbon" size={64} color={colors.primary} />
+        </View>
+        <Txt variant="display" color={colors.onPrimary} style={styles.centerText}>
+          ¡Recorrido completado!
+        </Txt>
+        <Txt variant="body" color={colors.onPrimary} style={[styles.centerText, styles.soft]}>
+          Gracias por caminar y escuchar Usaquén con nosotros.
+        </Txt>
+      </View>
+      <Button label="Volver al inicio" variant="light" onPress={() => router.dismissAll()} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: fontSize.title, fontWeight: '700', color: colors.text, marginTop: space.xl },
-  muted: { fontSize: fontSize.body, color: colors.textMuted },
+  screen: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    paddingHorizontal: space.l,
+  },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.m },
+  medal: {
+    width: 128,
+    height: 128,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: space.m,
+  },
+  centerText: { textAlign: 'center' },
+  soft: { opacity: 0.9 },
 });
