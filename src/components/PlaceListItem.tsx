@@ -12,10 +12,11 @@ type Props = {
   position: number;
   onPress: () => void;
   distance?: number | null; // metros desde el usuario, si se conoce
+  discovered?: boolean;
 };
 
 // Tarjeta horizontal de una parada dentro de una lista.
-export default function PlaceListItem({ place, position, onPress, distance }: Props) {
+export default function PlaceListItem({ place, position, onPress, distance, discovered = false }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -35,7 +36,16 @@ export default function PlaceListItem({ place, position, onPress, distance }: Pr
         <Txt variant="label" numberOfLines={1}>
           {place.name}
         </Txt>
-        <Txt variant="caption">{place.category}</Txt>
+        {discovered ? (
+          <View style={styles.discovered}>
+            <Ionicons name="checkmark-circle" size={14} color={colors.primary} />
+            <Txt variant="caption" color={colors.primary}>
+              Descubierta
+            </Txt>
+          </View>
+        ) : (
+          <Txt variant="caption">{place.category}</Txt>
+        )}
         {place.summary ? (
           <Txt variant="caption" color={colors.text} numberOfLines={2}>
             {place.summary}
@@ -79,4 +89,5 @@ const styles = StyleSheet.create({
   },
   badgeText: { fontSize: 12, lineHeight: 14 },
   texts: { flex: 1, gap: 2 },
+  discovered: { flexDirection: 'row', alignItems: 'center', gap: 3 },
 });

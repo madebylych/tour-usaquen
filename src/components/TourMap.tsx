@@ -11,6 +11,7 @@ import { colors, radius, shadow, space } from '@/theme';
 type Props = {
   places: Place[]; // en el orden de la ruta
   selectedId: string | null;
+  discoveredIds: Record<string, number>;
   onSelect: (id: string) => void;
   userPosition: Coordinates | null;
   userAccuracy: number | null; // metros; null si es simulada
@@ -23,6 +24,7 @@ type Props = {
 export default function TourMap({
   places,
   selectedId,
+  discoveredIds,
   onSelect,
   userPosition,
   userAccuracy,
@@ -64,6 +66,7 @@ export default function TourMap({
 
         {places.map((place, index) => {
           const selected = place.id === selectedId;
+          const discovered = place.id in discoveredIds;
           return (
             <Marker
               key={place.id}
@@ -79,6 +82,11 @@ export default function TourMap({
                 <Txt variant="label" color={selected ? colors.primary : colors.onPrimary}>
                   {index + 1}
                 </Txt>
+                {discovered ? (
+                  <View style={styles.check}>
+                    <Ionicons name="checkmark" size={11} color={colors.onPrimary} />
+                  </View>
+                ) : null}
               </View>
             </Marker>
           );
@@ -170,6 +178,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.primary,
     transform: [{ scale: 1.2 }],
+  },
+  check: {
+    position: 'absolute',
+    top: -7,
+    right: -7,
+    width: 18,
+    height: 18,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primaryDark,
+    borderWidth: 2,
+    borderColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   user: {
     width: 20,

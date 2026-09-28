@@ -24,6 +24,16 @@ Para probar o presentar sin estar en Usaquén: en la pantalla del tour, **manten
 
 Funciona también en el APK (está escondido a propósito, no desactivado).
 
+## Sonidos provisionales
+
+`assets/sounds/ui/discovery.wav` (sonido al descubrir una parada) es provisional y se genera con:
+
+```sh
+python scripts/generar_sonido_descubrimiento.py
+```
+
+Para usar el sonido definitivo del equipo de música, reemplazar el archivo con el mismo nombre.
+
 ## Comprobaciones
 
 ```sh
@@ -46,7 +56,8 @@ Requiere una cuenta gratuita de Expo. Ver `eas.json`.
 src/
   app/          pantallas (Expo Router: cada archivo es una pantalla)
   components/   componentes reutilizables
-  geo/          ubicación, distancias y modo simulación
+  geo/          ubicación, distancias, detección de paradas y modo simulación
+  audio/        sonido y vibración de descubrimiento
   data/         acceso a datos (source.ts es la única puerta de entrada)
     local/      datos de prueba con la forma de las tablas de Supabase
   utils/        funciones auxiliares (formato)

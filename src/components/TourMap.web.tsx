@@ -9,6 +9,7 @@ import { colors, space } from '@/theme';
 type Props = {
   places: Place[];
   selectedId: string | null;
+  discoveredIds: Record<string, number>;
   onSelect: (id: string) => void;
   userPosition: Coordinates | null;
   userAccuracy: number | null;

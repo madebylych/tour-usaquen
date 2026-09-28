@@ -2,32 +2,48 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useKeepAwake } from 'expo-keep-awake';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useDiscoveryFeedback } from '@/audio/useDiscoveryFeedback';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
+import DiscoveryCard from '@/components/DiscoveryCard';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
 import LocationStatus from '@/components/LocationStatus';
 import PlaceListItem from '@/components/PlaceListItem';
 import StateMessage from '@/components/StateMessage';
 import TourMap from '@/components/TourMap';
 import Txt from '@/components/Txt';
+import { progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
 import { distanceInMeters } from '@/geo/distance';
 import { simulator } from '@/geo/simulator';
 import { useLocation } from '@/geo/useLocation';
+import { useProximity } from '@/geo/useProximity';
 import { Place } from '@/types';
 import { colors, radius, shadow, space } from '@/theme';
 
-// Tour activo: mapa con la ruta, las paradas y tu ubicación + lista de
-// paradas con la distancia a cada una. El progreso llega en la fase 5.
+const NO_PLACES: Place[] = [];
+
+// Tour activo: mapa con la ruta, las paradas y tu ubicación; detección de
+// llegada a cada parada; lista de paradas con distancia y estado.
 export default function TourScreen() {
+  // La pantalla no se apaga mientras se está en el tour: si se apaga,
+  // el GPS se detiene y no se detectan las paradas.
+  useKeepAwake();
+
   const { route: slug } = useLocalSearchParams<{ route: string }>();
   const state = useData(() => getRoute(slug), slug);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { height } = useWindowDimensions();
   const location = useLocation();
+  const { discovered } = useProgress();
+  const celebrate = useDiscoveryFeedback();
+
+  const places = state.status === 'ready' && state.data ? state.data.places : NO_PLACES;
+  useProximity(places, location, celebrate);
 
   if (state.status === 'loading') return <StateMessage loading />;
   if (state.status === 'error' || !state.data) return <StateMessage message="No se pudo abrir el tour." />;
@@ -38,6 +54,11 @@ export default function TourScreen() {
   const openPlace = (id: string) => router.push(`/lugar/${id}`);
   const distanceTo = (place: Place) =>
     location.position ? distanceInMeters(location.position, place) : null;
+
+  // "Ya estoy aquí": para cuando el GPS no detecta la llegada.
+  const discoverManually = (id: string) => {
+    if (progress.discover([id], { announce: true }).length > 0) celebrate();
+  };
 
   // La simulación arranca unos 150 m al sur de la primera parada,
   // para que haya que "caminar" hasta ella.
@@ -54,6 +75,7 @@ export default function TourScreen() {
         <TourMap
           places={route.places}
           selectedId={selectedId}
+          discoveredIds={discovered}
           onSelect={setSelectedId}
           userPosition={location.position}
           userAccuracy={location.accuracy}
@@ -65,7 +87,9 @@ export default function TourScreen() {
           <SelectedPlace
             place={selected}
             position={selectedIndex + 1}
+            discovered={selected.id in discovered}
             onOpen={() => openPlace(selected.id)}
+            onImHere={() => discoverManually(selected.id)}
             onClose={() => setSelectedId(null)}
           />
         ) : null}
@@ -80,6 +104,7 @@ export default function TourScreen() {
               place={place}
               position={index + 1}
               distance={distanceTo(place)}
+              discovered={place.id in discovered}
               onPress={() => openPlace(place.id)}
             />
           ))}
@@ -91,6 +116,8 @@ export default function TourScreen() {
           <Button label="Terminar recorrido" icon="flag" onPress={() => router.push('/completado')} />
         </View>
       </BottomBar>
+
+      <DiscoveryCard places={route.places} onOpen={openPlace} />
     </View>
   );
 }
@@ -99,37 +126,44 @@ export default function TourScreen() {
 function SelectedPlace({
   place,
   position,
+  discovered,
   onOpen,
+  onImHere,
   onClose,
 }: {
   place: Place;
   position: number;
+  discovered: boolean;
   onOpen: () => void;
+  onImHere: () => void;
   onClose: () => void;
 }) {
   return (
     <View style={styles.floating}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Abrir parada ${position}: ${place.name}`}
-        onPress={onOpen}
-        style={styles.floatingMain}
-      >
-        <ImagePlaceholder category={place.category} iconSize={26} style={styles.floatingImage} />
-        <View style={styles.grow}>
-          <Txt variant="caption" color={colors.primary}>
-            PARADA {position}
-          </Txt>
-          <Txt variant="label" numberOfLines={1}>
-            {place.name}
-          </Txt>
-          <Txt variant="caption">Ver parada</Txt>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={colors.primary} />
-      </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
-        <Ionicons name="close" size={20} color={colors.textMuted} />
-      </Pressable>
+      <View style={styles.floatingRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Abrir parada ${position}: ${place.name}`}
+          onPress={onOpen}
+          style={styles.floatingMain}
+        >
+          <ImagePlaceholder category={place.category} iconSize={26} style={styles.floatingImage} />
+          <View style={styles.grow}>
+            <Txt variant="caption" color={colors.primary}>
+              {discovered ? `PARADA ${position}, DESCUBIERTA` : `PARADA ${position}`}
+            </Txt>
+            <Txt variant="label" numberOfLines={1}>
+              {place.name}
+            </Txt>
+            <Txt variant="caption">Ver parada</Txt>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
+          <Ionicons name="close" size={20} color={colors.textMuted} />
+        </Pressable>
+      </View>
+      {discovered ? null : <Button label="Ya estoy aquí" icon="hand-left-outline" variant="secondary" onPress={onImHere} />}
     </View>
   );
 }
@@ -145,15 +179,13 @@ const styles = StyleSheet.create({
     left: space.m,
     right: space.m,
     bottom: space.m,
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: space.s,
     padding: space.s + 2,
-    paddingRight: space.m - 2,
     borderRadius: radius.m,
     backgroundColor: colors.surface,
     boxShadow: shadow.floating,
   },
+  floatingRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingRight: space.xs },
   floatingMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.m - 4 },
   floatingImage: { width: 56, height: 56, borderRadius: radius.s },
 });

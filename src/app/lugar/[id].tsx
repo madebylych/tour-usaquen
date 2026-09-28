@@ -4,11 +4,15 @@ import { useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useDiscoveryFeedback } from '@/audio/useDiscoveryFeedback';
 import BackButton from '@/components/BackButton';
+import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
+import Button from '@/components/Button';
 import Chip from '@/components/Chip';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
+import { progress, useProgress } from '@/data/progress';
 import { getPlace } from '@/data/source';
 import { useData } from '@/data/useData';
 import { colors, radius, shadow, space } from '@/theme';
@@ -19,11 +23,19 @@ import { categoryIcon } from '@/utils/categories';
 export default function PlaceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const state = useData(() => getPlace(id), id);
+  const { discovered } = useProgress();
+  const celebrate = useDiscoveryFeedback();
 
   if (state.status === 'loading') return <StateMessage loading />;
   if (state.status === 'error') return <StateMessage message="No se pudo cargar la parada." />;
   const place = state.data;
   if (!place) return <StateMessage message="Esta parada no existe." />;
+
+  const isDiscovered = place.id in discovered;
+  // "Ya estoy aquí": respaldo para cuando el GPS no detecta la llegada.
+  const discoverManually = () => {
+    if (progress.discover([place.id], { announce: false }).length > 0) celebrate();
+  };
 
   const credits = [
     place.image_credit ? `Imagen: ${place.image_credit}` : null,
@@ -36,7 +48,7 @@ export default function PlaceScreen() {
       {/* Barra de estado oscura sobre la imagen clara. */}
       <StatusBar style="dark" />
       <BackButton />
-      <ScrollView contentContainerStyle={{ paddingBottom: space.xl }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE }}>
         {/* La imagen real se carga desde los archivos descargados (fase 7). */}
         <ImagePlaceholder category={place.category} style={styles.hero} iconSize={72} />
 
@@ -95,6 +107,21 @@ export default function PlaceScreen() {
           ) : null}
         </View>
       </ScrollView>
+
+      <BottomBar>
+        <View style={styles.grow}>
+          {isDiscovered ? (
+            <View style={styles.discoveredBadge} accessibilityRole="text">
+              <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+              <Txt variant="label" color={colors.primary}>
+                Parada descubierta
+              </Txt>
+            </View>
+          ) : (
+            <Button label="Ya estoy aquí" icon="hand-left-outline" onPress={discoverManually} />
+          )}
+        </View>
+      </BottomBar>
     </View>
   );
 }
@@ -176,4 +203,13 @@ const styles = StyleSheet.create({
   },
   factTitle: { flexDirection: 'row', alignItems: 'center', gap: space.s },
   credits: { marginTop: space.s },
+  discoveredBadge: {
+    minHeight: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.s,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
+  },
 });
