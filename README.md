@@ -22,6 +22,11 @@ Escanear el código QR con Expo Go. El celular y el computador deben estar en la
 
 MapLibre GL JS + tiles de [OpenFreeMap](https://openfreemap.org/) (datos de OpenStreetMap), dentro de un WebView. No necesita API key ni cuenta. La página del mapa está en `src/components/map/mapHtml.ts`.
 
+Funciona sin conexión:
+- MapLibre va dentro de la app (`src/components/map/vendor/maplibre.generated.ts`). Si se cambia la versión de `maplibre-gl` en `package.json`, regenerarlo con `node scripts/empaquetar-maplibre.js`.
+- Sin conexión el mapa base se reemplaza por un fondo liso.
+- El **mapa ilustrado** de la ruta (`map_image_path` + `map_bounds`) se descarga con la ruta y se dibuja anclado por sus esquinas. Debe estar orientado al norte y abarcar exactamente el área de `map_bounds`.
+
 ## Modo simulación
 
 Para probar o presentar sin estar en Usaquén: en la pantalla del tour, **mantener presionada** la píldora de ubicación que está sobre el mapa. Se pone fucsia y dice "Simulación". Desde ahí, tocar el mapa mueve tu posición. Otra pulsación larga vuelve al GPS real.
@@ -34,7 +39,7 @@ Sin servidor de contenido, la app usa los datos de prueba incluidos (sin fotos n
 
 ```sh
 python scripts/generar_contenido_prueba.py               # crea content/ (no se sube a git)
-python -m http.server 8088 --bind 0.0.0.0 --directory content
+python scripts/servir_contenido.py                        # sirve content/ en el puerto 8088
 ```
 
 y en `.env.local` (no se sube a git):

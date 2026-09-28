@@ -86,6 +86,9 @@ export default function TourScreen() {
           userAccuracy={location.accuracy}
           simulated={location.status === 'simulated'}
           onMapPress={simulator.moveTo}
+          illustratedMap={
+            route.media.map && route.map_bounds ? { uri: route.media.map, bounds: route.map_bounds } : null
+          }
         />
         <LocationStatus location={location} onLongPress={toggleSimulation} />
         {selected ? (

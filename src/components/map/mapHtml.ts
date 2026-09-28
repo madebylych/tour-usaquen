@@ -1,16 +1,21 @@
 import { colors } from '@/theme';
+import { MAPLIBRE_CSS, MAPLIBRE_JS } from './vendor/maplibre.generated';
 
 // Página HTML del mapa: MapLibre GL JS + tiles vectoriales de OpenFreeMap
 // (datos de OpenStreetMap; gratis, sin API key). Se muestra dentro de un
 // WebView en la app y de un iframe en la vista previa web.
 //
+// Funciona sin conexión:
+// - MapLibre va dentro de la app (vendor/maplibre.generated.ts), no en un CDN.
+// - Si el estilo de OpenFreeMap no carga, se usa un fondo liso.
+// - El mapa ilustrado de la ruta (imagen descargada) se dibuja encima,
+//   anclado por sus esquinas; es el mapa que se ve sin conexión.
+//
 // MapLibre 5.x porque trae todo en un solo archivo (la 6.x viene en módulos
-// separados, más frágil dentro de un WebView). Por ahora se carga desde CDN;
-// para el uso offline (fases 7-8) se empaquetará dentro de la app.
+// separados, más frágil dentro de un WebView).
 
-const MAPLIBRE_VERSION = '5.24.0';
-const CDN = `https://cdn.jsdelivr.net/npm/maplibre-gl@${MAPLIBRE_VERSION}/dist`;
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
+const STYLE_TIMEOUT_MS = 5000;
 
 export function buildMapHtml(): string {
   return `<!doctype html>
@@ -18,7 +23,7 @@ export function buildMapHtml(): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<link rel="stylesheet" href="${CDN}/maplibre-gl.css" />
+<style>${MAPLIBRE_CSS}</style>
 <style>
   html, body, #map { margin: 0; padding: 0; width: 100%; height: 100%; background: ${colors.primarySoft}; }
   body { -webkit-tap-highlight-color: transparent; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; }
@@ -47,7 +52,7 @@ export function buildMapHtml(): string {
 </head>
 <body>
 <div id="map"></div>
-<script src="${CDN}/maplibre-gl.js"></script>
+<script>${MAPLIBRE_JS}</script>
 <script>
 (function () {
   var PRIMARY = '${colors.primary}';
@@ -60,27 +65,36 @@ export function buildMapHtml(): string {
 
   window.onerror = function (message) { send({ type: 'error', message: String(message) }); };
   if (typeof maplibregl === 'undefined') {
-    send({ type: 'error', message: 'No se pudo cargar la librería del mapa (¿sin conexión?)' });
+    send({ type: 'error', message: 'No se pudo iniciar la librería del mapa' });
     return;
   }
 
-  var map = new maplibregl.Map({
-    container: 'map',
-    style: '${STYLE_URL}',
-    center: [-74.0308, 4.6948],
-    zoom: 15,
-    attributionControl: { compact: true },
-    pitchWithRotate: false,
-    dragRotate: false
-  });
-  map.touchZoomRotate.disableRotation();
+  // Estilo sin conexión: solo un fondo liso (no necesita tiles ni fuentes).
+  var OFFLINE_STYLE = {
+    version: 8,
+    sources: {},
+    layers: [{ id: 'background', type: 'background', paint: { 'background-color': '${colors.background}' } }]
+  };
 
+  // Intenta traer el estilo de OpenFreeMap; si no hay conexión (o tarda
+  // demasiado), sigue con el fondo liso.
+  function loadStyle() {
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (controller) controller.abort(); }, ${STYLE_TIMEOUT_MS});
+    return fetch('${STYLE_URL}', controller ? { signal: controller.signal } : undefined)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (style) { clearTimeout(timer); return { style: style, online: true }; })
+      .catch(function () { clearTimeout(timer); return { style: OFFLINE_STYLE, online: false }; });
+  }
+
+  var map = null;
   var loaded = false;
   var pending = null; // último estado recibido antes de que cargue el mapa
   var fitted = false;
   var markers = {}; // id -> { marker, el }
   var userMarker = null;
   var userEl = null;
+  var currentImageUrl = null;
 
   // Círculo aproximado (polígono de 48 lados) de radio en metros.
   function circle(lat, lng, radius) {
@@ -96,35 +110,29 @@ export function buildMapHtml(): string {
 
   var EMPTY = { type: 'FeatureCollection', features: [] };
 
-  map.on('load', function () {
-    map.addSource('route', { type: 'geojson', data: EMPTY });
-    map.addLayer({
-      id: 'route', type: 'line', source: 'route',
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: { 'line-color': PRIMARY, 'line-width': 5 }
-    });
-    map.addSource('accuracy', { type: 'geojson', data: EMPTY });
-    map.addLayer({
-      id: 'accuracy', type: 'fill', source: 'accuracy',
-      paint: { 'fill-color': PRIMARY, 'fill-opacity': 0.1, 'fill-outline-color': PRIMARY }
-    });
-    loaded = true;
-    if (pending) apply(pending);
-    send({ type: 'ready' });
-  });
+  // Esquinas de la imagen para MapLibre: [lng, lat] en orden
+  // superior izquierda, superior derecha, inferior derecha, inferior izquierda.
+  // bounds llega como [[lat_norte, lon_oeste], [lat_sur, lon_este]].
+  function corners(bounds) {
+    var n = bounds[0][0], w = bounds[0][1], s = bounds[1][0], e = bounds[1][1];
+    return [[w, n], [e, n], [e, s], [w, s]];
+  }
 
-  map.on('error', function (e) {
-    send({ type: 'error', message: (e && e.error && e.error.message) || 'Error del mapa' });
-  });
-
-  // Toques en el mapa (no en un marcador): posición para el modo simulación.
-  map.on('click', function (e) {
-    var target = e.originalEvent && e.originalEvent.target;
-    if (target && target.closest && target.closest('.pin')) return;
-    send({ type: 'press', lat: e.lngLat.lat, lng: e.lngLat.lng });
-  });
+  function setIllustratedMap(image) {
+    var url = image ? image.url : null;
+    if (url === currentImageUrl) return;
+    currentImageUrl = url;
+    if (map.getLayer('illustrated')) map.removeLayer('illustrated');
+    if (map.getSource('illustrated')) map.removeSource('illustrated');
+    if (!image) return;
+    map.addSource('illustrated', { type: 'image', url: image.url, coordinates: corners(image.bounds) });
+    // Debajo de la precisión, la ruta y los marcadores.
+    map.addLayer({ id: 'illustrated', type: 'raster', source: 'illustrated', paint: { 'raster-fade-duration': 0 } }, 'accuracy');
+  }
 
   function apply(state) {
+    setIllustratedMap(state.mapImage);
+
     // Línea de la ruta.
     map.getSource('route').setData({
       type: 'Feature', properties: {},
@@ -176,14 +184,58 @@ export function buildMapHtml(): string {
       map.getSource('accuracy').setData(EMPTY);
     }
 
-    // La primera vez, encuadrar todas las paradas.
+    // La primera vez, encuadrar el mapa ilustrado (si hay) o las paradas.
     if (!fitted && state.places.length > 0) {
       var bounds = new maplibregl.LngLatBounds();
-      state.places.forEach(function (p) { bounds.extend([p.lng, p.lat]); });
-      map.fitBounds(bounds, { padding: { top: 80, right: 60, bottom: 160, left: 60 }, maxZoom: 17, duration: 0 });
+      if (state.mapImage) corners(state.mapImage.bounds).forEach(function (c) { bounds.extend(c); });
+      else state.places.forEach(function (p) { bounds.extend([p.lng, p.lat]); });
+      map.fitBounds(bounds, { padding: { top: 70, right: 30, bottom: 40, left: 30 }, maxZoom: 17, duration: 0 });
       fitted = true;
     }
   }
+
+  loadStyle().then(function (result) {
+    map = new maplibregl.Map({
+      container: 'map',
+      style: result.style,
+      center: [-74.0308, 4.6948],
+      zoom: 15,
+      attributionControl: { compact: true },
+      pitchWithRotate: false,
+      dragRotate: false
+    });
+    map.touchZoomRotate.disableRotation();
+
+    map.on('load', function () {
+      map.addSource('route', { type: 'geojson', data: EMPTY });
+      map.addSource('accuracy', { type: 'geojson', data: EMPTY });
+      map.addLayer({
+        id: 'accuracy', type: 'fill', source: 'accuracy',
+        paint: { 'fill-color': PRIMARY, 'fill-opacity': 0.1, 'fill-outline-color': PRIMARY }
+      });
+      map.addLayer({
+        id: 'route', type: 'line', source: 'route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': PRIMARY, 'line-width': 5 }
+      });
+      loaded = true;
+      if (pending) apply(pending);
+      send({ type: 'ready', online: result.online });
+    });
+
+    // Errores de tiles sin conexión son esperables: solo se informan antes
+    // de que el mapa cargue.
+    map.on('error', function (e) {
+      if (!loaded) send({ type: 'error', message: (e && e.error && e.error.message) || 'Error del mapa' });
+    });
+
+    // Toques en el mapa (no en un marcador): posición para el modo simulación.
+    map.on('click', function (e) {
+      var target = e.originalEvent && e.originalEvent.target;
+      if (target && target.closest && target.closest('.pin')) return;
+      send({ type: 'press', lat: e.lngLat.lat, lng: e.lngLat.lng });
+    });
+  });
 
   // Punto de entrada de los mensajes de la app.
   window.receive = function (msg) {

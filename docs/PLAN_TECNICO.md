@@ -215,7 +215,7 @@ Durante el tour, imágenes, audios y mapa se cargan desde `file://` en el celula
 
 **Solución: mapa ilustrado georreferenciado** como fuente de imagen (`image` source) de MapLibre. Es una imagen anclada por sus cuatro esquinas; el punto del GPS cae en el lugar correcto. Se descarga con la ruta, así que funciona offline. El mapa base de OpenFreeMap se ve debajo cuando hay conexión.
 
-Para que el mapa funcione sin conexión también hay que empaquetar MapLibre GL JS dentro de la app (hoy se carga desde CDN).
+MapLibre GL JS va empaquetado dentro de la app (`scripts/empaquetar-maplibre.js`) y, si el estilo de OpenFreeMap no carga, el mapa usa un fondo liso: sin conexión se ven el mapa ilustrado, la ruta, las paradas y la ubicación. La imagen descargada se pasa al WebView como data URL (base64), porque el WebView no tiene acceso a los archivos del celular.
 
 No es solo la opción barata: **un mapa ilustrado del distrito es parte de la identidad visual del proyecto.** Lo pueden trabajar juntas ilustración (creación digital) y arquitectura (lectura del territorio, recorridos, hitos).
 

@@ -15,6 +15,13 @@ export type MapUser = {
   simulated: boolean;
 };
 
+// Mapa ilustrado: imagen anclada por sus esquinas.
+// bounds: [[lat_norte, lon_oeste], [lat_sur, lon_este]].
+export type MapImage = {
+  url: string;
+  bounds: [[number, number], [number, number]];
+};
+
 // De la app al mapa.
 export type ToMap =
   | {
@@ -23,12 +30,13 @@ export type ToMap =
       selectedId: string | null;
       discovered: string[];
       user: MapUser | null;
+      mapImage: MapImage | null;
     }
   | { type: 'center'; lat: number; lng: number };
 
 // Del mapa a la app.
 export type FromMap =
-  | { type: 'ready' }
+  | { type: 'ready'; online: boolean } // online: si cargó el mapa base de OpenFreeMap
   | { type: 'select'; id: string }
   | { type: 'press'; lat: number; lng: number }
   | { type: 'error'; message: string };

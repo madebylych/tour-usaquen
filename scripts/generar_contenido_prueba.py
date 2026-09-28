@@ -6,6 +6,7 @@ Crea en content/ la misma estructura que tendrá el servidor real:
     content/routes/usaquen-centro.json     ruta con sus paradas
     content/media/images/...               imágenes JPG marcadas "IMAGEN DE PRUEBA"
     content/media/audio/...                audios WAV de prueba (tonos, no música)
+    content/media/maps/...                 mapa ilustrado PROVISIONAL georreferenciado
 
 Nada de esto es contenido real: los nombres, textos y coordenadas son los
 mismos datos de prueba de src/data/local/testData.ts.
@@ -13,7 +14,7 @@ mismos datos de prueba de src/data/local/testData.ts.
 Uso:
     python scripts/generar_contenido_prueba.py
 Para servirlo en la red local (celular y computador en la misma wifi):
-    python -m http.server 8088 --directory content
+    python scripts/servir_contenido.py
 
 Requiere Pillow (pip install pillow).
 """
@@ -39,9 +40,11 @@ ROUTE = {
     "duration_min": 45,
     "distance_m": 800,
     "cover_image_path": "images/routes/usaquen-centro.jpg",
-    "map_image_path": None,
-    "map_bounds": None,
-    "version": 1,
+    "map_image_path": "maps/usaquen-centro.png",
+    # [[lat_norte, lon_oeste], [lat_sur, lon_este]] de la imagen del mapa.
+    "map_bounds": [[4.6965, -74.0335], [4.6925, -74.0285]],
+    # Versión 2: agrega el mapa ilustrado (sirve para probar "Actualizar").
+    "version": 2,
     "published": True,
     "updated_at": UPDATED_AT,
 }
@@ -118,6 +121,39 @@ def make_audio(path: Path, base_hz: float, seconds: float = 12.0) -> None:
         wav.writeframes(bytes(frames))
 
 
+def make_map(path: Path, bounds, places) -> None:
+    """Mapa ilustrado PROVISIONAL: fondo crema con manzanas de mentira y un
+    círculo en la coordenada exacta de cada parada. Sirve para comprobar el
+    georreferenciado: en la app, los marcadores deben caer sobre los círculos.
+    Orientado al norte; el ancho y alto respetan la proporción real del área."""
+    (north, west), (south, east) = bounds
+    mid_lat = math.radians((north + south) / 2)
+    width_m = (east - west) * 111320 * math.cos(mid_lat)
+    height_m = (north - south) * 111320
+    width = 1000
+    height = round(width * height_m / width_m)
+
+    def to_px(lat: float, lng: float):
+        return ((lng - west) / (east - west) * width, (north - lat) / (north - south) * height)
+
+    img = Image.new("RGB", (width, height), (250, 244, 236))
+    draw = ImageDraw.Draw(img)
+    # Manzanas decorativas (NO son las calles reales).
+    for x in range(20, width, 110):
+        for y in range(20, height, 95):
+            draw.rounded_rectangle([x, y, x + 88, y + 74], radius=10, fill=(240, 228, 214))
+    label = ImageFont.load_default(size=30)
+    draw.text((width / 2, 34), "MAPA ILUSTRADO DE PRUEBA", font=label, fill=PRIMARY, anchor="mm")
+    draw.text((width - 40, height - 40), "N ^", font=label, fill=PRIMARY, anchor="mm")
+    number = ImageFont.load_default(size=26)
+    for n, lat, lng in places:
+        x, y = to_px(lat, lng)
+        draw.ellipse([x - 38, y - 38, x + 38, y + 38], outline=PRIMARY, width=6)
+        draw.text((x + 48, y - 48), f"parada {n}", font=number, fill=PRIMARY, anchor="lm")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(path, "PNG", optimize=True)
+
+
 def main() -> None:
     media = ROOT / "media"
     places = []
@@ -127,6 +163,7 @@ def main() -> None:
         make_image(media / row["image_path"], f"Parada {n}", "IMAGEN DE PRUEBA")
         make_audio(media / row["audio_path"], hz)
     make_image(media / ROUTE["cover_image_path"], "Usaquén", "IMAGEN DE PRUEBA")
+    make_map(media / ROUTE["map_image_path"], ROUTE["map_bounds"], [(n, lat, lng) for n, _, lat, lng, _ in PLACES])
 
     (ROOT / "routes").mkdir(parents=True, exist_ok=True)
     (ROOT / "routes.json").write_text(json.dumps([ROUTE], ensure_ascii=False, indent=2), encoding="utf-8")

@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { FromMap, ToMap } from '@/components/map/bridge';
+import { FromMap, MapImage, ToMap } from '@/components/map/bridge';
+import { imageUrlForMap } from '@/components/map/imageUrl';
 import { buildMapHtml } from '@/components/map/mapHtml';
 import MapSurface, { MapSurfaceHandle } from '@/components/map/MapSurface';
 import Txt from '@/components/Txt';
 import { Coordinates } from '@/geo/distance';
-import { Place } from '@/types';
+import { MapBounds, Place } from '@/types';
 import { colors, radius, shadow, space } from '@/theme';
 
 type Props = {
@@ -19,9 +20,12 @@ type Props = {
   userAccuracy: number | null; // metros; null si es simulada
   simulated: boolean;
   onMapPress: (coordinate: Coordinates) => void;
+  // Mapa ilustrado de la ruta (imagen descargada o URL) y sus esquinas.
+  illustratedMap: { uri: string; bounds: MapBounds } | null;
 };
 
-// Mapa del tour: MapLibre + OpenFreeMap (OpenStreetMap), sin API key.
+// Mapa del tour: MapLibre + OpenFreeMap (OpenStreetMap), sin API key, con
+// el mapa ilustrado de la ruta encima (funciona sin conexión).
 // El dibujo ocurre en una página web embebida (map/mapHtml.ts); este
 // componente le envía el estado y recibe los toques.
 export default function TourMap({
@@ -33,11 +37,30 @@ export default function TourMap({
   userAccuracy,
   simulated,
   onMapPress,
+  illustratedMap,
 }: Props) {
   const html = useMemo(() => buildMapHtml(), []);
   const surface = useRef<MapSurfaceHandle>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapImage, setMapImage] = useState<MapImage | null>(null);
+
+  // La imagen descargada se convierte a un formato que la página del mapa
+  // pueda leer (ver map/imageUrl).
+  const imageUri = illustratedMap?.uri ?? null;
+  const imageBounds = illustratedMap?.bounds ?? null;
+  useEffect(() => {
+    if (!imageUri || !imageBounds) return;
+    let active = true;
+    imageUrlForMap(imageUri)
+      .then((url) => active && setMapImage({ url, bounds: imageBounds }))
+      .catch(() => active && setMapImage(null));
+    return () => {
+      active = false;
+    };
+    // imageBounds cambia de referencia en cada render; importa su contenido.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageUri, JSON.stringify(imageBounds)]);
 
   const state: ToMap = useMemo(
     () => ({
@@ -48,8 +71,9 @@ export default function TourMap({
       user: userPosition
         ? { lat: userPosition.latitude, lng: userPosition.longitude, accuracy: userAccuracy, simulated }
         : null,
+      mapImage: imageUri ? mapImage : null,
     }),
-    [places, selectedId, discoveredIds, userPosition, userAccuracy, simulated]
+    [places, selectedId, discoveredIds, userPosition, userAccuracy, simulated, imageUri, mapImage]
   );
 
   // Cada cambio de estado se envía completo; la página actualiza lo necesario.
@@ -57,11 +81,20 @@ export default function TourMap({
     if (ready) surface.current?.send(state);
   }, [ready, state]);
 
+  // Último estado, para reenviarlo si la página del mapa se recarga (Android
+  // puede reiniciar un WebView por falta de memoria): en ese caso `ready` ya
+  // era true y el efecto de arriba no se volvería a ejecutar.
+  const latestState = useRef(state);
+  useEffect(() => {
+    latestState.current = state;
+  }, [state]);
+
   const handleMessage = useCallback(
     (msg: FromMap) => {
       if (msg.type === 'ready') {
         setReady(true);
         setError(null);
+        surface.current?.send(latestState.current);
       } else if (msg.type === 'select') onSelect(msg.id);
       else if (msg.type === 'press') onMapPress({ latitude: msg.lat, longitude: msg.lng });
       else if (msg.type === 'error') setError(msg.message);
