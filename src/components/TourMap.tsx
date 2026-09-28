@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import MapView, { Circle, MapStyleElement, Marker, Polyline } from 'react-native-maps';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import MapView, { Circle, MapStyleElement, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
@@ -54,6 +54,9 @@ export default function TourMap({
     <View style={StyleSheet.absoluteFill}>
       <MapView
         ref={mapRef}
+        // En Android se usa Google Maps (necesita la API key en el APK).
+        // En iOS se deja Apple Maps, que no necesita key.
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         style={StyleSheet.absoluteFill}
         initialRegion={regionFor(coordinates)}
         onMapReady={fitRoute}
