@@ -6,7 +6,7 @@ Crea en content/ la misma estructura que tendrá el servidor real:
     content/routes/usaquen-centro.json     ruta con sus paradas
     content/media/images/...               imágenes JPG marcadas "IMAGEN DE PRUEBA"
     content/media/audio/...                audios WAV de prueba (tonos, no música)
-    content/media/maps/...                 mapa ilustrado PROVISIONAL georreferenciado
+    content/media/maps/...                 mapa ilustrado (solo si ROUTE lo define)
 
 Nada de esto es contenido real: los nombres, textos y coordenadas son los
 mismos datos de prueba de src/data/local/testData.ts.
@@ -40,11 +40,14 @@ ROUTE = {
     "duration_min": 45,
     "distance_m": 800,
     "cover_image_path": "images/routes/usaquen-centro.jpg",
-    "map_image_path": "maps/usaquen-centro.png",
-    # [[lat_norte, lon_oeste], [lat_sur, lon_este]] de la imagen del mapa.
-    "map_bounds": [[4.6965, -74.0335], [4.6925, -74.0285]],
-    # Versión 3: primera versión servida desde Supabase (sirve para probar "Actualizar").
-    "version": 3,
+    # Sin mapa ilustrado: el provisional tapaba el mapa real de calles. Se
+    # vuelve a poner cuando exista el mapa ilustrado del grupo, por ejemplo:
+    #   "map_image_path": "maps/usaquen-centro.png",
+    #   "map_bounds": [[4.6965, -74.0335], [4.6925, -74.0285]],  # [[lat_norte, lon_oeste], [lat_sur, lon_este]]
+    "map_image_path": None,
+    "map_bounds": None,
+    # Versión 4: se quitó el mapa provisional (las rutas descargadas muestran "Actualizar").
+    "version": 4,
     "published": True,
     "updated_at": UPDATED_AT,
 }
@@ -163,7 +166,8 @@ def main() -> None:
         make_image(media / row["image_path"], f"Parada {n}", "IMAGEN DE PRUEBA")
         make_audio(media / row["audio_path"], hz)
     make_image(media / ROUTE["cover_image_path"], "Usaquén", "IMAGEN DE PRUEBA")
-    make_map(media / ROUTE["map_image_path"], ROUTE["map_bounds"], [(n, lat, lng) for n, _, lat, lng, _ in PLACES])
+    if ROUTE["map_image_path"]:
+        make_map(media / ROUTE["map_image_path"], ROUTE["map_bounds"], [(n, lat, lng) for n, _, lat, lng, _ in PLACES])
 
     (ROOT / "routes").mkdir(parents=True, exist_ok=True)
     (ROOT / "routes.json").write_text(json.dumps([ROUTE], ensure_ascii=False, indent=2), encoding="utf-8")
