@@ -1,10 +1,14 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
-import { colors, radius, shadow, space } from '@/theme';
+import { colors, line, space } from '@/theme';
+
+// Alturas de las barras de la onda (decorativa, igual para todos los audios).
+const BARS = [10, 18, 12, 24, 16, 28, 14, 22, 30, 18, 12, 26, 20, 14, 24, 18, 28, 12, 20, 16, 24, 10, 18, 14, 22, 12];
 
 type Props = {
   uri: string | null; // archivo local descargado o URL remota; null si no hay audio
@@ -22,6 +26,20 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
   useEffect(() => {
     if (status.didJustFinish) player.seekTo(0).catch(() => {});
   }, [status.didJustFinish, player]);
+
+  // Al abrir otra pantalla encima, la anterior sigue montada: sin esto su
+  // audio seguiría sonando debajo del de la parada nueva.
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        try {
+          player.pause();
+        } catch {
+          // Al cerrar la pantalla el reproductor puede estar ya liberado.
+        }
+      };
+    }, [player])
+  );
 
   const toggle = () => {
     if (!available) return;
@@ -57,11 +75,17 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
           <Txt variant="label">{title ?? 'Escucha este lugar'}</Txt>
           <Txt variant="caption">{subtitle}</Txt>
         </View>
-        <Ionicons name="headset-outline" size={22} color={colors.textMuted} />
+        <Ionicons name="headset-outline" size={22} color={colors.text} />
       </View>
       {available ? (
-        <View style={styles.track}>
-          <View style={[styles.fill, { width: `${progress * 100}%` }]} />
+        // Onda: las barras ya escuchadas en azul, las que faltan en tinta.
+        <View style={styles.wave} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          {BARS.map((h, i) => (
+            <View
+              key={i}
+              style={[styles.bar, { height: h, backgroundColor: i / BARS.length < progress ? colors.primary : colors.text }]}
+            />
+          ))}
         </View>
       ) : null}
       {credit ? <Txt variant="caption">Audio: {credit}</Txt> : null}
@@ -77,16 +101,15 @@ function formatTime(seconds: number): string {
 const styles = StyleSheet.create({
   card: {
     gap: space.s + 2,
-    padding: space.m - 2,
-    borderRadius: radius.m,
+    padding: space.m,
     backgroundColor: colors.surface,
-    boxShadow: shadow.card,
+    borderWidth: line,
+    borderColor: colors.border,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.m - 2 },
   playButton: {
     width: 52,
     height: 52,
-    borderRadius: radius.pill,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -94,6 +117,6 @@ const styles = StyleSheet.create({
   playIcon: { marginLeft: 3 }, // centra ópticamente el triángulo
   disabled: { opacity: 0.35 },
   grow: { flex: 1 },
-  track: { height: 6, borderRadius: radius.pill, backgroundColor: colors.primarySoft, overflow: 'hidden' },
-  fill: { height: '100%', backgroundColor: colors.primary },
+  wave: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 32 },
+  bar: { width: 5 },
 });

@@ -3,28 +3,40 @@ import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
-import { colors, radius, space } from '@/theme';
+import { colors, line, shadow, space } from '@/theme';
 
 type Props = {
   label: string;
   onPress: () => void;
+  // primary: azul con eco amarillo. secondary: blanco con borde de tinta.
+  // light: amarillo con eco de tinta, para usar sobre fondo azul.
   variant?: 'primary' | 'secondary' | 'light';
   icon?: ComponentProps<typeof Ionicons>['name'];
+  // Flecha a la derecha y texto a la izquierda (botones de "seguir").
+  iconRight?: boolean;
 };
 
-// Botón tipo píldora. `light` es para usar sobre fondo fucsia.
-export default function Button({ label, onPress, variant = 'primary', icon }: Props) {
-  const color = variant === 'primary' ? colors.onPrimary : colors.primary;
+export default function Button({ label, onPress, variant = 'primary', icon, iconRight = false }: Props) {
+  const color = variant === 'primary' ? colors.onPrimary : colors.text;
+  const iconColor = variant === 'primary' ? colors.accent : colors.text;
+  const iconEl = icon ? <Ionicons name={icon} size={20} color={iconColor} /> : null;
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [styles.base, styles[variant], pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.base,
+        styles[variant],
+        iconRight && styles.spread,
+        // Al presionar, el botón "baja" sobre su sombra.
+        pressed && styles.pressed,
+      ]}
     >
-      {icon ? <Ionicons name={icon} size={20} color={color} /> : null}
+      {iconRight ? null : iconEl}
       <Txt variant="label" color={color} style={styles.label}>
         {label}
       </Txt>
+      {iconRight ? iconEl : null}
     </Pressable>
   );
 }
@@ -36,12 +48,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: space.s,
     minHeight: 54,
-    paddingHorizontal: space.l,
-    borderRadius: radius.pill,
+    paddingHorizontal: space.l - 4,
   },
-  primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.primarySoft },
-  light: { backgroundColor: colors.surface },
-  pressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
+  spread: { justifyContent: 'space-between' },
+  primary: { backgroundColor: colors.primary, boxShadow: shadow.accent },
+  secondary: { backgroundColor: colors.surface, borderWidth: line, borderColor: colors.border },
+  light: { backgroundColor: colors.accent, boxShadow: shadow.ink },
+  pressed: { transform: [{ translateX: 3 }, { translateY: 3 }], boxShadow: 'none' },
   label: { fontSize: 16 },
 });

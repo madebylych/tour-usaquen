@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
 import { UserLocation } from '@/geo/useLocation';
-import { colors, radius, shadow, space } from '@/theme';
+import { colors, line, space } from '@/theme';
 
 type Props = {
   location: UserLocation;
@@ -16,19 +16,21 @@ type Props = {
 export default function LocationStatus({ location, onLongPress }: Props) {
   const { icon, text, highlight } = describe(location);
   const denied = location.status === 'denied';
+  const unavailable = location.status === 'unavailable';
 
   return (
     <Pressable
       onLongPress={onLongPress}
       delayLongPress={800}
       // Sin permiso, un toque lleva a los ajustes del celular para darlo.
-      onPress={denied ? () => Linking.openSettings() : undefined}
-      accessibilityRole={denied ? 'button' : 'text'}
+      // Con el GPS apagado, un toque vuelve a intentar (tras encenderlo).
+      onPress={denied ? () => Linking.openSettings() : unavailable ? location.retry : undefined}
+      accessibilityRole={denied || unavailable ? 'button' : 'text'}
       accessibilityHint="Mantén presionado para activar o desactivar el modo simulación"
       style={[styles.pill, highlight && styles.highlight]}
     >
-      <Ionicons name={icon} size={16} color={highlight ? colors.onPrimary : colors.primary} />
-      <Txt variant="label" color={highlight ? colors.onPrimary : colors.text} style={styles.text}>
+      <Ionicons name={icon} size={16} color={highlight ? colors.text : colors.primary} />
+      <Txt variant="label" color={colors.text} style={styles.text}>
         {text}
       </Txt>
     </Pressable>
@@ -52,7 +54,7 @@ function describe(location: UserLocation): {
     case 'denied':
       return { icon: 'alert-circle-outline', text: 'Sin permiso de ubicación. Toca para activarlo', highlight: false };
     case 'unavailable':
-      return { icon: 'alert-circle-outline', text: 'GPS no disponible. Revisa que esté encendido', highlight: false };
+      return { icon: 'alert-circle-outline', text: 'GPS apagado o sin señal. Enciéndelo y toca aquí', highlight: false };
     case 'simulated':
       return { icon: 'flask', text: 'Simulación: toca el mapa para moverte', highlight: true };
   }
@@ -69,10 +71,10 @@ const styles = StyleSheet.create({
     gap: space.xs + 2,
     paddingVertical: space.s,
     paddingHorizontal: space.m - 2,
-    borderRadius: radius.pill,
     backgroundColor: colors.surface,
-    boxShadow: shadow.card,
+    borderWidth: line,
+    borderColor: colors.border,
   },
-  highlight: { backgroundColor: colors.primary },
+  highlight: { backgroundColor: colors.accent },
   text: { fontSize: 13, flexShrink: 1 },
 });

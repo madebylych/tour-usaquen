@@ -1,93 +1,99 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import MediaImage from '@/components/MediaImage';
 import Txt from '@/components/Txt';
-import { PlaceWithMedia } from '@/types';
-import { colors, radius, shadow, space } from '@/theme';
+import { Place } from '@/types';
+import { colors, fonts, line, space } from '@/theme';
 import { formatDistance } from '@/utils/format';
 
 type Props = {
-  place: PlaceWithMedia;
+  place: Place;
   position: number;
   onPress: () => void;
   distance?: number | null; // metros desde el usuario, si se conoce
   discovered?: boolean;
 };
 
-// Tarjeta horizontal de una parada dentro de una lista.
+// Parada como boleto: talón con el número (amarillo si ya se descubrió),
+// línea punteada de corte y los datos de la parada.
 export default function PlaceListItem({ place, position, onPress, distance, discovered = false }: Props) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Parada ${position}: ${place.name}`}
+      accessibilityLabel={`Parada ${position}: ${place.name}${discovered ? ', descubierta' : ''}`}
       onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.ticket, pressed && styles.pressed]}
     >
-      <View>
-        <MediaImage uri={place.media.image} category={place.category} iconSize={28} style={styles.image} label={place.name} />
-        <View style={styles.badge}>
-          <Txt variant="caption" color={colors.onPrimary} style={styles.badgeText}>
-            {position}
-          </Txt>
-        </View>
-      </View>
-      <View style={styles.texts}>
-        <Txt variant="label" numberOfLines={1}>
-          {place.name}
+      <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
+        <Txt variant="heading" color={colors.primary} style={styles.number}>
+          {String(position).padStart(2, '0')}
         </Txt>
-        {discovered ? (
-          <View style={styles.discovered}>
-            <Ionicons name="checkmark-circle" size={14} color={colors.primary} />
-            <Txt variant="caption" color={colors.primary}>
-              Descubierta
+      </View>
+      {/* Línea de corte del boleto. Se dibuja con guiones porque el borde
+          punteado de un solo lado falla en Android. */}
+      <View style={styles.cut}>
+        {DASHES.map((i) => (
+          <View key={i} style={styles.dash} />
+        ))}
+      </View>
+      <View style={styles.body}>
+        <View style={styles.texts}>
+          <Txt variant="label" numberOfLines={1}>
+            {place.name}
+          </Txt>
+          {discovered ? (
+            <View style={styles.discovered}>
+              <Ionicons name="checkmark" size={14} color={colors.primary} />
+              <Txt variant="caption" color={colors.primary}>
+                Descubierta
+              </Txt>
+            </View>
+          ) : (
+            <Txt variant="caption" numberOfLines={1}>
+              {place.category}
             </Txt>
-          </View>
-        ) : (
-          <Txt variant="caption">{place.category}</Txt>
-        )}
-        {place.summary ? (
-          <Txt variant="caption" color={colors.text} numberOfLines={2}>
-            {place.summary}
+          )}
+        </View>
+        {distance != null ? (
+          <Txt variant="label" color={colors.primary}>
+            {formatDistance(distance)}
           </Txt>
         ) : null}
+        <Ionicons name="arrow-forward" size={18} color={colors.text} />
       </View>
-      {distance != null ? (
-        <Txt variant="label" color={colors.primary}>
-          {formatDistance(distance)}
-        </Txt>
-      ) : null}
-      <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
     </Pressable>
   );
 }
 
+const DASHES = [0, 1, 2, 3, 4, 5, 6, 7];
+
 const styles = StyleSheet.create({
-  card: {
+  ticket: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.m - 4,
-    padding: space.s + 2,
+    minHeight: 66,
     backgroundColor: colors.surface,
-    borderRadius: radius.m,
-    boxShadow: shadow.card,
+    borderWidth: line,
+    borderColor: colors.border,
   },
-  pressed: { transform: [{ scale: 0.98 }] },
-  image: { width: 72, height: 72, borderRadius: radius.s },
-  badge: {
-    position: 'absolute',
-    top: -6,
-    left: -6,
-    width: 24,
-    height: 24,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-    borderWidth: 2,
-    borderColor: colors.surface,
+  pressed: { backgroundColor: colors.primarySoft },
+  stub: {
+    width: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { fontSize: 12, lineHeight: 14 },
+  cut: { width: line, justifyContent: 'space-between', paddingVertical: 3 },
+  dash: { height: 4, backgroundColor: colors.border },
+  stubDone: { backgroundColor: colors.accent },
+  stubPending: { backgroundColor: colors.primarySoft },
+  number: { fontFamily: fonts.display, fontSize: 20 },
+  body: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.m - 4,
+    paddingVertical: space.s + 2,
+    paddingHorizontal: space.m - 2,
+  },
   texts: { flex: 1, gap: 2 },
   discovered: { flexDirection: 'row', alignItems: 'center', gap: 3 },
 });

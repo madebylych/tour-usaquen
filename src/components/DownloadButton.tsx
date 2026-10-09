@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
 import { DownloadStatus } from '@/data/useRouteDownload';
-import { colors, radius, space } from '@/theme';
+import { colors, line, space } from '@/theme';
 
 type Props = {
   status: DownloadStatus;
@@ -21,8 +21,8 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
     return (
       <View style={[styles.base, styles.soft]} accessibilityLabel={`Descargando, ${status.done} de ${status.total}`}>
         <View style={[styles.progressFill, { width: `${pct * 100}%` }]} />
-        <Ionicons name="cloud-download-outline" size={20} color={colors.primary} />
-        <Txt variant="label" color={colors.primary}>
+        <Ionicons name="cloud-download-outline" size={20} color={colors.text} />
+        <Txt variant="label" color={colors.text}>
           {status.done}/{status.total}
         </Txt>
       </View>
@@ -42,8 +42,8 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
         onPress={confirmDelete}
         style={[styles.base, styles.soft]}
       >
-        <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
-        <Txt variant="label" color={colors.primary}>
+        <Ionicons name="checkmark-circle" size={20} color={colors.text} />
+        <Txt variant="label" color={colors.text}>
           Offline
         </Txt>
       </Pressable>
@@ -60,8 +60,8 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
       onPress={onDownload}
       style={({ pressed }) => [styles.base, styles.soft, pressed && styles.pressed]}
     >
-      <Ionicons name={icon} size={20} color={colors.primary} />
-      <Txt variant="label" color={colors.primary}>
+      <Ionicons name={icon} size={20} color={colors.text} />
+      <Txt variant="label" color={colors.text}>
         {label}
       </Txt>
     </Pressable>
@@ -75,17 +75,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: space.s,
-    paddingHorizontal: space.l - 4,
-    borderRadius: radius.pill,
+    paddingHorizontal: space.m + 2,
+    borderWidth: line,
+    borderColor: colors.border,
     overflow: 'hidden',
   },
-  soft: { backgroundColor: colors.primarySoft },
+  soft: { backgroundColor: colors.surface },
   pressed: { opacity: 0.8 },
   progressFill: {
     position: 'absolute',
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: 'rgba(209, 0, 111, 0.18)',
+    backgroundColor: colors.primarySoft,
   },
 });

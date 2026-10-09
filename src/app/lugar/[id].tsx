@@ -1,4 +1,3 @@
-import { ComponentProps } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,29 +8,35 @@ import AudioPlayer from '@/components/AudioPlayer';
 import BackButton from '@/components/BackButton';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
-import Chip from '@/components/Chip';
 import MediaImage from '@/components/MediaImage';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
-import { getPlace } from '@/data/source';
+import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
-import { colors, radius, shadow, space } from '@/theme';
-import { categoryIcon } from '@/utils/categories';
+import { colors, line, space } from '@/theme';
+
+// La parada y su número dentro de la ruta.
+async function loadPlace(routeSlug: string, placeId: string) {
+  const route = await getRoute(routeSlug);
+  const index = route?.places.findIndex((p) => p.id === placeId) ?? -1;
+  return index >= 0 && route ? { place: route.places[index], position: index + 1 } : null;
+}
 
 // Ficha del lugar. Orden deliberado: primero la consigna de observación
 // (mirar el lugar real), después el audio y al final los textos largos.
 export default function PlaceScreen() {
   const { id, route: routeSlug } = useLocalSearchParams<{ id: string; route: string }>();
-  const state = useData(() => getPlace(routeSlug, id), `${routeSlug}/${id}`);
+  const state = useData(() => loadPlace(routeSlug, id), `${routeSlug}/${id}`);
   const { discovered } = useProgress();
   const celebrate = useDiscoveryFeedback();
 
   if (!routeSlug || !id) return <StateMessage message="No se sabe qué parada abrir." showHomeButton />;
   if (state.status === 'loading') return <StateMessage loading />;
-  if (state.status === 'error') return <StateMessage message="No se pudo cargar la parada." showHomeButton />;
-  const place = state.data;
-  if (!place) return <StateMessage message="Esta parada no existe." showHomeButton />;
+  if (state.status === 'error')
+    return <StateMessage message="No se pudo cargar la parada." onRetry={state.reload} showHomeButton />;
+  if (!state.data) return <StateMessage message="Esta parada no existe." showHomeButton />;
+  const { place, position } = state.data;
 
   const isDiscovered = place.id in discovered;
   // "Ya estoy aquí": respaldo para cuando el GPS no detecta la llegada.
@@ -46,22 +51,24 @@ export default function PlaceScreen() {
 
   return (
     <View style={styles.screen}>
-      {/* Barra de estado oscura sobre la imagen clara. */}
       <StatusBar style="dark" />
       <BackButton />
-      <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE }}>
-        <MediaImage uri={place.media.image} category={place.category} style={styles.hero} iconSize={72} label={place.name} />
+      <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE + space.m }}>
+        <MediaImage uri={place.media.image} style={styles.hero} label={place.name} />
 
-        <View style={styles.sheet}>
-          <View style={styles.chipRow}>
-            <Chip icon={categoryIcon(place.category)} label={place.category} />
+        <View style={styles.content}>
+          <View style={styles.titleBlock}>
+            <Txt variant="overline">
+              PARADA {String(position).padStart(2, '0')}, {place.category.toUpperCase()}
+            </Txt>
+            <Txt variant="title" riso color={colors.primary}>
+              {place.name}
+            </Txt>
           </View>
-          <Txt variant="title">{place.name}</Txt>
 
           {place.observation_prompt ? (
             <View style={styles.prompt}>
-              <Ionicons name="eye-outline" size={24} color={colors.primary} />
-              <Txt variant="heading" style={styles.promptText}>
+              <Txt variant="label" style={styles.promptText}>
                 {place.observation_prompt}
               </Txt>
             </View>
@@ -69,20 +76,15 @@ export default function PlaceScreen() {
 
           <AudioPlayer uri={place.media.audio} title={place.audio_title} credit={place.audio_credit} />
 
-          {place.history ? <Section icon="time-outline" title="Historia" text={place.history} /> : null}
-          {place.architecture ? (
-            <Section icon="business-outline" title="Arquitectura" text={place.architecture} />
-          ) : null}
+          {place.history ? <Section title="Historia" text={place.history} /> : null}
+          {place.architecture ? <Section title="Arquitectura" text={place.architecture} /> : null}
 
           {place.did_you_know ? (
             <View style={styles.fact}>
-              <View style={styles.factTitle}>
-                <Ionicons name="bulb" size={20} color={colors.onPrimary} />
-                <Txt variant="label" color={colors.onPrimary}>
-                  ¿Sabías que...?
-                </Txt>
-              </View>
-              <Txt variant="body" color={colors.onPrimary}>
+              <Txt variant="overline" color={colors.accent}>
+                ¿SABÍAS QUE…?
+              </Txt>
+              <Txt variant="label" color={colors.onPrimary} style={styles.factText}>
                 {place.did_you_know}
               </Txt>
             </View>
@@ -100,13 +102,11 @@ export default function PlaceScreen() {
         <View style={styles.grow}>
           {isDiscovered ? (
             <View style={styles.discoveredBadge} accessibilityRole="text">
-              <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
-              <Txt variant="label" color={colors.primary}>
-                Parada descubierta
-              </Txt>
+              <Ionicons name="checkmark" size={22} color={colors.text} />
+              <Txt variant="label">Parada descubierta</Txt>
             </View>
           ) : (
-            <Button label="Ya estoy aquí" icon="hand-left-outline" onPress={discoverManually} />
+            <Button label="Ya estoy aquí" onPress={discoverManually} />
           )}
         </View>
       </BottomBar>
@@ -114,21 +114,10 @@ export default function PlaceScreen() {
   );
 }
 
-function Section({
-  icon,
-  title,
-  text,
-}: {
-  icon: ComponentProps<typeof Ionicons>['name'];
-  title: string;
-  text: string;
-}) {
+function Section({ title, text }: { title: string; text: string }) {
   return (
     <View style={styles.card}>
-      <View style={styles.cardTitle}>
-        <Ionicons name={icon} size={20} color={colors.primary} />
-        <Txt variant="heading">{title}</Txt>
-      </View>
+      <Txt variant="heading">{title}</Txt>
       <Txt variant="body">{text}</Txt>
     </View>
   );
@@ -136,41 +125,26 @@ function Section({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  hero: { height: 320 },
-  sheet: {
-    marginTop: -radius.l,
-    padding: space.m + 4,
-    paddingTop: space.l,
-    gap: space.m,
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.l,
-    borderTopRightRadius: radius.l,
-  },
-  chipRow: { flexDirection: 'row' },
+  hero: { height: 280, borderBottomWidth: line, borderColor: colors.border },
+  content: { padding: space.m + 6, gap: space.m },
+  titleBlock: { gap: space.s + 2, marginBottom: space.xs },
   prompt: {
-    flexDirection: 'row',
-    gap: space.m - 4,
-    padding: space.m + 2,
-    borderRadius: radius.m,
-    backgroundColor: colors.primarySoft,
+    padding: space.m,
+    backgroundColor: colors.accent,
+    borderWidth: line,
+    borderColor: colors.border,
   },
-  promptText: { flex: 1, color: colors.primaryDark },
+  promptText: { fontSize: 16, lineHeight: 23 },
   grow: { flex: 1 },
   card: {
     padding: space.m + 2,
     gap: space.s,
-    borderRadius: radius.m,
     backgroundColor: colors.surface,
-    boxShadow: shadow.card,
+    borderWidth: line,
+    borderColor: colors.border,
   },
-  cardTitle: { flexDirection: 'row', alignItems: 'center', gap: space.s },
-  fact: {
-    padding: space.m + 2,
-    gap: space.s,
-    borderRadius: radius.m,
-    backgroundColor: colors.primary,
-  },
-  factTitle: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  fact: { padding: space.m + 2, gap: space.s, backgroundColor: colors.primary },
+  factText: { fontSize: 16, lineHeight: 23 },
   credits: { marginTop: space.s },
   discoveredBadge: {
     minHeight: 54,
@@ -178,7 +152,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: space.s,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.accent,
+    borderWidth: line,
+    borderColor: colors.border,
   },
 });

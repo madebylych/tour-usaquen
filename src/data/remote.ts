@@ -31,12 +31,23 @@ export function mediaUrl(path: string): string {
   return `${SUPABASE_URL}/storage/v1/object/public/${MEDIA_BUCKET}/${encoded}`;
 }
 
+// Con señal débil una petición puede quedarse colgada minutos. Pasado este
+// tiempo se considera "sin conexión" y la app sigue con lo descargado.
+const REQUEST_TIMEOUT_MS = 10000;
+
 async function rest<T>(query: string): Promise<T> {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: { apikey: PUBLISHABLE_KEY ?? '', Accept: 'application/json' },
-  });
-  if (!response.ok) throw new Error(`Supabase respondió ${response.status}`);
-  return (await response.json()) as T;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
+      headers: { apikey: PUBLISHABLE_KEY ?? '', Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`Supabase respondió ${response.status}`);
+    return (await response.json()) as T;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function fetchRoutes(): Promise<Route[]> {

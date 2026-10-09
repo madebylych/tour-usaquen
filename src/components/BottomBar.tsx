@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, shadow, space } from '@/theme';
+import { colors, line, space } from '@/theme';
 
 // Barra fija abajo para la acción principal de la pantalla.
 export default function BottomBar({ children }: { children: ReactNode }) {
@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
     paddingTop: space.m,
     paddingHorizontal: space.m + 4,
     backgroundColor: colors.surface,
-    boxShadow: shadow.floating,
+    borderTopWidth: line,
+    borderColor: colors.border,
   },
 });

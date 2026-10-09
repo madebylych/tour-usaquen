@@ -29,22 +29,18 @@ export function buildMapHtml(): string {
   body { -webkit-tap-highlight-color: transparent; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; }
   .pin {
     width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%;
-    background: ${colors.primary}; border: 3px solid ${colors.surface};
+    background: ${colors.primary}; border: 2px solid ${colors.text};
     color: ${colors.onPrimary}; font-weight: 800; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 14px rgba(28, 27, 31, 0.18); cursor: pointer; position: relative;
+    box-shadow: 3px 3px 0 ${colors.text}; cursor: pointer; position: relative;
     transition: transform 0.15s;
   }
-  .pin.selected { background: ${colors.surface}; border-color: ${colors.primary}; color: ${colors.primary}; transform: scale(1.2); }
-  .pin .check {
-    position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; box-sizing: border-box;
-    border-radius: 50%; background: ${colors.primaryDark}; border: 2px solid ${colors.surface};
-    color: ${colors.onPrimary}; font-size: 10px; display: flex; align-items: center; justify-content: center;
-  }
+  .pin.done { background: ${colors.accent}; color: ${colors.text}; }
+  .pin.selected { transform: scale(1.2); box-shadow: 3px 3px 0 ${colors.accent}, 5px 5px 0 ${colors.text}; }
   .user {
     width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%;
-    background: ${colors.primaryDark}; border: 3px solid ${colors.surface};
-    box-shadow: 0 0 0 6px rgba(209, 0, 111, 0.25);
+    background: ${colors.primary}; border: 3px solid ${colors.surface};
+    box-shadow: 0 0 0 2px ${colors.text}, 0 0 0 8px rgba(29, 91, 214, 0.22);
   }
   .user.sim { width: 26px; height: 26px; border-style: dashed; }
   .maplibregl-ctrl-attrib { font-size: 10px; }
@@ -159,9 +155,10 @@ export function buildMapHtml(): string {
         markers[p.id] = entry;
       }
       entry.marker.setLngLat([p.lng, p.lat]);
-      entry.el.className = 'pin' + (p.id === state.selectedId ? ' selected' : '');
-      entry.el.setAttribute('aria-label', 'Parada ' + p.n);
-      entry.el.innerHTML = String(p.n) + (state.discovered.indexOf(p.id) >= 0 ? '<span class="check">&#10003;</span>' : '');
+      var done = state.discovered.indexOf(p.id) >= 0;
+      entry.el.className = 'pin' + (done ? ' done' : '') + (p.id === state.selectedId ? ' selected' : '');
+      entry.el.setAttribute('aria-label', 'Parada ' + p.n + (done ? ', descubierta' : ''));
+      entry.el.textContent = done ? '✓' : String(p.n);
     });
     Object.keys(markers).forEach(function (id) {
       if (!seen[id]) { markers[id].marker.remove(); delete markers[id]; }
@@ -216,7 +213,7 @@ export function buildMapHtml(): string {
       map.addLayer({
         id: 'route', type: 'line', source: 'route',
         layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 'line-color': PRIMARY, 'line-width': 5 }
+        paint: { 'line-color': PRIMARY, 'line-width': 4, 'line-dasharray': [2, 1.5] }
       });
       loaded = true;
       if (pending) apply(pending);

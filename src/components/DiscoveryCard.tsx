@@ -6,7 +6,7 @@ import Button from '@/components/Button';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
 import { Place } from '@/types';
-import { colors, radius, space } from '@/theme';
+import { colors, line, space } from '@/theme';
 import { categoryIcon } from '@/utils/categories';
 
 type Props = {
@@ -34,12 +34,12 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
       {place ? (
         <View style={[styles.sheet, { paddingBottom: insets.bottom + space.l }]}>
           <View style={styles.icon}>
-            <Ionicons name={categoryIcon(place.category)} size={36} color={colors.primary} />
+            <Ionicons name={categoryIcon(place.category)} size={34} color={colors.text} />
           </View>
-          <Txt variant="caption" color={colors.onPrimary} style={styles.center}>
+          <Txt variant="overline" color={colors.accent} style={styles.center}>
             PARADA {position} DESCUBIERTA
           </Txt>
-          <Txt variant="display" color={colors.onPrimary} style={styles.center}>
+          <Txt variant="title" color={colors.onPrimary} style={styles.center}>
             ¡Descubriste {place.name}!
           </Txt>
           {place.observation_prompt ? (
@@ -50,7 +50,6 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
           <View style={styles.actions}>
             <Button
               label="Ver parada"
-              icon="arrow-forward"
               variant="light"
               onPress={() => {
                 progress.dismissAnnouncement();
@@ -70,24 +69,26 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(28, 27, 31, 0.45)' },
+  backdrop: { flex: 1, backgroundColor: 'rgba(21, 21, 26, 0.5)' },
   sheet: {
     backgroundColor: colors.primary,
-    borderTopLeftRadius: radius.l + 8,
-    borderTopRightRadius: radius.l + 8,
+    borderTopWidth: line,
+    borderColor: colors.border,
     paddingHorizontal: space.l,
     paddingTop: space.xl,
     gap: space.m - 4,
     alignItems: 'center',
   },
   icon: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+    width: 86,
+    height: 86,
+    backgroundColor: colors.accent,
+    borderWidth: line + 0.5,
+    borderColor: colors.border,
+    transform: [{ rotate: '8deg' }],
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: space.s,
+    marginBottom: space.m,
   },
   center: { textAlign: 'center' },
   soft: { opacity: 0.92 },

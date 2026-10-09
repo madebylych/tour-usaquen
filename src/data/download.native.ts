@@ -78,7 +78,14 @@ export function readDownloadedRoute(
     downloads.forget(slug);
     return null;
   }
-  const route = JSON.parse(json.textSync()) as RemoteRoute;
+  let route: RemoteRoute;
+  try {
+    route = JSON.parse(json.textSync()) as RemoteRoute;
+  } catch {
+    // Archivo dañado: se trata como no descargada en vez de romper la app.
+    downloads.forget(slug);
+    return null;
+  }
   const media = new Directory(routeDir(slug), 'media');
   const localUri = (path: string | null) => {
     if (!path) return null;

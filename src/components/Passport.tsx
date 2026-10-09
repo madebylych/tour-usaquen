@@ -4,44 +4,27 @@ import { Ionicons } from '@expo/vector-icons';
 import Txt from '@/components/Txt';
 import { countDiscovered } from '@/data/progress';
 import { Place } from '@/types';
-import { colors, radius, shadow, space } from '@/theme';
-import { categoryIcon } from '@/utils/categories';
+import { colors, fonts, line, space } from '@/theme';
 
 type Props = {
   places: Place[]; // paradas de la ruta, en orden
   discovered: Record<string, number>;
-  onPrimary?: boolean; // versión para fondo fucsia (pantalla final)
 };
 
+// Inclinación de cada sello descubierto: así parecen estampados a mano.
+const TILT = ['-6deg', '4deg', '-3deg', '7deg', '-5deg', '3deg'];
+
 // Pasaporte creativo: cuántas paradas se descubrieron y un sello por parada.
-export default function Passport({ places, discovered, onPrimary = false }: Props) {
+export default function Passport({ places, discovered }: Props) {
   const total = places.length;
   const done = countDiscovered(places.map((p) => p.id), discovered);
   const complete = total > 0 && done === total;
-  const textColor = onPrimary ? colors.onPrimary : colors.text;
 
   return (
-    <View
-      style={[styles.card, onPrimary && styles.cardOnPrimary]}
-      accessibilityLabel={`Pasaporte creativo: ${done} de ${total} paradas descubiertas`}
-    >
+    <View style={styles.card} accessibilityLabel={`Pasaporte creativo: ${done} de ${total} paradas descubiertas`}>
       <View style={styles.header}>
-        <Txt variant="caption" color={onPrimary ? colors.onPrimary : colors.primary}>
-          PASAPORTE CREATIVO
-        </Txt>
-        <Txt variant="label" color={textColor}>
-          {complete ? '¡Recorrido completo!' : `${done} de ${total} descubiertas`}
-        </Txt>
-      </View>
-
-      <View style={[styles.track, onPrimary && styles.trackOnPrimary]}>
-        <View
-          style={[
-            styles.fill,
-            onPrimary && styles.fillOnPrimary,
-            { width: `${total > 0 ? (done / total) * 100 : 0}%` },
-          ]}
-        />
+        <Txt variant="overline">PASAPORTE CREATIVO</Txt>
+        <Txt variant="label">{complete ? '¡Completo!' : `${done} de ${total}`}</Txt>
       </View>
 
       <View style={styles.stamps}>
@@ -52,19 +35,14 @@ export default function Passport({ places, discovered, onPrimary = false }: Prop
               key={place.id}
               style={[
                 styles.stamp,
-                isDone ? styles.stampDone : styles.stampPending,
-                onPrimary && (isDone ? styles.stampDoneOnPrimary : styles.stampPendingOnPrimary),
+                isDone ? [styles.stampDone, { transform: [{ rotate: TILT[index % TILT.length] }] }] : styles.stampPending,
               ]}
             >
               {isDone ? (
-                <Ionicons
-                  name={categoryIcon(place.category)}
-                  size={20}
-                  color={onPrimary ? colors.primary : colors.onPrimary}
-                />
+                <Ionicons name="checkmark" size={22} color={colors.text} />
               ) : (
-                <Txt variant="label" color={onPrimary ? colors.onPrimary : colors.textMuted}>
-                  {index + 1}
+                <Txt variant="label" color={colors.textMuted} style={styles.number}>
+                  {String(index + 1).padStart(2, '0')}
                 </Txt>
               )}
             </View>
@@ -75,40 +53,20 @@ export default function Passport({ places, discovered, onPrimary = false }: Prop
   );
 }
 
-const STAMP = 44;
+const STAMP = 46;
 
 const styles = StyleSheet.create({
   card: {
-    padding: space.m,
+    padding: space.m + 2,
     gap: space.m - 4,
-    borderRadius: radius.m,
     backgroundColor: colors.surface,
-    boxShadow: shadow.card,
-  },
-  cardOnPrimary: {
-    backgroundColor: 'rgba(255, 255, 255, 0.14)',
-    boxShadow: 'none',
+    borderWidth: line,
+    borderColor: colors.border,
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.s },
-  track: {
-    height: 8,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-    overflow: 'hidden',
-  },
-  trackOnPrimary: { backgroundColor: 'rgba(255, 255, 255, 0.25)' },
-  fill: { height: '100%', borderRadius: radius.pill, backgroundColor: colors.primary },
-  fillOnPrimary: { backgroundColor: colors.surface },
   stamps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s + 2 },
-  stamp: {
-    width: STAMP,
-    height: STAMP,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stampDone: { backgroundColor: colors.primary },
-  stampPending: { borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border },
-  stampDoneOnPrimary: { backgroundColor: colors.surface },
-  stampPendingOnPrimary: { borderColor: 'rgba(255, 255, 255, 0.5)' },
+  stamp: { width: STAMP, height: STAMP, alignItems: 'center', justifyContent: 'center' },
+  stampDone: { backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border },
+  stampPending: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.textMuted },
+  number: { fontFamily: fonts.display },
 });

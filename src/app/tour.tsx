@@ -24,7 +24,8 @@ import { simulator } from '@/geo/simulator';
 import { useLocation } from '@/geo/useLocation';
 import { useProximity } from '@/geo/useProximity';
 import { Place, PlaceWithMedia } from '@/types';
-import { colors, radius, shadow, space } from '@/theme';
+import { colors, line, shadow, space } from '@/theme';
+import { formatDistance } from '@/utils/format';
 
 const NO_PLACES: PlaceWithMedia[] = [];
 
@@ -49,7 +50,7 @@ export default function TourScreen() {
   if (!slug) return <StateMessage message="No se sabe qué recorrido abrir." showHomeButton />;
   if (state.status === 'loading') return <StateMessage loading />;
   if (state.status === 'error' || !state.data)
-    return <StateMessage message="No se pudo abrir el tour." showHomeButton />;
+    return <StateMessage message="No se pudo abrir el tour." onRetry={state.reload} showHomeButton />;
   const route = state.data;
 
   const selectedIndex = route.places.findIndex((p) => p.id === selectedId);
@@ -59,6 +60,10 @@ export default function TourScreen() {
   const finish = () => router.push({ pathname: '/completado', params: { route: route.slug } });
   const distanceTo = (place: Place) =>
     location.position ? distanceInMeters(location.position, place) : null;
+  // La primera parada sin descubrir, en el orden de la ruta.
+  const nextIndex = route.places.findIndex((p) => !(p.id in discovered));
+  const next = nextIndex >= 0 ? route.places[nextIndex] : null;
+  const nextDistance = next ? distanceTo(next) : null;
 
   // "Ya estoy aquí": para cuando el GPS no detecta la llegada.
   const discoverManually = (id: string) => {
@@ -74,7 +79,7 @@ export default function TourScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <View style={[styles.mapArea, { height: height * 0.5 }]}>
         <TourMap
@@ -105,6 +110,21 @@ export default function TourScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Passport places={route.places} discovered={discovered} />
+        {next ? (
+          <View style={styles.next}>
+            <View style={styles.grow}>
+              <Txt variant="overline">SIGUIENTE</Txt>
+              <Txt variant="heading" numberOfLines={1}>
+                {next.name}
+              </Txt>
+            </View>
+            {nextDistance != null ? (
+              <View style={styles.nextDistance}>
+                <Txt variant="label">{formatDistance(nextDistance)}</Txt>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
         <Txt variant="heading" style={styles.listTitle}>
           Paradas
         </Txt>
@@ -127,7 +147,7 @@ export default function TourScreen() {
           {complete ? (
             <Button label="Ver resumen del recorrido" icon="ribbon" onPress={finish} />
           ) : (
-            <Button label="Terminar recorrido" icon="flag" variant="secondary" onPress={finish} />
+            <Button label="Terminar recorrido" variant="secondary" onPress={finish} />
           )}
         </View>
       </BottomBar>
@@ -162,9 +182,9 @@ function SelectedPlace({
           onPress={onOpen}
           style={styles.floatingMain}
         >
-          <MediaImage uri={place.media.image} category={place.category} iconSize={26} style={styles.floatingImage} label={place.name} />
+          <MediaImage uri={place.media.image} style={styles.floatingImage} label={place.name} />
           <View style={styles.grow}>
-            <Txt variant="caption" color={colors.primary}>
+            <Txt variant="overline">
               {discovered ? `PARADA ${position}, DESCUBIERTA` : `PARADA ${position}`}
             </Txt>
             <Txt variant="label" numberOfLines={1}>
@@ -172,23 +192,31 @@ function SelectedPlace({
             </Txt>
             <Txt variant="caption">Ver parada</Txt>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+          <Ionicons name="arrow-forward" size={20} color={colors.text} />
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Cerrar" onPress={onClose} hitSlop={10}>
-          <Ionicons name="close" size={20} color={colors.textMuted} />
+          <Ionicons name="close" size={20} color={colors.text} />
         </Pressable>
       </View>
-      {discovered ? null : <Button label="Ya estoy aquí" icon="hand-left-outline" variant="secondary" onPress={onImHere} />}
+      {discovered ? null : <Button label="Ya estoy aquí" variant="light" onPress={onImHere} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  mapArea: { backgroundColor: colors.primarySoft },
+  mapArea: { backgroundColor: colors.primarySoft, borderBottomWidth: line, borderColor: colors.border },
   content: { padding: space.m + 4, gap: space.m - 4, paddingBottom: BOTTOM_BAR_SPACE },
   list: { gap: space.m - 4 },
   listTitle: { marginTop: space.s },
+  next: { flexDirection: 'row', alignItems: 'center', gap: space.m - 4, paddingVertical: space.xs },
+  nextDistance: {
+    paddingVertical: space.s,
+    paddingHorizontal: space.m - 4,
+    backgroundColor: colors.accent,
+    borderWidth: line,
+    borderColor: colors.border,
+  },
   grow: { flex: 1 },
   floating: {
     position: 'absolute',
@@ -197,11 +225,12 @@ const styles = StyleSheet.create({
     bottom: space.m,
     gap: space.s,
     padding: space.s + 2,
-    borderRadius: radius.m,
     backgroundColor: colors.surface,
+    borderWidth: line,
+    borderColor: colors.border,
     boxShadow: shadow.floating,
   },
   floatingRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingRight: space.xs },
   floatingMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.m - 4 },
-  floatingImage: { width: 56, height: 56, borderRadius: radius.s },
+  floatingImage: { width: 56, height: 56 },
 });

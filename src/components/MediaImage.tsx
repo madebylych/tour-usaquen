@@ -1,42 +1,35 @@
 import { Image, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '@/theme';
-import { categoryIcon } from '@/utils/categories';
+
+const TRAMA = require('../../assets/images/trama.png');
+const TRAMA_OVERLAY = require('../../assets/images/trama_overlay.png');
 
 type Props = {
-  uri?: string | null; // foto (archivo descargado o URL); si falta, se muestra un ícono
-  category?: string;
-  iconSize?: number;
+  uri?: string | null; // foto (archivo descargado o URL); si falta, se muestra la trama
   style?: StyleProp<ViewStyle>;
   label?: string; // descripción para lectores de pantalla
 };
 
-// Foto de un lugar o ruta. Sin foto, un fondo rosado con el ícono de la
-// categoría para que el espacio no se vea roto.
-export default function MediaImage({ uri, category, iconSize = 40, style, label }: Props) {
+// Foto de un lugar o ruta con estética de risografía: encima de la foto va
+// una trama de puntos azules; sin foto, se ve solo la trama (generada con
+// scripts/generar_trama.py), así el espacio nunca se ve roto.
+export default function MediaImage({ uri, style, label }: Props) {
   return (
     <View style={[styles.box, style]} accessibilityRole="image" accessibilityLabel={label ?? 'Imagen'}>
       {uri ? (
-        <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <>
+          <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          <Image source={TRAMA_OVERLAY} style={[StyleSheet.absoluteFill, styles.overlay]} resizeMode="repeat" />
+        </>
       ) : (
-        <Ionicons
-          name={category ? categoryIcon(category) : 'image'}
-          size={iconSize}
-          color={colors.primary}
-          style={styles.icon}
-        />
+        <Image source={TRAMA} style={StyleSheet.absoluteFill} resizeMode="cover" />
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  box: {
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  icon: { opacity: 0.55 },
+  box: { backgroundColor: colors.primarySoft, overflow: 'hidden' },
+  overlay: { opacity: 0.22 },
 });

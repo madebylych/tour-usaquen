@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import * as Location from 'expo-location';
 
 import { Coordinates } from './distance';
@@ -15,30 +15,43 @@ export type UserLocation = {
   status: LocationStatus;
   position: Coordinates | null;
   accuracy: number | null; // metros; null en simulación
+  retry: () => void; // vuelve a pedir permiso / GPS (por si lo encendió después)
 };
 
 // Posición del usuario mientras camina. Si el modo simulación está activo,
 // devuelve la posición simulada y el resto de la app no nota la diferencia.
 export function useLocation(): UserLocation {
   const sim = useSimulator();
-  const [real, setReal] = useState<UserLocation>({
+  const [attempt, setAttempt] = useState(0);
+  const [real, setReal] = useState<Omit<UserLocation, 'retry'>>({
     status: 'requesting',
     position: null,
     accuracy: null,
   });
+  const retry = useCallback(() => {
+    setReal({ status: 'requesting', position: null, accuracy: null });
+    setAttempt((n) => n + 1);
+  }, []);
 
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null;
     let cancelled = false;
 
     (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (cancelled) return;
-      if (status !== 'granted') {
-        setReal({ status: 'denied', position: null, accuracy: null });
-        return;
-      }
       try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (cancelled) return;
+        if (status !== 'granted') {
+          setReal({ status: 'denied', position: null, accuracy: null });
+          return;
+        }
+        // Con el GPS apagado, watchPositionAsync no falla: simplemente nunca
+        // llega una posición y la pantalla se quedaría "buscando" para siempre.
+        if (!(await Location.hasServicesEnabledAsync())) {
+          if (!cancelled) setReal({ status: 'unavailable', position: null, accuracy: null });
+          return;
+        }
+        if (cancelled) return;
         subscription = await Location.watchPositionAsync(
           // High: GPS a nivel de calle. distanceInterval evita actualizar
           // la pantalla por movimientos de menos de 3 m.
@@ -61,8 +74,8 @@ export function useLocation(): UserLocation {
       cancelled = true;
       subscription?.remove();
     };
-  }, []);
+  }, [attempt]);
 
-  if (sim.enabled) return { status: 'simulated', position: sim.position, accuracy: null };
-  return real;
+  if (sim.enabled) return { status: 'simulated', position: sim.position, accuracy: null, retry };
+  return { ...real, retry };
 }
