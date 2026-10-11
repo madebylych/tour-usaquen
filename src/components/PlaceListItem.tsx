@@ -6,6 +6,7 @@ import Txt from '@/components/Txt';
 import { Place } from '@/types';
 import { fonts, line, makeStyles, space, useTheme } from '@/theme';
 import { formatDistance } from '@/utils/format';
+import { tap } from '@/audio/haptics';
 
 type Props = {
   place: Place;
@@ -30,7 +31,10 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
         accessibilityRole="button"
         accessibilityLabel={`Parada ${position}: ${place.name}${discovered ? ', descubierta' : ''}`}
         onPress={onPress}
-        onPressIn={press.in}
+        onPressIn={() => {
+          tap();
+          press.in();
+        }}
         onPressOut={press.out}
         // Con el mouse encima el boleto se corre un poco y la flecha avanza.
         onHoverIn={hover.handlers.onHoverIn}

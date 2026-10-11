@@ -68,14 +68,14 @@ export default function PlaceScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={styles.titleBlock}>
+          <Appear delay={60} style={styles.titleBlock}>
             <Txt variant="overline">
               PARADA {String(position).padStart(2, '0')}, {place.category.toUpperCase()}
             </Txt>
             <Txt variant="title" color={colors.primary}>
               {place.name}
             </Txt>
-          </View>
+          </Appear>
 
           {place.observation_prompt ? (
             <Appear delay={150} style={styles.prompt}>
@@ -89,18 +89,18 @@ export default function PlaceScreen() {
             <AudioPlayer uri={place.media.audio} title={place.audio_title} credit={place.audio_credit} />
           </Appear>
 
-          {place.history ? <Section title="Historia" text={place.history} /> : null}
-          {place.architecture ? <Section title="Arquitectura" text={place.architecture} /> : null}
+          {place.history ? <Section title="Historia" text={place.history} delay={330} /> : null}
+          {place.architecture ? <Section title="Arquitectura" text={place.architecture} delay={400} /> : null}
 
           {place.did_you_know ? (
-            <View style={styles.fact}>
+            <Appear delay={470} style={styles.fact}>
               <Txt variant="overline" color={colors.onAccent}>
                 ¿SABÍAS QUE…?
               </Txt>
               <Txt variant="label" color={colors.onAccent} style={styles.factText}>
                 {place.did_you_know}
               </Txt>
-            </View>
+            </Appear>
           ) : null}
 
           {credits.length > 0 ? (
@@ -129,15 +129,15 @@ export default function PlaceScreen() {
   );
 }
 
-function Section({ title, text }: { title: string; text: string }) {
+function Section({ title, text, delay = 0 }: { title: string; text: string; delay?: number }) {
   const styles = useStyles();
   return (
-    <View style={styles.card}>
+    <Appear delay={delay} style={styles.card}>
       <Txt variant="heading" highlight>
         {title}
       </Txt>
       <Txt variant="body">{text}</Txt>
-    </View>
+    </Appear>
   );
 }
 

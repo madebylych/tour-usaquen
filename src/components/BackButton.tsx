@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useHover } from '@/components/motion';
 import { line, makeStyles, space, useTheme } from '@/theme';
+import { tap } from '@/audio/haptics';
 
 // Botón circular flotante para volver, sobre imágenes a pantalla completa.
 export default function BackButton() {
@@ -17,7 +18,11 @@ export default function BackButton() {
       accessibilityRole="button"
       accessibilityLabel="Volver"
       // Si la app se abrió directo en esta pantalla no hay a dónde volver.
-      onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+      onPress={() => {
+        tap();
+        if (router.canGoBack()) router.back();
+        else router.replace('/');
+      }}
       {...hover.handlers}
       hitSlop={8}
       style={[styles.button, { top: insets.top + space.s }]}

@@ -1,15 +1,18 @@
 import { ReactNode } from 'react';
-import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Appear } from '@/components/motion';
 import { line, makeStyles, space } from '@/theme';
 
-// Barra fija abajo para la acción principal de la pantalla.
+// Barra fija abajo para la acción principal de la pantalla. Sube al abrir
+// la pantalla.
 export default function BottomBar({ children }: { children: ReactNode }) {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, space.m) }]}>{children}</View>
+    <Appear delay={180} style={[styles.bar, { paddingBottom: Math.max(insets.bottom, space.m) }]}>
+      {children}
+    </Appear>
   );
 }
 

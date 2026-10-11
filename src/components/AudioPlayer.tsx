@@ -9,6 +9,7 @@ import { useHover, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { useSettings } from '@/data/settings';
 import { line, makeStyles, space, useTheme } from '@/theme';
+import { tap } from '@/audio/haptics';
 
 // Alturas de las barras de la onda (decorativa, igual para todos los audios).
 // Cuánto crece o se encoge cada barra con el pulso (se repite cada 5).
@@ -83,7 +84,10 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
           accessibilityRole="button"
           accessibilityLabel={status.playing ? 'Pausar audio' : 'Reproducir audio'}
           accessibilityState={{ disabled: !available }}
-          onPress={toggle}
+          onPress={() => {
+            tap();
+            toggle();
+          }}
           {...(available ? hover.handlers : null)}
         >
           {/* Con hover el botón crece; al tocarlo se nota que responde. */}

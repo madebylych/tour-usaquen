@@ -1,6 +1,9 @@
-import { Alert, Pressable, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Animated, Easing, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { tap, thud } from '@/audio/haptics';
+import { Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { DownloadStatus } from '@/data/useRouteDownload';
 import { line, makeStyles, space, useTheme } from '@/theme';
@@ -22,7 +25,7 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
     const pct = status.total > 0 ? status.done / status.total : 0;
     return (
       <View style={[styles.base, styles.soft]} accessibilityLabel={`Descargando, ${status.done} de ${status.total}`}>
-        <View style={[styles.progressFill, { width: `${pct * 100}%` }]} />
+        <ProgressFill pct={pct} />
         <Ionicons name="cloud-download-outline" size={20} color={colors.text} />
         <Txt variant="label" color={colors.text}>
           {status.done}/{status.total}
@@ -44,7 +47,10 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
         onPress={confirmDelete}
         style={[styles.base, styles.soft]}
       >
-        <Ionicons name="checkmark-circle" size={20} color={colors.text} />
+        {/* Al terminar la descarga, el ✓ se estampa (y vibra una vez). */}
+        <Stamp rotate="-10deg">
+          <Ionicons name="checkmark-circle" size={20} color={colors.text} />
+        </Stamp>
         <Txt variant="label" color={colors.text}>
           Offline
         </Txt>
@@ -59,7 +65,10 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
     <Pressable
       accessibilityRole="button"
       accessibilityHint={status.kind === 'error' ? status.message : 'Guarda el recorrido para usarlo sin conexión'}
-      onPress={onDownload}
+      onPress={() => {
+        tap();
+        onDownload();
+      }}
       style={({ pressed }) => [styles.base, styles.soft, pressed && styles.pressed]}
     >
       <Ionicons name={icon} size={20} color={colors.text} />
@@ -68,6 +77,18 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
       </Txt>
     </Pressable>
   );
+}
+
+// Relleno de la descarga: avanza suave entre archivo y archivo en vez de a
+// saltos (escala horizontal desde la izquierda, con el driver nativo).
+function ProgressFill({ pct }: { pct: number }) {
+  const styles = useStyles();
+  const [value] = useState(() => new Animated.Value(pct));
+  useEffect(() => {
+    Animated.timing(value, { toValue: pct, duration: 350, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
+    if (pct >= 1) thud();
+  }, [pct, value]);
+  return <Animated.View style={[styles.progressFill, { transform: [{ scaleX: value }] }]} />;
 }
 
 const useStyles = makeStyles((colors) => ({
@@ -87,8 +108,10 @@ const useStyles = makeStyles((colors) => ({
   progressFill: {
     position: 'absolute',
     left: 0,
+    right: 0,
     top: 0,
     bottom: 0,
     backgroundColor: colors.primarySoft,
+    transformOrigin: 'left',
   },
 }));

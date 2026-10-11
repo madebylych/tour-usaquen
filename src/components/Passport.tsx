@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { ReactNode, useEffect, useState } from 'react';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Breathe, Stamp, useHover } from '@/components/motion';
@@ -31,6 +31,8 @@ export default function Passport({ places, discovered }: Props) {
         <Txt variant="overline">PASAPORTE CREATIVO</Txt>
         <Txt variant="label">{complete ? '¡Completo!' : `${done} de ${total}`}</Txt>
       </View>
+
+      <ProgressBar value={total > 0 ? done / total : 0} />
 
       <View style={styles.stamps}>
         {places.map((place, index) => {
@@ -79,6 +81,21 @@ function Wiggle({ children }: { children: ReactNode }) {
   );
 }
 
+// Barra del pasaporte: se llena con resorte cada vez que se descubre una
+// parada (escala desde la izquierda, con el driver nativo).
+function ProgressBar({ value }: { value: number }) {
+  const styles = useStyles();
+  const [fill] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    Animated.spring(fill, { toValue: value, friction: 7, tension: 60, delay: 250, useNativeDriver: true }).start();
+  }, [value, fill]);
+  return (
+    <View style={styles.track}>
+      <Animated.View style={[styles.fill, { transform: [{ scaleX: fill }] }]} />
+    </View>
+  );
+}
+
 const STAMP = 46;
 
 const useStyles = makeStyles((colors) => ({
@@ -90,6 +107,8 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.border,
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.s },
+  track: { height: 10, borderWidth: line, borderColor: colors.border, backgroundColor: colors.background, overflow: 'hidden' },
+  fill: { ...StyleSheet.absoluteFill, backgroundColor: colors.accent, transformOrigin: 'left' },
   stamps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s + 2 },
   stamp: { width: STAMP, height: STAMP, alignItems: 'center', justifyContent: 'center' },
   stampDone: { backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border },

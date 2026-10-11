@@ -4,6 +4,7 @@ import { Animated, Pressable, View } from 'react-native';
 import { useHover } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { fonts, line, makeStyles, space, useTheme } from '@/theme';
+import { tap } from '@/audio/haptics';
 
 const IMAGE_HEIGHT = 210;
 const DEPTH = 6; // sombra dura de la postal
@@ -43,7 +44,12 @@ export default function Postcard({ uri, label, caption, onPress, children }: Pro
   const stamp = { transform: [{ rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['4deg', '10deg'] }) }] };
 
   return (
-    <Pressable onPress={onPress} {...hover.handlers} accessibilityRole={onPress ? 'button' : 'image'} accessibilityLabel={label}>
+    <Pressable
+      onPress={() => {
+        tap();
+        onPress?.();
+      }}
+      {...hover.handlers} accessibilityRole={onPress ? 'button' : 'image'} accessibilityLabel={label}>
       <View style={styles.wrap}>
         <Animated.View style={[styles.shadow, shadow]} />
         <Animated.View style={[styles.card, card]}>

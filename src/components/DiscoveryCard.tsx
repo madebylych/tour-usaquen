@@ -73,7 +73,7 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
         </View>
       ) : null}
       {/* Celebración: recortes de tinta que caen al descubrir la parada. */}
-      {place ? <InkConfetti key={place.id} /> : null}
+      {place ? <InkConfetti key={`confeti-${place.id}`} /> : null}
     </Modal>
   );
 }

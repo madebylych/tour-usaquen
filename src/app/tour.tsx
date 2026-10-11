@@ -26,6 +26,7 @@ import { useProximity } from '@/geo/useProximity';
 import { Place, PlaceWithMedia } from '@/types';
 import { line, makeStyles, shadows, space, useTheme } from '@/theme';
 import { formatDistance } from '@/utils/format';
+import { thud } from '@/audio/haptics';
 
 const NO_PLACES: PlaceWithMedia[] = [];
 
@@ -87,7 +88,10 @@ export default function TourScreen() {
           places={route.places}
           selectedId={selectedId}
           discoveredIds={discovered}
-          onSelect={setSelectedId}
+          onSelect={(id) => {
+            thud();
+            setSelectedId(id);
+          }}
           userPosition={location.position}
           userAccuracy={location.accuracy}
           simulated={location.status === 'simulated'}
@@ -113,7 +117,8 @@ export default function TourScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Passport places={route.places} discovered={discovered} />
         {next ? (
-          <View style={styles.next}>
+          // Al descubrir una parada, la siguiente entra desde la derecha.
+          <Appear key={next.id} from="right" style={styles.next}>
             <View style={styles.grow}>
               <Txt variant="overline">SIGUIENTE</Txt>
               <Txt variant="heading" numberOfLines={1}>
@@ -129,7 +134,7 @@ export default function TourScreen() {
                 </View>
               </Breathe>
             ) : null}
-          </View>
+          </Appear>
         ) : null}
         <Txt variant="heading" highlight style={styles.listTitle}>
           Paradas

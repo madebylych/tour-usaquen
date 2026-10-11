@@ -14,6 +14,7 @@ import { countDiscovered, useProgress } from '@/data/progress';
 import { useData } from '@/data/useData';
 import { line, makeStyles, space, useTheme } from '@/theme';
 import { formatDistance, formatDuration } from '@/utils/format';
+import { tap } from '@/audio/haptics';
 
 // Inicio. Con una sola ruta en el MVP, la ruta destacada es la primera.
 async function loadFeaturedRoute() {
@@ -130,7 +131,10 @@ function SettingsButton() {
       accessibilityRole="button"
       accessibilityLabel="Ajustes"
       onPress={() => router.push('/ajustes')}
-      onPressIn={press.in}
+      onPressIn={() => {
+        tap();
+        press.in();
+      }}
       onPressOut={press.out}
       onHoverIn={hover.handlers.onHoverIn}
       onHoverOut={hover.handlers.onHoverOut}

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Nudge, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { line, makeStyles, space, useTheme } from '@/theme';
+import { tap } from '@/audio/haptics';
 
 type Props = {
   label: string;
@@ -46,7 +47,10 @@ export default function Button({ label, onPress, variant = 'primary', icon, icon
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      onPressIn={() => springTo(press, 1)}
+      onPressIn={() => {
+        tap();
+        springTo(press, 1);
+      }}
       onPressOut={() => springTo(press, 0)}
       onHoverIn={() => springTo(hover, 1)}
       onHoverOut={() => springTo(hover, 0)}

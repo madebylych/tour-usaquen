@@ -6,7 +6,7 @@ import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import DownloadButton from '@/components/DownloadButton';
 import MediaImage from '@/components/MediaImage';
-import { useParallax } from '@/components/motion';
+import { Appear, useParallax } from '@/components/motion';
 import PlaceListItem from '@/components/PlaceListItem';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
@@ -61,14 +61,18 @@ export default function RouteScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={styles.titleBlock}>
+          <Appear delay={60} style={styles.titleBlock}>
             <Txt variant="overline">RECORRIDO 01</Txt>
             <Txt variant="title" color={colors.primary}>
               {route.name}
             </Txt>
             <Txt variant="caption">{meta.join(' / ')}</Txt>
-          </View>
-          {route.description ? <Txt variant="body">{route.description}</Txt> : null}
+          </Appear>
+          {route.description ? (
+            <Appear delay={140}>
+              <Txt variant="body">{route.description}</Txt>
+            </Appear>
+          ) : null}
 
           <Txt variant="heading" highlight style={styles.sectionTitle}>
             Boletos

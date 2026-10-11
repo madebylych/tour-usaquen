@@ -17,6 +17,7 @@ import { deleteAllDownloads, downloadsSize } from '@/data/cleanup';
 import { useDownloads } from '@/data/downloads';
 import { settings, toVolume, useSettings, VOLUME_STEPS } from '@/data/settings';
 import { line, makeStyles, space, ThemeMode, useTheme } from '@/theme';
+import { tap } from '@/audio/haptics';
 
 const DISCOVERY_SOUND = require('../../assets/sounds/ui/discovery.wav');
 
@@ -173,7 +174,10 @@ function Option({
   const lift = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, -3] });
   const iconScale = hover.value.interpolate({ inputRange: [0, 1], outputRange: [1, 1.25] });
   return (
-    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={onPress} {...hover.handlers} style={styles.optionWrap}>
+    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => {
+        tap();
+        onPress();
+      }} {...hover.handlers} style={styles.optionWrap}>
       <Animated.View style={[styles.option, selected && styles.optionSelected, { transform: [{ translateY: lift }] }]}>
         <Animated.View style={{ transform: [{ scale: iconScale }] }}>
           <Ionicons name={icon} size={18} color={color} />
@@ -223,7 +227,15 @@ function VolumeBlock({ step, on, onPress }: { step: number; on: boolean; onPress
   const hover = useHover();
   const lift = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, -5] });
   return (
-    <Pressable onPress={onPress} hitSlop={4} {...hover.handlers} style={styles.blockWrap}>
+    <Pressable
+      onPress={() => {
+        tap();
+        onPress();
+      }}
+      hitSlop={4}
+      {...hover.handlers}
+      style={styles.blockWrap}
+    >
       <Animated.View
         style={[styles.block, { height: 14 + step * 5 }, on ? styles.blockOn : styles.blockOff, { transform: [{ translateY: lift }] }]}
       />

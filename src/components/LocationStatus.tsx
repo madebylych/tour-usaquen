@@ -2,6 +2,7 @@ import { ComponentProps } from 'react';
 import { Linking, Platform, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Appear, Breathe } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { UserLocation } from '@/geo/useLocation';
 import { line, makeStyles, space, useTheme } from '@/theme';
@@ -32,12 +33,21 @@ export default function LocationStatus({ location, onLongPress }: Props) {
       }
       accessibilityRole={denied || unavailable ? 'button' : 'text'}
       accessibilityHint="Mantén presionado para activar o desactivar el modo simulación"
-      style={[styles.pill, highlight && styles.highlight]}
+      style={styles.anchor}
     >
-      <Ionicons name={icon} size={16} color={highlight ? colors.onAccent : colors.primary} />
-      <Txt variant="label" color={highlight ? colors.onAccent : colors.text} style={styles.text}>
-        {text}
-      </Txt>
+      {/* Cada cambio de estado entra de nuevo; mientras busca, el ícono respira. */}
+      <Appear key={location.status} style={[styles.pill, highlight && styles.highlight]}>
+        {location.status === 'requesting' ? (
+          <Breathe amount={0.25}>
+            <Ionicons name={icon} size={16} color={colors.primary} />
+          </Breathe>
+        ) : (
+          <Ionicons name={icon} size={16} color={highlight ? colors.onAccent : colors.primary} />
+        )}
+        <Txt variant="label" color={highlight ? colors.onAccent : colors.text} style={styles.text}>
+          {text}
+        </Txt>
+      </Appear>
     </Pressable>
   );
 }
@@ -66,11 +76,8 @@ function describe(location: UserLocation): {
 }
 
 const useStyles = makeStyles((colors) => ({
+  anchor: { position: 'absolute', top: space.m, alignSelf: 'center', maxWidth: '90%' },
   pill: {
-    position: 'absolute',
-    top: space.m,
-    alignSelf: 'center',
-    maxWidth: '90%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.xs + 2,
