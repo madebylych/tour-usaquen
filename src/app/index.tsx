@@ -1,7 +1,7 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
 import MediaImage from '@/components/MediaImage';
@@ -12,7 +12,7 @@ import Txt from '@/components/Txt';
 import { getRoute, listRoutes } from '@/data/source';
 import { countDiscovered, useProgress } from '@/data/progress';
 import { useData } from '@/data/useData';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 import { formatDistance, formatDuration } from '@/utils/format';
 
 // Inicio. Con una sola ruta en el MVP, la ruta destacada es la primera.
@@ -22,6 +22,8 @@ async function loadFeaturedRoute() {
 }
 
 export default function HomeScreen() {
+  const { colors, dark, setMode } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const state = useData(loadFeaturedRoute, 'featured');
   const { discovered } = useProgress();
@@ -52,12 +54,23 @@ export default function HomeScreen() {
       style={styles.screen}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + space.l, paddingBottom: space.xl }]}
     >
-      <StatusBar style="dark" />
       <View style={styles.topRow}>
         <Txt variant="overline" color={colors.text}>
           USAQUÉN, BOGOTÁ
         </Txt>
-        <Txt variant="overline">N.º 01</Txt>
+        <View style={styles.topRight}>
+          <Txt variant="overline">N.º 01</Txt>
+          {/* Papel claro o papel negro; queda guardado en el celular. */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            onPress={() => setMode(dark ? 'light' : 'dark')}
+            hitSlop={8}
+            style={({ pressed }) => [styles.themeButton, pressed && styles.themeButtonPressed]}
+          >
+            <Ionicons name={dark ? 'sunny' : 'moon'} size={18} color={colors.text} />
+          </Pressable>
+        </View>
       </View>
 
       <Txt variant="display" riso style={styles.headline}>
@@ -68,7 +81,9 @@ export default function HomeScreen() {
         <MediaImage uri={route.media.cover} style={styles.cover} label={route.name} />
         <Stamp delay={450} rotate="-6deg" style={styles.sticker}>
           <View style={styles.stickerInk}>
-            <Txt variant="label">Recorrido 01</Txt>
+            <Txt variant="label" color={colors.onAccent}>
+              Recorrido 01
+            </Txt>
           </View>
         </Stamp>
       </Appear>
@@ -103,10 +118,21 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: space.m + 6, gap: space.m },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  topRight: { flexDirection: 'row', alignItems: 'center', gap: space.m - 4 },
+  themeButton: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: line,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  themeButtonPressed: { backgroundColor: colors.accent },
   headline: { marginTop: space.m, marginBottom: space.s },
   cover: { height: 220 },
   sticker: { position: 'absolute', left: space.m - 4, bottom: space.m + 4 },
@@ -121,4 +147,4 @@ const styles = StyleSheet.create({
   sectionTitle: { marginTop: space.m },
   list: { gap: space.m - 4 },
   footer: { textAlign: 'center', marginTop: space.m },
-});
+}));

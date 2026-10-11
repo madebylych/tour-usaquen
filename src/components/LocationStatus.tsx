@@ -1,10 +1,10 @@
 import { ComponentProps } from 'react';
-import { Linking, Pressable, StyleSheet } from 'react-native';
+import { Linking, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
 import { UserLocation } from '@/geo/useLocation';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 
 type Props = {
   location: UserLocation;
@@ -14,6 +14,8 @@ type Props = {
 // Píldora sobre el mapa que explica el estado del GPS en lenguaje claro.
 // Pulsación larga: modo simulación (escondido a propósito).
 export default function LocationStatus({ location, onLongPress }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const { icon, text, highlight } = describe(location);
   const denied = location.status === 'denied';
   const unavailable = location.status === 'unavailable';
@@ -29,8 +31,8 @@ export default function LocationStatus({ location, onLongPress }: Props) {
       accessibilityHint="Mantén presionado para activar o desactivar el modo simulación"
       style={[styles.pill, highlight && styles.highlight]}
     >
-      <Ionicons name={icon} size={16} color={highlight ? colors.text : colors.primary} />
-      <Txt variant="label" color={colors.text} style={styles.text}>
+      <Ionicons name={icon} size={16} color={highlight ? colors.onAccent : colors.primary} />
+      <Txt variant="label" color={highlight ? colors.onAccent : colors.text} style={styles.text}>
         {text}
       </Txt>
     </Pressable>
@@ -60,7 +62,7 @@ function describe(location: UserLocation): {
   }
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   pill: {
     position: 'absolute',
     top: space.m,
@@ -77,4 +79,4 @@ const styles = StyleSheet.create({
   },
   highlight: { backgroundColor: colors.accent },
   text: { fontSize: 13, flexShrink: 1 },
-});
+}));

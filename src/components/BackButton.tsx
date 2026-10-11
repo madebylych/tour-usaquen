@@ -1,12 +1,14 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 
 // Botón circular flotante para volver, sobre imágenes a pantalla completa.
 export default function BackButton() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <Pressable
@@ -22,7 +24,7 @@ export default function BackButton() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   button: {
     position: 'absolute',
     left: space.m,
@@ -35,4 +37,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

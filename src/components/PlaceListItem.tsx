@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Appear } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { Place } from '@/types';
-import { colors, fonts, line, space } from '@/theme';
+import { fonts, line, makeStyles, space, useTheme } from '@/theme';
 import { formatDistance } from '@/utils/format';
 
 type Props = {
@@ -19,6 +19,8 @@ type Props = {
 // línea punteada de corte y los datos de la parada. Los boletos salen uno
 // tras otro, como de una impresora.
 export default function PlaceListItem({ place, position, onPress, distance, discovered = false }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <Appear index={position - 1} from="right">
       <Pressable
@@ -28,7 +30,7 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
         style={({ pressed }) => [styles.ticket, pressed && styles.pressed]}
       >
         <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
-          <Txt variant="heading" color={colors.primary} style={styles.number}>
+          <Txt variant="heading" color={discovered ? colors.onAccent : colors.primary} style={styles.number}>
             {String(position).padStart(2, '0')}
           </Txt>
         </View>
@@ -71,7 +73,7 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
 
 const DASHES = [0, 1, 2, 3, 4, 5, 6, 7];
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   ticket: {
     flexDirection: 'row',
     minHeight: 66,
@@ -100,4 +102,4 @@ const styles = StyleSheet.create({
   },
   texts: { flex: 1, gap: 2 },
   discovered: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-});
+}));

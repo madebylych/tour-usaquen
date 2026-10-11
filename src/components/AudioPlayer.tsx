@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 
 // Alturas de las barras de la onda (decorativa, igual para todos los audios).
 const BARS = [10, 18, 12, 24, 16, 28, 14, 22, 30, 18, 12, 26, 20, 14, 24, 18, 28, 12, 20, 16, 24, 10, 18, 14, 22, 12];
@@ -18,6 +18,8 @@ type Props = {
 
 // Tarjeta "Escucha este lugar". Sin audio, se muestra desactivada.
 export default function AudioPlayer({ uri, title, credit }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
   const available = uri !== null;
@@ -98,7 +100,7 @@ function formatTime(seconds: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   card: {
     gap: space.s + 2,
     padding: space.m,
@@ -119,4 +121,4 @@ const styles = StyleSheet.create({
   grow: { flex: 1 },
   wave: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 32 },
   bar: { width: 5 },
-});
+}));

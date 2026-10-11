@@ -10,7 +10,7 @@ import {
 } from '@expo-google-fonts/bricolage-grotesque';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
 
-import { colors, fonts } from '@/theme';
+import { fonts, ThemeProvider, useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,6 +35,16 @@ export default function RootLayout() {
   if (!loaded && !error) return null;
 
   return (
+    <ThemeProvider>
+      <ThemedStack />
+    </ThemeProvider>
+  );
+}
+
+// Navegación y barra de estado con los colores del tema activo.
+function ThemedStack() {
+  const { colors, dark } = useTheme();
+  return (
     <>
       <Stack
         screenOptions={{
@@ -49,7 +59,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="tour" options={{ headerShown: true, title: 'Tu recorrido' }} />
       </Stack>
-      <StatusBar style="dark" />
+      <StatusBar style={dark ? 'light' : 'dark'} />
     </>
   );
 }

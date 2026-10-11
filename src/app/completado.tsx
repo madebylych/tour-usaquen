@@ -1,6 +1,5 @@
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -13,10 +12,12 @@ import Txt from '@/components/Txt';
 import { countDiscovered, progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 
 // Final del recorrido: resumen del pasaporte y créditos.
 export default function CompleteScreen() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { route: slug } = useLocalSearchParams<{ route: string }>();
   const state = useData(() => getRoute(slug), slug);
@@ -55,7 +56,6 @@ export default function CompleteScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -64,7 +64,7 @@ export default function CompleteScreen() {
       >
         <Stamp delay={200} rotate="-7deg" style={styles.medalSpace}>
           <View style={styles.medal}>
-            <Ionicons name={complete ? 'sparkles' : 'footsteps'} size={56} color={colors.text} />
+            <Ionicons name={complete ? 'sparkles' : 'footsteps'} size={56} color={colors.onAccent} />
           </View>
         </Stamp>
         <Txt variant="display" riso style={styles.center}>
@@ -99,7 +99,7 @@ export default function CompleteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: space.l, gap: space.m + 4, alignItems: 'stretch' },
   medal: {
@@ -116,4 +116,4 @@ const styles = StyleSheet.create({
   credits: { gap: space.xs },
   actions: { gap: space.xs, marginTop: space.s },
   reset: { alignItems: 'center', paddingVertical: space.m - 2 },
-});
+}));

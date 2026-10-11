@@ -1,11 +1,12 @@
 import { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space } from '@/theme';
 
 // Barra fija abajo para la acción principal de la pantalla.
 export default function BottomBar({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, space.m) }]}>{children}</View>
@@ -15,7 +16,7 @@ export default function BottomBar({ children }: { children: ReactNode }) {
 // Espacio que el contenido desplazable debe dejar libre para no quedar tapado.
 export const BOTTOM_BAR_SPACE = 110;
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   bar: {
     position: 'absolute',
     left: 0,
@@ -29,4 +30,4 @@ const styles = StyleSheet.create({
     borderTopWidth: line,
     borderColor: colors.border,
   },
-});
+}));

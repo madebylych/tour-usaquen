@@ -1,4 +1,4 @@
-import { colors } from '@/theme';
+import { Colors } from '@/theme';
 import { MAPLIBRE_CSS, MAPLIBRE_JS } from './vendor/maplibre.generated';
 
 // Página HTML del mapa: MapLibre GL JS + tiles vectoriales de OpenFreeMap
@@ -17,7 +17,11 @@ import { MAPLIBRE_CSS, MAPLIBRE_JS } from './vendor/maplibre.generated';
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 const STYLE_TIMEOUT_MS = 5000;
 
-export function buildMapHtml(): string {
+// En modo oscuro las teselas claras (Positron) se invierten con un filtro
+// CSS: queda un mapa nocturno sin depender de otro estilo ni de conexión.
+// El filtro afecta todo el canvas, así que se quita si la ruta tiene mapa
+// ilustrado (sus colores son los del dibujo y no deben invertirse).
+export function buildMapHtml(colors: Colors, dark: boolean): string {
   return `<!doctype html>
 <html>
 <head>
@@ -29,18 +33,18 @@ export function buildMapHtml(): string {
   body { -webkit-tap-highlight-color: transparent; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; }
   .pin {
     width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%;
-    background: ${colors.primary}; border: 2px solid ${colors.text};
+    background: ${colors.primary}; border: 2px solid ${colors.border};
     color: ${colors.onPrimary}; font-weight: 800; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 3px 3px 0 ${colors.text}; cursor: pointer; position: relative;
+    box-shadow: 3px 3px 0 ${colors.border}; cursor: pointer; position: relative;
     transition: transform 0.15s;
   }
-  .pin.done { background: ${colors.accent}; color: ${colors.text}; }
-  .pin.selected { transform: scale(1.2); box-shadow: 3px 3px 0 ${colors.accent}, 5px 5px 0 ${colors.text}; }
+  .pin.done { background: ${colors.accent}; color: ${colors.onAccent}; }
+  .pin.selected { transform: scale(1.2); box-shadow: 3px 3px 0 ${colors.accent}, 5px 5px 0 ${colors.border}; }
   .user {
     width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%;
     background: ${colors.primary}; border: 3px solid ${colors.surface};
-    box-shadow: 0 0 0 2px ${colors.text}, 0 0 0 8px rgba(29, 91, 214, 0.22);
+    box-shadow: 0 0 0 2px ${colors.border}, 0 0 0 8px rgba(29, 91, 214, 0.22);
   }
   .user.sim { width: 26px; height: 26px; border-style: dashed; }
   /* Animaciones: los pines caen como sellos, saltan al descubrirse y la
@@ -72,6 +76,8 @@ export function buildMapHtml(): string {
     .drop, .pop, .user::after { animation: none; }
   }
   .maplibregl-ctrl-attrib { font-size: 10px; }
+  ${dark ? 'body:not(.has-image) .maplibregl-canvas { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9); }' : ''}
+  ${dark ? '.maplibregl-ctrl.maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib.maplibregl-compact { background: rgba(30, 30, 38, 0.85); color: #A8A49B; } .maplibregl-ctrl-attrib a { color: #A8A49B; } .maplibregl-ctrl-attrib-button { filter: invert(1); }' : ''}
 </style>
 </head>
 <body>
@@ -155,6 +161,7 @@ export function buildMapHtml(): string {
   }
 
   function apply(state) {
+    document.body.classList.toggle('has-image', !!state.mapImage);
     setIllustratedMap(state.mapImage);
 
     // Línea de la ruta.

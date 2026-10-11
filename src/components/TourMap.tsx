@@ -9,7 +9,7 @@ import MapSurface, { MapSurfaceHandle } from '@/components/map/MapSurface';
 import Txt from '@/components/Txt';
 import { Coordinates } from '@/geo/distance';
 import { MapBounds, Place } from '@/types';
-import { colors, radius, shadow, space } from '@/theme';
+import { makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = {
   places: Place[]; // en el orden de la ruta
@@ -39,7 +39,11 @@ export default function TourMap({
   onMapPress,
   illustratedMap,
 }: Props) {
-  const html = useMemo(() => buildMapHtml(), []);
+  const { colors, dark } = useTheme();
+  const styles = useStyles();
+  // Al cambiar de tema se rearma la página del mapa; al quedar lista
+  // ('ready') se le reenvía el estado.
+  const html = useMemo(() => buildMapHtml(colors, dark), [colors, dark]);
   const surface = useRef<MapSurfaceHandle>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +139,7 @@ export default function TourMap({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   errorBox: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -154,6 +158,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: shadow.card,
   },
-});
+}));

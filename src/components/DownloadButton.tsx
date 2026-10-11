@@ -1,9 +1,9 @@
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
 import { DownloadStatus } from '@/data/useRouteDownload';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 
 type Props = {
   status: DownloadStatus;
@@ -14,6 +14,8 @@ type Props = {
 // Botón de descarga offline con sus estados. No se muestra si no hay
 // servidor de contenido (o en la vista previa web).
 export default function DownloadButton({ status, onDownload, onDelete }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   if (status.kind === 'unavailable') return null;
 
   if (status.kind === 'downloading') {
@@ -68,7 +70,7 @@ export default function DownloadButton({ status, onDownload, onDelete }: Props) 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   base: {
     minHeight: 54,
     flexDirection: 'row',
@@ -89,4 +91,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: colors.primarySoft,
   },
-});
+}));

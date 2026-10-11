@@ -1,11 +1,11 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { countDiscovered } from '@/data/progress';
 import { Place } from '@/types';
-import { colors, fonts, line, space } from '@/theme';
+import { fonts, line, makeStyles, space, useTheme } from '@/theme';
 
 type Props = {
   places: Place[]; // paradas de la ruta, en orden
@@ -17,6 +17,8 @@ const TILT = ['-6deg', '4deg', '-3deg', '7deg', '-5deg', '3deg'];
 
 // Pasaporte creativo: cuántas paradas se descubrieron y un sello por parada.
 export default function Passport({ places, discovered }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const total = places.length;
   const done = countDiscovered(places.map((p) => p.id), discovered);
   const complete = total > 0 && done === total;
@@ -36,7 +38,7 @@ export default function Passport({ places, discovered }: Props) {
           return isDone ? (
             <Stamp key={place.id} rotate={TILT[index % TILT.length]} delay={150 + index * 90} trigger={isDone}>
               <View style={[styles.stamp, styles.stampDone]}>
-                <Ionicons name="checkmark" size={22} color={colors.text} />
+                <Ionicons name="checkmark" size={22} color={colors.onAccent} />
               </View>
             </Stamp>
           ) : (
@@ -54,7 +56,7 @@ export default function Passport({ places, discovered }: Props) {
 
 const STAMP = 46;
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   card: {
     padding: space.m + 2,
     gap: space.m - 4,
@@ -68,4 +70,4 @@ const styles = StyleSheet.create({
   stampDone: { backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border },
   stampPending: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.textMuted },
   number: { fontFamily: fonts.display },
-});
+}));

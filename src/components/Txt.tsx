@@ -1,7 +1,7 @@
-import { Animated, StyleSheet, Text, TextProps, View } from 'react-native';
+import { Animated, Text, TextProps, View } from 'react-native';
 
 import { useRegistration } from '@/components/motion';
-import { colors, fonts } from '@/theme';
+import { fonts, makeStyles } from '@/theme';
 
 // Texto con las variantes tipográficas de la app. Usar siempre este
 // componente en vez de <Text> para que la fuente sea consistente.
@@ -19,6 +19,7 @@ type Props = TextProps & {
 const RISO_OFFSET = 3;
 
 export default function Txt({ variant = 'body', color, style, riso = false, ...rest }: Props) {
+  const styles = useStyles();
   const text = <Text {...rest} style={[styles[variant], color ? { color } : null, style]} />;
   if (!riso) return text;
   return (
@@ -44,7 +45,7 @@ function RisoEcho(props: TextProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   display: { fontFamily: fonts.display, fontSize: 40, lineHeight: 42, letterSpacing: -0.8, color: colors.primary },
   title: { fontFamily: fonts.display, fontSize: 30, lineHeight: 34, letterSpacing: -0.5, color: colors.text },
   heading: { fontFamily: fonts.display, fontSize: 20, lineHeight: 26, color: colors.text },
@@ -57,6 +58,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    color: colors.accent,
+    color: colors.risoEcho,
   },
-});
+}));

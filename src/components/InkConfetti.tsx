@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { useReducedMotion } from '@/components/motion';
-import { colors } from '@/theme';
+import { useTheme } from '@/theme';
 
 const PIECES = 26;
-const INKS = [colors.primary, colors.accent, colors.text];
 
 // Valores fijos por pieza (no aleatorios en cada render).
 const pieces = Array.from({ length: PIECES }, (_, i) => ({
@@ -14,7 +13,6 @@ const pieces = Array.from({ length: PIECES }, (_, i) => ({
   delay: (i * 53) % 700,
   spin: (i % 2 ? 1 : -1) * (180 + ((i * 41) % 360)),
   drift: ((i * 29) % 60) - 30,
-  ink: INKS[i % INKS.length],
   round: i % 4 === 0, // algunos puntos de trama entre los cuadros
 }));
 
@@ -22,6 +20,8 @@ const pieces = Array.from({ length: PIECES }, (_, i) => ({
 // una sola vez. No bloquea los toques.
 export default function InkConfetti() {
   const reduced = useReducedMotion();
+  const { colors } = useTheme();
+  const inks = [colors.primary, colors.accent, colors.border];
   const { width, height } = useWindowDimensions();
   const [fall] = useState(() => pieces.map(() => new Animated.Value(0)));
 
@@ -52,7 +52,7 @@ export default function InkConfetti() {
             width: p.size,
             height: p.size,
             borderRadius: p.round ? p.size / 2 : 0,
-            backgroundColor: p.ink,
+            backgroundColor: inks[i % inks.length],
             opacity: fall[i].interpolate({ inputRange: [0, 0.05, 0.85, 1], outputRange: [0, 1, 1, 0] }),
             transform: [
               { translateY: fall[i].interpolate({ inputRange: [0, 1], outputRange: [0, height + 60] }) },

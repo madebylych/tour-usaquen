@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useKeepAwake } from 'expo-keep-awake';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -24,7 +23,7 @@ import { simulator } from '@/geo/simulator';
 import { useLocation } from '@/geo/useLocation';
 import { useProximity } from '@/geo/useProximity';
 import { Place, PlaceWithMedia } from '@/types';
-import { colors, line, shadow, space } from '@/theme';
+import { line, makeStyles, shadows, space, useTheme } from '@/theme';
 import { formatDistance } from '@/utils/format';
 
 const NO_PLACES: PlaceWithMedia[] = [];
@@ -32,6 +31,8 @@ const NO_PLACES: PlaceWithMedia[] = [];
 // Tour activo: mapa con la ruta, las paradas y tu ubicación; detección de
 // llegada a cada parada; pasaporte; lista de paradas con distancia y estado.
 export default function TourScreen() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   // La pantalla no se apaga mientras se está en el tour: si se apaga,
   // el GPS se detiene y no se detectan las paradas.
   useKeepAwake();
@@ -79,7 +80,6 @@ export default function TourScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
 
       <View style={[styles.mapArea, { height: height * 0.5 }]}>
         <TourMap
@@ -120,7 +120,7 @@ export default function TourScreen() {
             </View>
             {nextDistance != null ? (
               <View style={styles.nextDistance}>
-                <Txt variant="label">{formatDistance(nextDistance)}</Txt>
+                <Txt variant="label" color={colors.onAccent}>{formatDistance(nextDistance)}</Txt>
               </View>
             ) : null}
           </View>
@@ -173,6 +173,8 @@ function SelectedPlace({
   onImHere: () => void;
   onClose: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.floating}>
       <View style={styles.floatingRow}>
@@ -203,7 +205,7 @@ function SelectedPlace({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   mapArea: { backgroundColor: colors.primarySoft, borderBottomWidth: line, borderColor: colors.border },
   content: { padding: space.m + 4, gap: space.m - 4, paddingBottom: BOTTOM_BAR_SPACE },
@@ -228,9 +230,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
-    boxShadow: shadow.floating,
+    boxShadow: shadows(colors).floating,
   },
   floatingRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingRight: space.xs },
   floatingMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.m - 4 },
   floatingImage: { width: 56, height: 56 },
-});
+}));

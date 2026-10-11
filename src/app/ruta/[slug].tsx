@@ -1,6 +1,5 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 
 import BackButton from '@/components/BackButton';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
@@ -14,11 +13,13 @@ import { useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
 import { useRouteDownload } from '@/data/useRouteDownload';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 import { formatDistance, formatDuration } from '@/utils/format';
 
 // Detalle de la ruta: datos generales, paradas en orden y descarga offline.
 export default function RouteScreen() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const state = useData(() => getRoute(slug), slug);
   const download = useRouteDownload(slug);
@@ -44,7 +45,6 @@ export default function RouteScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
       <BackButton />
       <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE }}>
         <MediaImage uri={route.media.cover} style={styles.hero} label={route.name} />
@@ -91,7 +91,7 @@ export default function RouteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   hero: { height: 290, borderBottomWidth: line, borderColor: colors.border },
   content: { padding: space.m + 6, gap: space.m },
@@ -99,4 +99,4 @@ const styles = StyleSheet.create({
   sectionTitle: { marginTop: space.s },
   list: { gap: space.m - 4 },
   grow: { flex: 1 },
-});
+}));

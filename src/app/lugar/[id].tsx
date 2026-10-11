@@ -1,6 +1,5 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useDiscoveryFeedback } from '@/audio/useDiscoveryFeedback';
@@ -15,7 +14,7 @@ import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 
 // La parada y su número dentro de la ruta.
 async function loadPlace(routeSlug: string, placeId: string) {
@@ -27,6 +26,8 @@ async function loadPlace(routeSlug: string, placeId: string) {
 // Ficha del lugar. Orden deliberado: primero la consigna de observación
 // (mirar el lugar real), después el audio y al final los textos largos.
 export default function PlaceScreen() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const { id, route: routeSlug } = useLocalSearchParams<{ id: string; route: string }>();
   const state = useData(() => loadPlace(routeSlug, id), `${routeSlug}/${id}`);
   const { discovered } = useProgress();
@@ -52,7 +53,6 @@ export default function PlaceScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
       <BackButton />
       <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE + space.m }}>
         <MediaImage uri={place.media.image} style={styles.hero} label={place.name} />
@@ -69,7 +69,7 @@ export default function PlaceScreen() {
 
           {place.observation_prompt ? (
             <Appear delay={150} style={styles.prompt}>
-              <Txt variant="label" style={styles.promptText}>
+              <Txt variant="label" color={colors.onAccent} style={styles.promptText}>
                 {place.observation_prompt}
               </Txt>
             </Appear>
@@ -84,7 +84,7 @@ export default function PlaceScreen() {
 
           {place.did_you_know ? (
             <View style={styles.fact}>
-              <Txt variant="overline" color={colors.accent}>
+              <Txt variant="overline" color={colors.accentOnPrimary}>
                 ¿SABÍAS QUE…?
               </Txt>
               <Txt variant="label" color={colors.onPrimary} style={styles.factText}>
@@ -105,8 +105,10 @@ export default function PlaceScreen() {
         <View style={styles.grow}>
           {isDiscovered ? (
             <View style={styles.discoveredBadge} accessibilityRole="text">
-              <Ionicons name="checkmark" size={22} color={colors.text} />
-              <Txt variant="label">Parada descubierta</Txt>
+              <Ionicons name="checkmark" size={22} color={colors.onAccent} />
+              <Txt variant="label" color={colors.onAccent}>
+                Parada descubierta
+              </Txt>
             </View>
           ) : (
             <Button label="Ya estoy aquí" onPress={discoverManually} />
@@ -118,6 +120,7 @@ export default function PlaceScreen() {
 }
 
 function Section({ title, text }: { title: string; text: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.card}>
       <Txt variant="heading">{title}</Txt>
@@ -126,7 +129,7 @@ function Section({ title, text }: { title: string; text: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   hero: { height: 280, borderBottomWidth: line, borderColor: colors.border },
   content: { padding: space.m + 6, gap: space.m },
@@ -159,4 +162,4 @@ const styles = StyleSheet.create({
     borderWidth: line,
     borderColor: colors.border,
   },
-});
+}));

@@ -1,10 +1,10 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 
 import Button from '@/components/Button';
 import InkLoader from '@/components/InkLoader';
 import Txt from '@/components/Txt';
-import { colors, space } from '@/theme';
+import { makeStyles, space, useTheme } from '@/theme';
 
 type Props = {
   message?: string;
@@ -15,6 +15,8 @@ type Props = {
 
 // Mensaje centrado para estados de carga, error o "no encontrado".
 export default function StateMessage({ message, loading = false, showHomeButton = false, onRetry }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       {loading ? <InkLoader /> : null}
@@ -29,7 +31,7 @@ export default function StateMessage({ message, loading = false, showHomeButton 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -39,4 +41,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   text: { textAlign: 'center' },
-});
+}));

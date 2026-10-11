@@ -1,4 +1,4 @@
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -7,7 +7,7 @@ import { Appear, Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
 import { Place } from '@/types';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 import { categoryIcon } from '@/utils/categories';
 
 type Props = {
@@ -19,6 +19,8 @@ type Props = {
 // Si se descubren varias a la vez, se muestran una tras otra. El ícono cae
 // como un sello y los textos se imprimen detrás.
 export default function DiscoveryCard({ places, onOpen }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const { announcements } = useProgress();
   const insets = useSafeAreaInsets();
 
@@ -37,11 +39,11 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
         <View key={place.id} style={[styles.sheet, { paddingBottom: insets.bottom + space.l }]}>
           <Stamp delay={250} rotate="8deg" style={styles.iconSpace}>
             <View style={styles.icon}>
-              <Ionicons name={categoryIcon(place.category)} size={34} color={colors.text} />
+              <Ionicons name={categoryIcon(place.category)} size={34} color={colors.onAccent} />
             </View>
           </Stamp>
           <Appear delay={420} style={styles.texts}>
-            <Txt variant="overline" color={colors.accent} style={styles.center}>
+            <Txt variant="overline" color={colors.accentOnPrimary} style={styles.center}>
               PARADA {position} DESCUBIERTA
             </Txt>
             <Txt variant="title" color={colors.onPrimary} style={styles.center}>
@@ -74,7 +76,7 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   backdrop: { flex: 1, backgroundColor: 'rgba(21, 21, 26, 0.5)' },
   sheet: {
     backgroundColor: colors.primary,
@@ -100,4 +102,4 @@ const styles = StyleSheet.create({
   soft: { opacity: 0.92 },
   actions: { alignSelf: 'stretch', gap: space.s, marginTop: space.m },
   secondary: { alignItems: 'center', paddingVertical: space.m - 2 },
-});
+}));

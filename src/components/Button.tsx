@@ -1,10 +1,10 @@
 import { ComponentProps, useState } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
-import { colors, line, space } from '@/theme';
+import { line, makeStyles, space, useTheme } from '@/theme';
 
 type Props = {
   label: string;
@@ -20,12 +20,14 @@ type Props = {
 const DEPTH = 5; // cuánto se corre la sombra (la "segunda tinta")
 
 export default function Button({ label, onPress, variant = 'primary', icon, iconRight = false }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const reduced = useReducedMotion();
   const [press] = useState(() => new Animated.Value(0));
-  const color = variant === 'primary' ? colors.onPrimary : colors.text;
-  const iconColor = variant === 'primary' ? colors.accent : colors.text;
+  const color = variant === 'primary' ? colors.onPrimary : variant === 'light' ? colors.onAccent : colors.text;
+  const iconColor = variant === 'primary' ? colors.accentOnPrimary : color;
   const iconEl = icon ? <Ionicons name={icon} size={20} color={iconColor} /> : null;
-  const shadowColor = variant === 'primary' ? colors.accent : variant === 'light' ? colors.text : null;
+  const shadowColor = variant === 'primary' ? colors.accent : variant === 'light' ? colors.border : null;
 
   // Al presionar, la cara del botón "baja" sobre su sombra y rebota al soltar.
   const animateTo = (toValue: number) => {
@@ -61,7 +63,7 @@ export default function Button({ label, onPress, variant = 'primary', icon, icon
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   withShadow: { marginRight: DEPTH, marginBottom: DEPTH },
   shadow: { position: 'absolute', top: DEPTH, left: DEPTH, right: -DEPTH, bottom: -DEPTH },
   base: {
@@ -77,4 +79,4 @@ const styles = StyleSheet.create({
   secondary: { backgroundColor: colors.surface, borderWidth: line, borderColor: colors.border },
   light: { backgroundColor: colors.accent },
   label: { fontSize: 16 },
-});
+}));
