@@ -24,24 +24,32 @@ export default function Button({ label, onPress, variant = 'primary', icon, icon
   const styles = useStyles();
   const reduced = useReducedMotion();
   const [press] = useState(() => new Animated.Value(0));
+  const [hover] = useState(() => new Animated.Value(0));
   const color = variant === 'primary' ? colors.onPrimary : variant === 'light' ? colors.onAccent : colors.text;
   const iconColor = variant === 'primary' ? colors.accentOnPrimary : color;
   const iconEl = icon ? <Ionicons name={icon} size={20} color={iconColor} /> : null;
   const shadowColor = variant === 'primary' ? colors.accent : variant === 'light' ? colors.border : null;
 
   // Al presionar, la cara del botón "baja" sobre su sombra y rebota al soltar.
-  const animateTo = (toValue: number) => {
-    if (reduced) return press.setValue(toValue);
-    Animated.spring(press, { toValue, friction: 6, tension: 260, useNativeDriver: true }).start();
+  // Con el mouse encima se levanta un poco (la sombra se ve más grande).
+  const springTo = (value: Animated.Value, toValue: number) => {
+    if (reduced) return value.setValue(toValue);
+    Animated.spring(value, { toValue, friction: 6, tension: 260, useNativeDriver: true }).start();
   };
-  const offset = press.interpolate({ inputRange: [0, 1], outputRange: [0, DEPTH - 1] });
+  const offset = Animated.subtract(
+    press.interpolate({ inputRange: [0, 1], outputRange: [0, DEPTH - 1] }),
+    hover.interpolate({ inputRange: [0, 1], outputRange: [0, 2] })
+  );
+  const grow = hover.interpolate({ inputRange: [0, 1], outputRange: [1, 1.02] });
 
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      onPressIn={() => animateTo(1)}
-      onPressOut={() => animateTo(0)}
+      onPressIn={() => springTo(press, 1)}
+      onPressOut={() => springTo(press, 0)}
+      onHoverIn={() => springTo(hover, 1)}
+      onHoverOut={() => springTo(hover, 0)}
       style={shadowColor ? styles.withShadow : null}
     >
       {shadowColor ? <View style={[styles.shadow, { backgroundColor: shadowColor }]} /> : null}
@@ -50,7 +58,8 @@ export default function Button({ label, onPress, variant = 'primary', icon, icon
           styles.base,
           styles[variant],
           iconRight && styles.spread,
-          { transform: [{ translateX: offset }, { translateY: offset }] },
+          // Sin sombra (secundario), el hover lo agranda un poco.
+          { transform: shadowColor ? [{ translateX: offset }, { translateY: offset }] : [{ scale: grow }] },
         ]}
       >
         {iconRight ? null : iconEl}

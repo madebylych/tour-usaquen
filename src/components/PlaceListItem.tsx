@@ -1,7 +1,7 @@
 import { Animated, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Appear, Stamp, usePressSpring } from '@/components/motion';
+import { Appear, Stamp, useHover, usePressSpring } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { Place } from '@/types';
 import { fonts, line, makeStyles, space, useTheme } from '@/theme';
@@ -22,6 +22,8 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
   const { colors } = useTheme();
   const styles = useStyles();
   const press = usePressSpring(0.97);
+  const hover = useHover();
+  const slide = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, 6] });
   return (
     <Appear index={position - 1} from="right">
       <Pressable
@@ -30,9 +32,12 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
         onPress={onPress}
         onPressIn={press.in}
         onPressOut={press.out}
+        // Con el mouse encima el boleto se corre un poco y la flecha avanza.
+        onHoverIn={hover.handlers.onHoverIn}
+        onHoverOut={hover.handlers.onHoverOut}
       >
         {({ pressed }) => (
-          <Animated.View style={[styles.ticket, pressed && styles.pressed, { transform: [{ scale: press.scale }] }]}>
+          <Animated.View style={[styles.ticket, pressed && styles.pressed, { transform: [{ scale: press.scale }, { translateX: slide }] }]}>
             <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
               {/* Al descubrir la parada, el número se vuelve a estampar. */}
               <Stamp trigger={discovered} delay={discovered ? 100 : 0} rotate={discovered ? '-8deg' : '0deg'}>
@@ -71,7 +76,9 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
                 {formatDistance(distance)}
               </Txt>
             ) : null}
-            <Ionicons name="arrow-forward" size={18} color={colors.text} />
+            <Animated.View style={{ transform: [{ translateX: slide }] }}>
+              <Ionicons name="arrow-forward" size={18} color={colors.text} />
+            </Animated.View>
           </View>
         </Animated.View>
         )}

@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react';
-import { Linking, Pressable } from 'react-native';
+import { Linking, Platform, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import Txt from '@/components/Txt';
@@ -26,7 +26,10 @@ export default function LocationStatus({ location, onLongPress }: Props) {
       delayLongPress={800}
       // Sin permiso, un toque lleva a los ajustes del celular para darlo.
       // Con el GPS apagado, un toque vuelve a intentar (tras encenderlo).
-      onPress={denied ? () => Linking.openSettings() : unavailable ? location.retry : undefined}
+      // En la web no hay "Ajustes de la app" que abrir: se reintenta.
+      onPress={
+        denied && Platform.OS !== 'web' ? () => Linking.openSettings() : denied || unavailable ? location.retry : undefined
+      }
       accessibilityRole={denied || unavailable ? 'button' : 'text'}
       accessibilityHint="Mantén presionado para activar o desactivar el modo simulación"
       style={[styles.pill, highlight && styles.highlight]}

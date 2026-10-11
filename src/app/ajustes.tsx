@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { setPlayerVolume } from '@/audio/volume';
 import BackButton from '@/components/BackButton';
 import Button from '@/components/Button';
-import { Appear, useReducedMotion } from '@/components/motion';
+import { Appear, useHover, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { signInWithGoogle, signOut, useAuth } from '@/data/auth';
 import { deleteAllDownloads, downloadsSize } from '@/data/cleanup';
@@ -168,17 +168,20 @@ function Option({
   const styles = useStyles();
   const { colors } = useTheme();
   const color = selected ? colors.onAccent : colors.text;
+  const hover = useHover();
+  // Con hover la opción sube un poco y el ícono se agranda.
+  const lift = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, -3] });
+  const iconScale = hover.value.interpolate({ inputRange: [0, 1], outputRange: [1, 1.25] });
   return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={[styles.option, selected && styles.optionSelected]}
-    >
-      <Ionicons name={icon} size={18} color={color} />
-      <Txt variant="label" color={color}>
-        {label}
-      </Txt>
+    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={onPress} {...hover.handlers} style={styles.optionWrap}>
+      <Animated.View style={[styles.option, selected && styles.optionSelected, { transform: [{ translateY: lift }] }]}>
+        <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+          <Ionicons name={icon} size={18} color={color} />
+        </Animated.View>
+        <Txt variant="label" color={color}>
+          {label}
+        </Txt>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -207,15 +210,24 @@ function Volume({ label, value, onChange }: { label: string; value: number; onCh
           <Ionicons name={value === 0 ? 'volume-mute' : 'volume-low'} size={20} color={colors.text} />
         </Pressable>
         {Array.from({ length: VOLUME_STEPS }, (_, i) => i + 1).map((step) => (
-          <Pressable
-            key={step}
-            onPress={() => onChange(step)}
-            hitSlop={4}
-            style={[styles.block, { height: 14 + step * 5 }, step <= value ? styles.blockOn : styles.blockOff]}
-          />
+          <VolumeBlock key={step} step={step} on={step <= value} onPress={() => onChange(step)} />
         ))}
       </View>
     </View>
+  );
+}
+
+// Un bloque del volumen: con hover sube un poco.
+function VolumeBlock({ step, on, onPress }: { step: number; on: boolean; onPress: () => void }) {
+  const styles = useStyles();
+  const hover = useHover();
+  const lift = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, -5] });
+  return (
+    <Pressable onPress={onPress} hitSlop={4} {...hover.handlers} style={styles.blockWrap}>
+      <Animated.View
+        style={[styles.block, { height: 14 + step * 5 }, on ? styles.blockOn : styles.blockOff, { transform: [{ translateY: lift }] }]}
+      />
+    </Pressable>
   );
 }
 
@@ -267,8 +279,8 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.border,
   },
   segmented: { flexDirection: 'row', gap: space.s },
+  optionWrap: { flex: 1 },
   option: {
-    flex: 1,
     alignItems: 'center',
     gap: space.xs,
     paddingVertical: space.m - 4,
@@ -280,7 +292,8 @@ const useStyles = makeStyles((colors) => ({
   volumeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   blocks: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s, height: 44 },
   mute: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
-  block: { flex: 1, borderWidth: line, borderColor: colors.border },
+  blockWrap: { flex: 1, justifyContent: 'flex-end' },
+  block: { borderWidth: line, borderColor: colors.border },
   blockOn: { backgroundColor: colors.primary },
   blockOff: { backgroundColor: colors.background },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space.m },

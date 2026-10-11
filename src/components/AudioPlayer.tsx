@@ -5,7 +5,7 @@ import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 
 import { setPlayerVolume } from '@/audio/volume';
-import { useReducedMotion } from '@/components/motion';
+import { useHover, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { useSettings } from '@/data/settings';
 import { line, makeStyles, space, useTheme } from '@/theme';
@@ -36,6 +36,7 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
   const status = useAudioPlayerStatus(player);
   const available = uri !== null;
   const beat = useBeat(status.playing);
+  const hover = useHover();
 
   // Volumen elegido en Ajustes; cambia en vivo si se ajusta mientras suena.
   const { placeVolume } = useSettings();
@@ -83,14 +84,23 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
           accessibilityLabel={status.playing ? 'Pausar audio' : 'Reproducir audio'}
           accessibilityState={{ disabled: !available }}
           onPress={toggle}
-          style={[styles.playButton, !available && styles.disabled]}
+          {...(available ? hover.handlers : null)}
         >
-          <Ionicons
-            name={status.playing ? 'pause' : 'play'}
-            size={26}
-            color={colors.onPrimary}
-            style={status.playing ? null : styles.playIcon}
-          />
+          {/* Con hover el botón crece; al tocarlo se nota que responde. */}
+          <Animated.View
+            style={[
+              styles.playButton,
+              !available && styles.disabled,
+              { transform: [{ scale: hover.value.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) }] },
+            ]}
+          >
+            <Ionicons
+              name={status.playing ? 'pause' : 'play'}
+              size={26}
+              color={colors.onPrimary}
+              style={status.playing ? null : styles.playIcon}
+            />
+          </Animated.View>
         </Pressable>
         <View style={styles.grow}>
           <Txt variant="label">{title ?? 'Escucha este lugar'}</Txt>

@@ -4,9 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
-import MediaImage from '@/components/MediaImage';
-import { Appear, Stamp, usePressSpring, Wobble, Words } from '@/components/motion';
+import { Appear, Stamp, useHover, usePressSpring, Wobble, Words } from '@/components/motion';
 import PlaceListItem from '@/components/PlaceListItem';
+import Postcard from '@/components/Postcard';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { getRoute, listRoutes } from '@/data/source';
@@ -70,17 +70,18 @@ export default function HomeScreen() {
       </View>
 
       <Appear delay={100}>
-        <MediaImage uri={route.media.cover} style={styles.cover} label={route.name} drift />
-        <Stamp delay={450} rotate="-6deg" style={styles.sticker}>
-          {/* Ya estampado, el sticker se mece un poco. */}
-          <Wobble delay={1200} from="0deg" to="4deg">
-            <View style={styles.stickerInk}>
-              <Txt variant="label" color={colors.onAccent}>
-                Recorrido 01
-              </Txt>
-            </View>
-          </Wobble>
-        </Stamp>
+        <Postcard uri={route.media.cover} label={route.name} caption="Saludos desde Usaquén" onPress={openRoute}>
+          <Stamp delay={450} rotate="-6deg" style={styles.sticker}>
+            {/* Ya estampado, el sticker se mece un poco. */}
+            <Wobble delay={1200} from="0deg" to="4deg">
+              <View style={styles.stickerInk}>
+                <Txt variant="label" color={colors.onAccent}>
+                  Recorrido 01
+                </Txt>
+              </View>
+            </Wobble>
+          </Stamp>
+        </Postcard>
       </Appear>
 
       <Appear delay={200} style={styles.routeInfo}>
@@ -118,7 +119,12 @@ function SettingsButton() {
   const styles = useStyles();
   const { colors } = useTheme();
   const press = usePressSpring(0.88);
-  const rotate = press.scale.interpolate({ inputRange: [0.88, 1], outputRange: ['90deg', '0deg'] });
+  const hover = useHover();
+  // Gira un cuarto con el mouse encima y otro poco al tocarlo.
+  const rotate = Animated.add(
+    press.scale.interpolate({ inputRange: [0.88, 1], outputRange: [1, 0] }),
+    hover.value
+  ).interpolate({ inputRange: [0, 2], outputRange: ['0deg', '180deg'] });
   return (
     <Pressable
       accessibilityRole="button"
@@ -126,6 +132,8 @@ function SettingsButton() {
       onPress={() => router.push('/ajustes')}
       onPressIn={press.in}
       onPressOut={press.out}
+      onHoverIn={hover.handlers.onHoverIn}
+      onHoverOut={hover.handlers.onHoverOut}
       hitSlop={8}
       style={({ pressed }) => [styles.themeButton, pressed && styles.themeButtonPressed]}
     >
@@ -152,7 +160,6 @@ const useStyles = makeStyles((colors) => ({
   },
   themeButtonPressed: { backgroundColor: colors.accent },
   headline: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.m, marginBottom: space.s },
-  cover: { height: 220 },
   sticker: { position: 'absolute', left: space.m - 4, bottom: space.m + 4 },
   stickerInk: {
     paddingVertical: space.s,

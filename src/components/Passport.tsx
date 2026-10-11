@@ -1,7 +1,8 @@
-import { View } from 'react-native';
+import { ReactNode } from 'react';
+import { Animated, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Breathe, Stamp } from '@/components/motion';
+import { Breathe, Stamp, useHover } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { countDiscovered } from '@/data/progress';
 import { Place } from '@/types';
@@ -38,9 +39,11 @@ export default function Passport({ places, discovered }: Props) {
           // pantalla, uno tras otro).
           return isDone ? (
             <Stamp key={place.id} rotate={TILT[index % TILT.length]} delay={150 + index * 90} trigger={isDone}>
-              <View style={[styles.stamp, styles.stampDone]}>
-                <Ionicons name="checkmark" size={22} color={colors.onAccent} />
-              </View>
+              <Wiggle>
+                <View style={[styles.stamp, styles.stampDone]}>
+                  <Ionicons name="checkmark" size={22} color={colors.onAccent} />
+                </View>
+              </Wiggle>
             </Stamp>
           ) : index === nextIndex ? (
             // La próxima casilla por llenar "respira" para que se note cuál sigue.
@@ -61,6 +64,18 @@ export default function Passport({ places, discovered }: Props) {
         })}
       </View>
     </View>
+  );
+}
+
+// Sello que se sacude un poco con el mouse encima (o al tocarlo).
+function Wiggle({ children }: { children: ReactNode }) {
+  const hover = useHover();
+  const rotate = hover.value.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['0deg', '-12deg', '8deg'] });
+  const scale = hover.value.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
+  return (
+    <Pressable {...hover.handlers} accessible={false}>
+      <Animated.View style={{ transform: [{ rotate }, { scale }] }}>{children}</Animated.View>
+    </Pressable>
   );
 }
 

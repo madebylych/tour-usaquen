@@ -190,3 +190,19 @@ export function useParallax(height: number) {
   };
   return { onScroll, heroStyle };
 }
+
+// Hover: 0 -> 1 al pasar el mouse (web, tablets con mouse) y también al
+// presionar, para que en el celular (sin mouse) se vea el mismo efecto.
+// Uso: const hover = useHover(); <Pressable {...hover.handlers}> y
+// hover.value.interpolate(...) en los estilos.
+export function useHover() {
+  const reduced = useReducedMotion();
+  const [value] = useState(() => new Animated.Value(0));
+  const to = (toValue: number) => {
+    if (reduced) return value.setValue(toValue);
+    Animated.spring(value, { toValue, friction: 7, tension: 160, useNativeDriver: true }).start();
+  };
+  const on = () => to(1);
+  const off = () => to(0);
+  return { value, handlers: { onHoverIn: on, onHoverOut: off, onPressIn: on, onPressOut: off } };
+}
