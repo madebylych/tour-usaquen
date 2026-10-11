@@ -11,7 +11,7 @@ const DEPTH = 6; // sombra dura de la postal
 type Props = {
   uri: string | null; // foto; sin foto se ve la trama
   label: string; // descripción para lectores de pantalla
-  caption: string; // pie de la postal ("Saludos desde Usaquén")
+  caption: string; // pie de la postal ("Saludos desde ...")
   onPress?: () => void;
   children?: ReactNode; // lo que va encima de la foto (el sticker del recorrido)
 };
@@ -94,10 +94,12 @@ const useStyles = makeStyles((colors) => ({
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
+    gap: space.m,
     paddingVertical: space.s + 2,
     paddingHorizontal: space.xs,
   },
-  caption: { fontFamily: fonts.display, fontSize: 17 },
+  // El pie puede ocupar dos líneas en celulares angostos.
+  caption: { flexShrink: 1, fontFamily: fonts.display, fontSize: 17 },
   stamp: {
     position: 'absolute',
     top: -10,

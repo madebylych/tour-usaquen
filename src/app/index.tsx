@@ -70,7 +70,7 @@ export default function HomeScreen() {
       </View>
 
       <Appear delay={100}>
-        <Postcard uri={route.media.cover} label={route.name} caption="Saludos desde Usaquén" onPress={openRoute}>
+        <Postcard uri={route.media.cover} label={route.name} caption="Saludos desde el distrito cultural de Usaquén" onPress={openRoute}>
           <Stamp delay={450} rotate="-6deg" style={styles.sticker}>
             {/* Ya estampado, el sticker se mece un poco. */}
             <Wobble delay={1200} from="0deg" to="4deg">
