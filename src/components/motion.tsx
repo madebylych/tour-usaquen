@@ -99,3 +99,94 @@ export function Stamp({ children, delay = 0, rotate = '0deg', trigger = null, st
     </Animated.View>
   );
 }
+
+// --- Movimiento continuo y respuesta al toque -------------------------------
+
+// Valor que va y viene entre 0 y 1 sin parar (suave, con seno). Quieto en 0
+// con "Reducir movimiento".
+export function useLoop(duration: number, delay = 0) {
+  const reduced = useReducedMotion();
+  const [value] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (reduced) {
+      value.setValue(0);
+      return;
+    }
+    const half = (toValue: number) =>
+      Animated.timing(value, { toValue, duration: duration / 2, easing: Easing.inOut(Easing.sin), useNativeDriver: true });
+    const loop = Animated.sequence([Animated.delay(delay), Animated.loop(Animated.sequence([half(1), half(0)]))]);
+    loop.start();
+    return () => loop.stop();
+  }, [reduced, value, duration, delay]);
+  return value;
+}
+
+type LoopProps = { children: ReactNode; style?: StyleProp<ViewStyle>; delay?: number };
+
+// "Respira": crece un poco y vuelve. Para lo que pide atención (siguiente parada).
+export function Breathe({ children, style, delay = 0, amount = 0.06 }: LoopProps & { amount?: number }) {
+  const v = useLoop(2200, delay);
+  const scale = v.interpolate({ inputRange: [0, 1], outputRange: [1, 1 + amount] });
+  return <Animated.View style={[style, { transform: [{ scale }] }]}>{children}</Animated.View>;
+}
+
+// "Se mece": un sticker pegado que se mueve con el viento.
+export function Wobble({ children, style, delay = 0, from = '-6deg', to = '-2deg' }: LoopProps & { from?: string; to?: string }) {
+  const v = useLoop(3200, delay);
+  const rotate = v.interpolate({ inputRange: [0, 1], outputRange: [from, to] });
+  return <Animated.View style={[style, { transform: [{ rotate }] }]}>{children}</Animated.View>;
+}
+
+// "Empuja": una flecha que invita a seguir (se corre unos píxeles y vuelve).
+export function Nudge({ children, style, delay = 0, distance = 5 }: LoopProps & { distance?: number }) {
+  const v = useLoop(1400, delay);
+  const translateX = v.interpolate({ inputRange: [0, 1], outputRange: [0, distance] });
+  return <Animated.View style={[style, { transform: [{ translateX }] }]}>{children}</Animated.View>;
+}
+
+// Rebote al tocar: el elemento se hunde un poco y vuelve con resorte.
+// Uso: const press = usePressSpring(); <Pressable onPressIn={press.in} onPressOut={press.out}>
+//        <Animated.View style={{ transform: [{ scale: press.scale }] }}>...
+export function usePressSpring(depth = 0.96) {
+  const reduced = useReducedMotion();
+  const [scale] = useState(() => new Animated.Value(1));
+  const to = (toValue: number) => {
+    if (reduced) return;
+    Animated.spring(scale, { toValue, friction: 5, tension: 300, useNativeDriver: true }).start();
+  };
+  return { scale, in: () => to(depth), out: () => to(1) };
+}
+
+// Palabras que entran una por una (titulares).
+export function Words({ text, render, delay = 0 }: { text: string; render: (word: string) => ReactNode; delay?: number }) {
+  return (
+    <>
+      {text.split(' ').map((word, i) => (
+        <Appear key={`${word}-${i}`} delay={delay + i * 110} style={{ marginRight: 10 }}>
+          {render(word)}
+        </Appear>
+      ))}
+    </>
+  );
+}
+
+// Foto que se acerca lentamente (efecto "Ken Burns"): la imagen nunca está
+// del todo quieta.
+export function useDrift() {
+  const v = useLoop(16000);
+  return v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] });
+}
+
+// Parallax de la foto principal: al bajar, la foto se queda un poco atrás;
+// al estirar hacia arriba, crece.
+export function useParallax(height: number) {
+  const [scrollY] = useState(() => new Animated.Value(0));
+  const onScroll = Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true });
+  const heroStyle = {
+    transform: [
+      { translateY: scrollY.interpolate({ inputRange: [-height, 0, height], outputRange: [-height / 2, 0, height * 0.45], extrapolateRight: 'clamp' as const }) },
+      { scale: scrollY.interpolate({ inputRange: [-height, 0], outputRange: [1.6, 1], extrapolateRight: 'clamp' as const }) },
+    ],
+  };
+  return { onScroll, heroStyle };
+}

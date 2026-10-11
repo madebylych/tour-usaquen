@@ -56,6 +56,8 @@ function ThemedStack() {
       <Stack
         screenOptions={{
           headerShown: false,
+          // Cada pantalla entra deslizándose desde la derecha (en Android e iOS).
+          animation: 'slide_from_right',
           contentStyle: { backgroundColor: colors.background },
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.text,

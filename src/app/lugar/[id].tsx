@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,7 +8,7 @@ import BackButton from '@/components/BackButton';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import MediaImage from '@/components/MediaImage';
-import { Appear } from '@/components/motion';
+import { Appear, useParallax } from '@/components/motion';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
@@ -28,6 +28,8 @@ async function loadPlace(routeSlug: string, placeId: string) {
 export default function PlaceScreen() {
   const { colors } = useTheme();
   const styles = useStyles();
+  // La foto de arriba se queda un poco atrás al bajar (parallax).
+  const parallax = useParallax(280);
   const { id, route: routeSlug } = useLocalSearchParams<{ id: string; route: string }>();
   const state = useData(() => loadPlace(routeSlug, id), `${routeSlug}/${id}`);
   const { discovered } = useProgress();
@@ -54,8 +56,16 @@ export default function PlaceScreen() {
   return (
     <View style={styles.screen}>
       <BackButton />
-      <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE + space.m }}>
-        <MediaImage uri={place.media.image} style={styles.hero} label={place.name} />
+      <Animated.ScrollView
+        contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE + space.m }}
+        onScroll={parallax.onScroll}
+        scrollEventThrottle={16}
+      >
+        <View style={styles.hero}>
+          <Animated.View style={[styles.heroImage, parallax.heroStyle]}>
+            <MediaImage uri={place.media.image} style={styles.heroImage} label={place.name} />
+          </Animated.View>
+        </View>
 
         <View style={styles.content}>
           <View style={styles.titleBlock}>
@@ -99,7 +109,7 @@ export default function PlaceScreen() {
             </Txt>
           ) : null}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <BottomBar>
         <View style={styles.grow}>
@@ -133,7 +143,8 @@ function Section({ title, text }: { title: string; text: string }) {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
-  hero: { height: 280, borderBottomWidth: line, borderColor: colors.border },
+  hero: { height: 280, overflow: 'hidden', borderBottomWidth: line, borderColor: colors.border },
+  heroImage: { height: 280 },
   content: { padding: space.m + 6, gap: space.m },
   titleBlock: { gap: space.s + 2, marginBottom: space.xs },
   prompt: {

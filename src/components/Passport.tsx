@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Stamp } from '@/components/motion';
+import { Breathe, Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { countDiscovered } from '@/data/progress';
 import { Place } from '@/types';
@@ -22,6 +22,7 @@ export default function Passport({ places, discovered }: Props) {
   const total = places.length;
   const done = countDiscovered(places.map((p) => p.id), discovered);
   const complete = total > 0 && done === total;
+  const nextIndex = places.findIndex((p) => !(p.id in discovered));
 
   return (
     <View style={styles.card} accessibilityLabel={`Pasaporte creativo: ${done} de ${total} paradas descubiertas`}>
@@ -41,6 +42,15 @@ export default function Passport({ places, discovered }: Props) {
                 <Ionicons name="checkmark" size={22} color={colors.onAccent} />
               </View>
             </Stamp>
+          ) : index === nextIndex ? (
+            // La próxima casilla por llenar "respira" para que se note cuál sigue.
+            <Breathe key={place.id} amount={0.1}>
+              <View style={[styles.stamp, styles.stampNext]}>
+                <Txt variant="label" color={colors.primary} style={styles.number}>
+                  {String(index + 1).padStart(2, '0')}
+                </Txt>
+              </View>
+            </Breathe>
           ) : (
             <View key={place.id} style={[styles.stamp, styles.stampPending]}>
               <Txt variant="label" color={colors.textMuted} style={styles.number}>
@@ -68,6 +78,7 @@ const useStyles = makeStyles((colors) => ({
   stamps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s + 2 },
   stamp: { width: STAMP, height: STAMP, alignItems: 'center', justifyContent: 'center' },
   stampDone: { backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border },
+  stampNext: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.primary },
   stampPending: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.textMuted },
   number: { fontFamily: fonts.display },
 }));

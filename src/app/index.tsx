@@ -1,11 +1,11 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { Animated, Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
 import MediaImage from '@/components/MediaImage';
-import { Appear, Stamp } from '@/components/motion';
+import { Appear, Stamp, usePressSpring, Wobble, Words } from '@/components/motion';
 import PlaceListItem from '@/components/PlaceListItem';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
@@ -60,30 +60,26 @@ export default function HomeScreen() {
         </Txt>
         <View style={styles.topRight}>
           <Txt variant="overline">N.º 01</Txt>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Ajustes"
-            onPress={() => router.push('/ajustes')}
-            hitSlop={8}
-            style={({ pressed }) => [styles.themeButton, pressed && styles.themeButtonPressed]}
-          >
-            <Ionicons name="settings-sharp" size={18} color={colors.text} />
-          </Pressable>
+          <SettingsButton />
         </View>
       </View>
 
-      <Txt variant="display" style={styles.headline}>
-        Camina, escucha, descubre.
-      </Txt>
+      {/* El titular entra palabra por palabra. */}
+      <View style={styles.headline} accessible accessibilityRole="header" accessibilityLabel="Camina, escucha, descubre.">
+        <Words text="Camina, escucha, descubre." delay={80} render={(word) => <Txt variant="display">{word}</Txt>} />
+      </View>
 
       <Appear delay={100}>
-        <MediaImage uri={route.media.cover} style={styles.cover} label={route.name} />
+        <MediaImage uri={route.media.cover} style={styles.cover} label={route.name} drift />
         <Stamp delay={450} rotate="-6deg" style={styles.sticker}>
-          <View style={styles.stickerInk}>
-            <Txt variant="label" color={colors.onAccent}>
-              Recorrido 01
-            </Txt>
-          </View>
+          {/* Ya estampado, el sticker se mece un poco. */}
+          <Wobble delay={1200} from="0deg" to="4deg">
+            <View style={styles.stickerInk}>
+              <Txt variant="label" color={colors.onAccent}>
+                Recorrido 01
+              </Txt>
+            </View>
+          </Wobble>
         </Stamp>
       </Appear>
 
@@ -117,6 +113,29 @@ export default function HomeScreen() {
   );
 }
 
+// Engranaje de Ajustes: al tocarlo da media vuelta.
+function SettingsButton() {
+  const styles = useStyles();
+  const { colors } = useTheme();
+  const press = usePressSpring(0.88);
+  const rotate = press.scale.interpolate({ inputRange: [0.88, 1], outputRange: ['90deg', '0deg'] });
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Ajustes"
+      onPress={() => router.push('/ajustes')}
+      onPressIn={press.in}
+      onPressOut={press.out}
+      hitSlop={8}
+      style={({ pressed }) => [styles.themeButton, pressed && styles.themeButtonPressed]}
+    >
+      <Animated.View style={{ transform: [{ scale: press.scale }, { rotate }] }}>
+        <Ionicons name="settings-sharp" size={18} color={colors.text} />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: space.m + 6, gap: space.m },
@@ -132,7 +151,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
   },
   themeButtonPressed: { backgroundColor: colors.accent },
-  headline: { marginTop: space.m, marginBottom: space.s },
+  headline: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.m, marginBottom: space.s },
   cover: { height: 220 },
   sticker: { position: 'absolute', left: space.m - 4, bottom: space.m + 4 },
   stickerInk: {

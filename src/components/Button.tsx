@@ -2,7 +2,7 @@ import { ComponentProps, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useReducedMotion } from '@/components/motion';
+import { Nudge, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { line, makeStyles, space, useTheme } from '@/theme';
 
@@ -57,7 +57,8 @@ export default function Button({ label, onPress, variant = 'primary', icon, icon
         <Txt variant="label" color={color} style={styles.label}>
           {label}
         </Txt>
-        {iconRight ? iconEl : null}
+        {/* La flecha de "seguir" empuja hacia adelante. */}
+        {iconRight && iconEl ? <Nudge delay={600}>{iconEl}</Nudge> : null}
       </Animated.View>
     </Pressable>
   );

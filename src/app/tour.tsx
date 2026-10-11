@@ -9,6 +9,7 @@ import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import DiscoveryCard from '@/components/DiscoveryCard';
 import MediaImage from '@/components/MediaImage';
+import { Appear, Breathe } from '@/components/motion';
 import LocationStatus from '@/components/LocationStatus';
 import Passport from '@/components/Passport';
 import PlaceListItem from '@/components/PlaceListItem';
@@ -98,6 +99,7 @@ export default function TourScreen() {
         <LocationStatus location={location} onLongPress={toggleSimulation} />
         {selected ? (
           <SelectedPlace
+            key={selected.id}
             place={selected}
             position={selectedIndex + 1}
             discovered={selected.id in discovered}
@@ -119,9 +121,13 @@ export default function TourScreen() {
               </Txt>
             </View>
             {nextDistance != null ? (
-              <View style={styles.nextDistance}>
-                <Txt variant="label" color={colors.onAccent}>{formatDistance(nextDistance)}</Txt>
-              </View>
+              <Breathe>
+                <View style={styles.nextDistance}>
+                  <Txt variant="label" color={colors.onAccent}>
+                    {formatDistance(nextDistance)}
+                  </Txt>
+                </View>
+              </Breathe>
             ) : null}
           </View>
         ) : null}
@@ -176,7 +182,8 @@ function SelectedPlace({
   const { colors } = useTheme();
   const styles = useStyles();
   return (
-    <View style={styles.floating}>
+    // Sube desde abajo cada vez que se toca otro pin (key = id de la parada).
+    <Appear style={styles.floating}>
       <View style={styles.floatingRow}>
         <Pressable
           accessibilityRole="button"
@@ -201,7 +208,7 @@ function SelectedPlace({
         </Pressable>
       </View>
       {discovered ? null : <Button label="Ya estoy aquí" variant="light" onPress={onImHere} />}
-    </View>
+    </Appear>
   );
 }
 

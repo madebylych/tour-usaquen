@@ -1,7 +1,7 @@
-import { Pressable, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Appear } from '@/components/motion';
+import { Appear, Stamp, usePressSpring } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { Place } from '@/types';
 import { fonts, line, makeStyles, space, useTheme } from '@/theme';
@@ -21,51 +21,60 @@ type Props = {
 export default function PlaceListItem({ place, position, onPress, distance, discovered = false }: Props) {
   const { colors } = useTheme();
   const styles = useStyles();
+  const press = usePressSpring(0.97);
   return (
     <Appear index={position - 1} from="right">
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Parada ${position}: ${place.name}${discovered ? ', descubierta' : ''}`}
         onPress={onPress}
-        style={({ pressed }) => [styles.ticket, pressed && styles.pressed]}
+        onPressIn={press.in}
+        onPressOut={press.out}
       >
-        <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
-          <Txt variant="heading" color={discovered ? colors.onAccent : colors.primary} style={styles.number}>
-            {String(position).padStart(2, '0')}
-          </Txt>
-        </View>
-        {/* Línea de corte del boleto. Se dibuja con guiones porque el borde
-            punteado de un solo lado falla en Android. */}
-        <View style={styles.cut}>
-          {DASHES.map((i) => (
-            <View key={i} style={styles.dash} />
-          ))}
-        </View>
-        <View style={styles.body}>
-          <View style={styles.texts}>
-            <Txt variant="label" numberOfLines={1}>
-              {place.name}
-            </Txt>
-            {discovered ? (
-              <View style={styles.discovered}>
-                <Ionicons name="checkmark" size={14} color={colors.primary} />
-                <Txt variant="caption" color={colors.primary}>
-                  Descubierta
+        {({ pressed }) => (
+          <Animated.View style={[styles.ticket, pressed && styles.pressed, { transform: [{ scale: press.scale }] }]}>
+            <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
+              {/* Al descubrir la parada, el número se vuelve a estampar. */}
+              <Stamp trigger={discovered} delay={discovered ? 100 : 0} rotate={discovered ? '-8deg' : '0deg'}>
+                <Txt variant="heading" color={discovered ? colors.onAccent : colors.primary} style={styles.number}>
+                  {String(position).padStart(2, '0')}
                 </Txt>
-              </View>
-            ) : (
-              <Txt variant="caption" numberOfLines={1}>
-                {place.category}
+              </Stamp>
+            </View>
+            {/* Línea de corte del boleto. Se dibuja con guiones porque el borde
+                punteado de un solo lado falla en Android. */}
+            <View style={styles.cut}>
+              {DASHES.map((i) => (
+                <View key={i} style={styles.dash} />
+              ))}
+            </View>
+            <View style={styles.body}>
+              <View style={styles.texts}>
+                <Txt variant="label" numberOfLines={1}>
+                  {place.name}
+                </Txt>
+                {discovered ? (
+                  <View style={styles.discovered}>
+                    <Ionicons name="checkmark" size={14} color={colors.primary} />
+                    <Txt variant="caption" color={colors.primary}>
+                      Descubierta
+                    </Txt>
+                  </View>
+                ) : (
+                  <Txt variant="caption" numberOfLines={1}>
+                    {place.category}
+                  </Txt>
+              )}
+            </View>
+            {distance != null ? (
+              <Txt variant="label" color={colors.primary}>
+                {formatDistance(distance)}
               </Txt>
-            )}
+            ) : null}
+            <Ionicons name="arrow-forward" size={18} color={colors.text} />
           </View>
-          {distance != null ? (
-            <Txt variant="label" color={colors.primary}>
-              {formatDistance(distance)}
-            </Txt>
-          ) : null}
-          <Ionicons name="arrow-forward" size={18} color={colors.text} />
-        </View>
+        </Animated.View>
+        )}
       </Pressable>
     </Appear>
   );

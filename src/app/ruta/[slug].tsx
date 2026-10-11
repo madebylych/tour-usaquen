@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import BackButton from '@/components/BackButton';
@@ -6,6 +6,7 @@ import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import DownloadButton from '@/components/DownloadButton';
 import MediaImage from '@/components/MediaImage';
+import { useParallax } from '@/components/motion';
 import PlaceListItem from '@/components/PlaceListItem';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
@@ -20,6 +21,8 @@ import { formatDistance, formatDuration } from '@/utils/format';
 export default function RouteScreen() {
   const { colors } = useTheme();
   const styles = useStyles();
+  // La foto de arriba se queda un poco atrás al bajar (parallax).
+  const parallax = useParallax(290);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const state = useData(() => getRoute(slug), slug);
   const download = useRouteDownload(slug);
@@ -46,8 +49,16 @@ export default function RouteScreen() {
   return (
     <View style={styles.screen}>
       <BackButton />
-      <ScrollView contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE }}>
-        <MediaImage uri={route.media.cover} style={styles.hero} label={route.name} />
+      <Animated.ScrollView
+        contentContainerStyle={{ paddingBottom: BOTTOM_BAR_SPACE }}
+        onScroll={parallax.onScroll}
+        scrollEventThrottle={16}
+      >
+        <View style={styles.hero}>
+          <Animated.View style={[styles.heroImage, parallax.heroStyle]}>
+            <MediaImage uri={route.media.cover} style={styles.heroImage} label={route.name} drift />
+          </Animated.View>
+        </View>
 
         <View style={styles.content}>
           <View style={styles.titleBlock}>
@@ -74,7 +85,7 @@ export default function RouteScreen() {
             ))}
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <BottomBar>
         <DownloadButton status={download.status} onDownload={download.start} onDelete={download.remove} />
@@ -93,7 +104,8 @@ export default function RouteScreen() {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
-  hero: { height: 290, borderBottomWidth: line, borderColor: colors.border },
+  hero: { height: 290, overflow: 'hidden', borderBottomWidth: line, borderColor: colors.border },
+  heroImage: { height: 290 },
   content: { padding: space.m + 6, gap: space.m },
   titleBlock: { gap: space.s },
   sectionTitle: { marginTop: space.s },

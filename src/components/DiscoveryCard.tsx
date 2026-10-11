@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
+import InkConfetti from '@/components/InkConfetti';
 import { Appear, Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
@@ -71,6 +72,8 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
           </Appear>
         </View>
       ) : null}
+      {/* Celebración: recortes de tinta que caen al descubrir la parada. */}
+      {place ? <InkConfetti key={place.id} /> : null}
     </Modal>
   );
 }

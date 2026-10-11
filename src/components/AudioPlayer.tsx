@@ -1,15 +1,25 @@
-import { useCallback, useEffect } from 'react';
-import { Pressable, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Animated, Easing, Pressable, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 
 import { setPlayerVolume } from '@/audio/volume';
+import { useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { useSettings } from '@/data/settings';
 import { line, makeStyles, space, useTheme } from '@/theme';
 
 // Alturas de las barras de la onda (decorativa, igual para todos los audios).
+// Cuánto crece o se encoge cada barra con el pulso (se repite cada 5).
+const BEAT = [
+  [1, 0.45],
+  [0.6, 1.15],
+  [1, 0.7],
+  [0.5, 1],
+  [0.85, 1.2],
+];
+
 const BARS = [10, 18, 12, 24, 16, 28, 14, 22, 30, 18, 12, 26, 20, 14, 24, 18, 28, 12, 20, 16, 24, 10, 18, 14, 22, 12];
 
 type Props = {
@@ -25,6 +35,7 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
   const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
   const available = uri !== null;
+  const beat = useBeat(status.playing);
 
   // Volumen elegido en Ajustes; cambia en vivo si se ajusta mientras suena.
   const { placeVolume } = useSettings();
@@ -91,9 +102,14 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
         // Onda: las barras ya escuchadas en azul, las que faltan en tinta.
         <View style={styles.wave} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           {BARS.map((h, i) => (
-            <View
+            <Animated.View
               key={i}
-              style={[styles.bar, { height: h, backgroundColor: i / BARS.length < progress ? colors.primary : colors.text }]}
+              style={[
+                styles.bar,
+                { height: h, backgroundColor: i / BARS.length < progress ? colors.primary : colors.text },
+                // Mientras suena, las barras pulsan; unas suben cuando otras bajan.
+                { transform: [{ scaleY: beat.interpolate({ inputRange: [0, 1], outputRange: BEAT[i % BEAT.length] }) }] },
+              ]}
             />
           ))}
         </View>
@@ -130,3 +146,22 @@ const useStyles = makeStyles((colors) => ({
   wave: { flexDirection: 'row', alignItems: 'center', gap: 3, height: 32 },
   bar: { width: 5 },
 }));
+
+// Pulso de la onda: va y viene solo mientras el audio suena; en pausa vuelve
+// a su altura. Quieto con "Reducir movimiento".
+function useBeat(playing: boolean) {
+  const reduced = useReducedMotion();
+  const [beat] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (!playing || reduced) {
+      Animated.timing(beat, { toValue: 0, duration: 200, useNativeDriver: true }).start();
+      return;
+    }
+    const step = (toValue: number) =>
+      Animated.timing(beat, { toValue, duration: 260, easing: Easing.inOut(Easing.quad), useNativeDriver: true });
+    const loop = Animated.loop(Animated.sequence([step(1), step(0)]));
+    loop.start();
+    return () => loop.stop();
+  }, [playing, reduced, beat]);
+  return beat;
+}

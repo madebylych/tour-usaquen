@@ -1,5 +1,5 @@
-import { ReactNode, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { ReactNode, useEffect, useState } from 'react';
+import { Alert, Animated, Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import * as Application from 'expo-application';
 import { useAudioPlayer } from 'expo-audio';
@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { setPlayerVolume } from '@/audio/volume';
 import BackButton from '@/components/BackButton';
 import Button from '@/components/Button';
-import { Appear } from '@/components/motion';
+import { Appear, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { signInWithGoogle, signOut, useAuth } from '@/data/auth';
 import { deleteAllDownloads, downloadsSize } from '@/data/cleanup';
@@ -221,6 +221,13 @@ function Volume({ label, value, onChange }: { label: string; value: number; onCh
 
 function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (on: boolean) => void }) {
   const styles = useStyles();
+  const reduced = useReducedMotion();
+  const [x] = useState(() => new Animated.Value(value ? 1 : 0));
+  // La perilla se desliza (con resorte) en vez de saltar.
+  useEffect(() => {
+    if (reduced) x.setValue(value ? 1 : 0);
+    else Animated.spring(x, { toValue: value ? 1 : 0, friction: 6, tension: 180, useNativeDriver: true }).start();
+  }, [value, reduced, x]);
   return (
     <Pressable
       accessibilityRole="switch"
@@ -232,7 +239,13 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         {label}
       </Txt>
       <View style={[styles.track, value && styles.trackOn]}>
-        <View style={[styles.knob, value && styles.knobOn]} />
+        <Animated.View
+          style={[
+            styles.knob,
+            value && styles.knobOn,
+            { transform: [{ translateX: x.interpolate({ inputRange: [0, 1], outputRange: [0, 26] }) }] },
+          ]}
+        />
       </View>
     </Pressable>
   );
@@ -282,6 +295,6 @@ const useStyles = makeStyles((colors) => ({
   },
   trackOn: { backgroundColor: colors.primary },
   knob: { width: 21, height: 21, backgroundColor: colors.border },
-  knobOn: { marginLeft: 26, backgroundColor: colors.accent },
+  knobOn: { backgroundColor: colors.accent },
   version: { textAlign: 'center', marginTop: space.s },
 }));
