@@ -42,3 +42,6 @@ yarn-error.*
 
 # contenido de prueba generado (scripts/generar_contenido_prueba.py)
 content/
+
+# Python
+__pycache__/
