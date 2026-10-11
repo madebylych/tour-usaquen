@@ -168,7 +168,7 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: line,
     borderColor: colors.border,
   },
-  routeInfo: { gap: space.xs, marginTop: space.s },
+  routeInfo: { gap: space.xs, marginTop: space.l },
   sectionTitle: { marginTop: space.m },
   list: { gap: space.m - 4 },
   footer: { textAlign: 'center', marginTop: space.m },
