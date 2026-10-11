@@ -10,9 +10,9 @@ type Variant = 'display' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 
 type Props = TextProps & {
   variant?: Variant;
   color?: string;
-  // Subtítulo en amarillo riso. Las etiquetas (overline) lo son siempre; los
-  // títulos de sección lo piden con `highlight`. Un `color` explícito manda
-  // (por ejemplo sobre fondo azul).
+  // Subtítulo (en azul). Las etiquetas (overline) ya son azules; los títulos
+  // de sección lo piden con `highlight`. Un `color` explícito manda (por
+  // ejemplo sobre fondo amarillo).
   highlight?: boolean;
 };
 
@@ -20,7 +20,7 @@ export default function Txt({ variant = 'body', color, style, highlight, ...rest
   const styles = useStyles();
   const { colors } = useTheme();
   const subtitle = highlight ?? variant === 'overline';
-  const tint = color ?? (subtitle ? colors.accent : undefined);
+  const tint = color ?? (subtitle ? colors.primary : undefined);
   return <Text {...rest} style={[styles[variant], tint ? { color: tint } : null, style]} />;
 }
 

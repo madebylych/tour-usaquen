@@ -84,10 +84,10 @@ export default function PlaceScreen() {
 
           {place.did_you_know ? (
             <View style={styles.fact}>
-              <Txt variant="overline" color={colors.accentOnPrimary}>
+              <Txt variant="overline" color={colors.onAccent}>
                 ¿SABÍAS QUE…?
               </Txt>
-              <Txt variant="label" color={colors.onPrimary} style={styles.factText}>
+              <Txt variant="label" color={colors.onAccent} style={styles.factText}>
                 {place.did_you_know}
               </Txt>
             </View>
@@ -151,7 +151,7 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: line,
     borderColor: colors.border,
   },
-  fact: { padding: space.m + 2, gap: space.s, backgroundColor: colors.primary },
+  fact: { padding: space.m + 2, gap: space.s, backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border },
   factText: { fontSize: 16, lineHeight: 23 },
   credits: { marginTop: space.s },
   discoveredBadge: {

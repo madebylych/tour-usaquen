@@ -39,18 +39,18 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
         <View key={place.id} style={[styles.sheet, { paddingBottom: insets.bottom + space.l }]}>
           <Stamp delay={250} rotate="8deg" style={styles.iconSpace}>
             <View style={styles.icon}>
-              <Ionicons name={categoryIcon(place.category)} size={34} color={colors.onAccent} />
+              <Ionicons name={categoryIcon(place.category)} size={34} color={colors.text} />
             </View>
           </Stamp>
           <Appear delay={420} style={styles.texts}>
-            <Txt variant="overline" color={colors.accentOnPrimary} style={styles.center}>
+            <Txt variant="overline" color={colors.onAccent} style={styles.center}>
               PARADA {position} DESCUBIERTA
             </Txt>
-            <Txt variant="title" color={colors.onPrimary} style={styles.center}>
+            <Txt variant="title" color={colors.onAccent} style={styles.center}>
               ¡Descubriste {place.name}!
             </Txt>
             {place.observation_prompt ? (
-              <Txt variant="body" color={colors.onPrimary} style={[styles.center, styles.soft]}>
+              <Txt variant="body" color={colors.onAccent} style={[styles.center, styles.soft]}>
                 {place.observation_prompt}
               </Txt>
             ) : null}
@@ -58,14 +58,13 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
           <Appear delay={560} style={styles.actions}>
             <Button
               label="Ver parada"
-              variant="light"
               onPress={() => {
                 progress.dismissAnnouncement();
                 onOpen(place.id);
               }}
             />
             <Pressable onPress={progress.dismissAnnouncement} style={styles.secondary} accessibilityRole="button">
-              <Txt variant="label" color={colors.onPrimary}>
+              <Txt variant="label" color={colors.onAccent}>
                 Seguir explorando
               </Txt>
             </Pressable>
@@ -79,7 +78,7 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
 const useStyles = makeStyles((colors) => ({
   backdrop: { flex: 1, backgroundColor: 'rgba(21, 21, 26, 0.5)' },
   sheet: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
     borderTopWidth: line,
     borderColor: colors.border,
     paddingHorizontal: space.l,
@@ -90,7 +89,7 @@ const useStyles = makeStyles((colors) => ({
   icon: {
     width: 86,
     height: 86,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.surface,
     borderWidth: line + 0.5,
     borderColor: colors.border,
     alignItems: 'center',

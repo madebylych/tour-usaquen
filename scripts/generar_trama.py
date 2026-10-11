@@ -4,10 +4,6 @@
                                      tamaño variable (cuando no hay foto)
     assets/images/trama_oscuro.png   lo mismo para el modo oscuro: puntos
                                      azul claro sobre azul noche
-    assets/images/trama_overlay.png  trama transparente de 2048x1024 que va
-                                     encima de las fotos reales (ya repetida:
-                                     resizeMode "repeat" no llenaba la caja en
-                                     la web)
 
 Uso:
     py scripts/generar_trama.py
@@ -46,30 +42,10 @@ def trama(width: int, height: int, step: int, ink=BLUE, paper=BLUE_SOFT) -> Imag
     return img.resize((width, height), Image.LANCZOS)
 
 
-def overlay(step: int) -> Image.Image:
-    s = step * SCALE
-    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
-    r = s * 0.27  # puntos visibles encima de la foto sin taparla
-    c = s / 2
-    ImageDraw.Draw(img).ellipse([c - r, c - r, c + r, c + r], fill=BLUE + (255,))
-    return img.resize((step, step), Image.LANCZOS)
-
-
-def overlay_sheet(step: int, width: int, height: int) -> Image.Image:
-    """El módulo de un punto repetido en una hoja grande."""
-    tile = overlay(step)
-    sheet = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    for y in range(0, height, step):
-        for x in range(0, width, step):
-            sheet.paste(tile, (x, y))
-    return sheet
-
-
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     trama(780, 600, 26).save(OUT / "trama.png", optimize=True)
     trama(780, 600, 26, BLUE_DARK_MODE, BLUE_SOFT_DARK_MODE).save(OUT / "trama_oscuro.png", optimize=True)
-    overlay_sheet(16, 2048, 1024).save(OUT / "trama_overlay.png", optimize=True)
     print(f"Tramas generadas en {OUT}")
 
 
