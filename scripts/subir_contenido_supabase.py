@@ -10,7 +10,7 @@ La clave secreta salta todas las reglas de acceso: solo se usa en este
 computador y el script nunca la imprime.
 
 Uso:
-    python scripts/generar_contenido_prueba.py     (o el contenido real, mismo formato)
+    py scripts/generar_contenido.py
     python scripts/subir_contenido_supabase.py
 """
 
@@ -107,7 +107,7 @@ def main() -> None:
     if not base or not key:
         sys.exit("Faltan EXPO_PUBLIC_SUPABASE_URL o SUPABASE_SECRET_KEY en .env.local")
     if not (CONTENT / "routes").exists():
-        sys.exit("No hay contenido en content/. Ejecuta primero scripts/generar_contenido_prueba.py")
+        sys.exit("No hay contenido en content/. Ejecuta primero scripts/generar_contenido.py")
 
     print(f"Subiendo a {base}")
     count = upload_media(base, key)

@@ -47,13 +47,13 @@ SUPABASE_SECRET_KEY=sb_secret_...                          # SOLO para el script
 
 Para los APK, las dos variables públicas van en `eas.json`. La clave secreta nunca va en la app ni en git.
 
-Sin esas variables, la app usa los datos de prueba incluidos (sin fotos ni audios, sin descarga).
+Sin esas variables, la app usa la ruta incluida en `src/data/local/ruta_usaquen.json` (sin fotos ni audios, sin descarga).
 
-Cargar contenido de prueba:
+El contenido de la ruta (textos, coordenadas, fuentes) se edita en `src/data/local/ruta_usaquen.json`. Para subirlo:
 
 ```sh
-python scripts/generar_contenido_prueba.py     # crea content/ (no se sube a git)
-python scripts/subir_contenido_supabase.py     # sube archivos y filas; se puede repetir
+py scripts/generar_contenido.py              # crea content/ desde el JSON (no se sube a git)
+py scripts/subir_contenido_supabase.py       # sube archivos y filas; se puede repetir
 ```
 
 Para que la app ofrezca "Actualizar" a quien ya descargó una ruta, subir el número `version` de la ruta.
