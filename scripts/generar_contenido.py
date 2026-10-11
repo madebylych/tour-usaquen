@@ -8,9 +8,9 @@ Crea:
     content/routes/usaquen-centro.json     ruta con sus paradas
 
 Borra content/ antes de generarlo para no volver a subir archivos viejos.
-Por ahora las paradas no tienen fotos ni audios (image_path y audio_path en
-null). Cuando existan, van en content/media/ con la ruta que diga cada parada
-(por ejemplo content/media/images/places/plaza-usaquen.jpg).
+Los archivos (fotos, audios) viven en media/ con la misma ruta que dice cada
+parada (por ejemplo media/images/places/plaza-usaquen.jpg) y se copian a
+content/media/. Solo se copian los que el JSON usa.
 
 Uso:
     py scripts/generar_contenido.py
@@ -24,6 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "src" / "data" / "local" / "ruta_usaquen.json"
 CONTENT = ROOT / "content"
+MEDIA = ROOT / "media"
 
 
 def main() -> None:
@@ -37,6 +38,15 @@ def main() -> None:
     (CONTENT / "routes" / f"{route['slug']}.json").write_text(
         json.dumps({**route, "places": places}, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    used = [route.get("cover_image_path"), route.get("map_image_path")]
+    used += [p.get(k) for p in places for k in ("image_path", "audio_path")]
+    for path in filter(None, used):
+        source = MEDIA / path
+        if not source.exists():
+            raise SystemExit(f"Falta el archivo {source}")
+        target = CONTENT / "media" / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
     print(f"Ruta {route['slug']} (versión {route['version']}, {len(places)} paradas) generada en {CONTENT}")
 
 
