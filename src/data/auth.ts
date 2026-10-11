@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import type { Session } from '@supabase/supabase-js';
@@ -79,7 +80,10 @@ function tokensFrom(url: string) {
 // Devuelve un mensaje de error para mostrar, o null si salió bien o se canceló.
 export async function signInWithGoogle(): Promise<string | null> {
   if (!supabase) return 'Esta versión de la app no tiene cuentas configuradas.';
-  const redirectTo = Linking.createURL('auth');
+  // En la web el sitio puede vivir en una subcarpeta (GitHub Pages:
+  // /tour-usaquen) y createURL no la incluye; en el celular es tourusaquen://auth.
+  const redirectTo =
+    Platform.OS === 'web' ? Linking.createURL(`${process.env.EXPO_BASE_URL ?? ''}/auth`) : Linking.createURL('auth');
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo, skipBrowserRedirect: true, queryParams: { prompt: 'select_account' } },

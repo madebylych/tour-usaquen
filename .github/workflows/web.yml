@@ -1,0 +1,56 @@
+# Versión web en GitHub Pages: cada push a main la vuelve a construir y
+# publicar en https://madebylych.github.io/tour-usaquen/
+#
+# La clave de Supabase es la publicable (hecha para ir en la app, solo lee
+# lo publicado; ver supabase/schema.sql). La clave secreta nunca va aquí.
+
+name: Web (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: https://wlsgpwrundauzbfqtlqx.supabase.co
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_9BUtYrb53ywc1xHWvlh_YQ_uG5a8d7A
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # El sitio vive en /tour-usaquen (no en la raíz del dominio). Solo se
+      # configura aquí para no cambiar la dirección de la vista previa local.
+      - name: Ruta base del sitio
+        run: node -e "const f='app.json',c=require('./'+f);c.expo.experiments={...c.expo.experiments,baseUrl:'/tour-usaquen'};require('fs').writeFileSync(f,JSON.stringify(c,null,2))"
+      - run: npx expo export -p web
+      # GitHub Pages no conoce las rutas de la app (/lugar/..., /ajustes):
+      # su página 404 es la misma app, que abre la pantalla correcta.
+      - run: cp dist/index.html dist/404.html && touch dist/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
