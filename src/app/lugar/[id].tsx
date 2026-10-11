@@ -62,7 +62,7 @@ export default function PlaceScreen() {
             <Txt variant="overline">
               PARADA {String(position).padStart(2, '0')}, {place.category.toUpperCase()}
             </Txt>
-            <Txt variant="title" riso color={colors.primary}>
+            <Txt variant="title" color={colors.primary}>
               {place.name}
             </Txt>
           </View>
@@ -123,7 +123,9 @@ function Section({ title, text }: { title: string; text: string }) {
   const styles = useStyles();
   return (
     <View style={styles.card}>
-      <Txt variant="heading">{title}</Txt>
+      <Txt variant="heading" highlight>
+        {title}
+      </Txt>
       <Txt variant="body">{text}</Txt>
     </View>
   );

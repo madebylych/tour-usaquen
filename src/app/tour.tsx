@@ -125,7 +125,7 @@ export default function TourScreen() {
             ) : null}
           </View>
         ) : null}
-        <Txt variant="heading" style={styles.listTitle}>
+        <Txt variant="heading" highlight style={styles.listTitle}>
           Paradas
         </Txt>
         <View style={styles.list}>

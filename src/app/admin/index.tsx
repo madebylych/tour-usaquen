@@ -20,6 +20,7 @@ import { line, makeStyles, space, useTheme } from '@/theme';
 export default function AdminScreen() {
   const auth = useAuth();
   const styles = useStyles();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [routes, setRoutes] = useState<AdminRoute[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export default function AdminScreen() {
           { paddingTop: insets.top + space.xl + space.l, paddingBottom: insets.bottom + space.xl },
         ]}
       >
-        <Txt variant="title" riso>
+        <Txt variant="title" color={colors.primary}>
           Administración
         </Txt>
         <Txt variant="caption">
@@ -129,7 +130,7 @@ function RouteEditor({ route, onChanged }: { route: AdminRoute; onChanged: () =>
       </View>
       <Button label={saving ? 'Guardando…' : 'Guardar ruta'} icon="save-outline" onPress={saving ? () => {} : save} />
 
-      <Txt variant="heading" style={styles.stopsTitle}>
+      <Txt variant="heading" highlight style={styles.stopsTitle}>
         Paradas
       </Txt>
       {route.places.map((place, index) => (

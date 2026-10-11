@@ -1,7 +1,6 @@
-import { Animated, Text, TextProps, View } from 'react-native';
+import { Text, TextProps } from 'react-native';
 
-import { useRegistration } from '@/components/motion';
-import { fonts, makeStyles } from '@/theme';
+import { fonts, makeStyles, useTheme } from '@/theme';
 
 // Texto con las variantes tipográficas de la app. Usar siempre este
 // componente en vez de <Text> para que la fuente sea consistente.
@@ -11,38 +10,18 @@ type Variant = 'display' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 
 type Props = TextProps & {
   variant?: Variant;
   color?: string;
-  // Título "mal registrado": una copia en amarillo desplazada detrás, como
-  // una impresión de risografía con las tintas corridas.
-  riso?: boolean;
+  // Subtítulo en amarillo riso. Las etiquetas (overline) lo son siempre; los
+  // títulos de sección lo piden con `highlight`. Un `color` explícito manda
+  // (por ejemplo sobre fondo azul).
+  highlight?: boolean;
 };
 
-const RISO_OFFSET = 3;
-
-export default function Txt({ variant = 'body', color, style, riso = false, ...rest }: Props) {
+export default function Txt({ variant = 'body', color, style, highlight, ...rest }: Props) {
   const styles = useStyles();
-  const text = <Text {...rest} style={[styles[variant], color ? { color } : null, style]} />;
-  if (!riso) return text;
-  return (
-    <View>
-      <RisoEcho {...rest} style={[styles[variant], style, styles.risoEcho]} />
-      {text}
-    </View>
-  );
-}
-
-// Copia amarilla del título. Al aparecer, la tinta llega corrida y se
-// "registra" en su desplazamiento final.
-function RisoEcho(props: TextProps) {
-  const transform = useRegistration(RISO_OFFSET);
-  return (
-    <Animated.Text
-      {...props}
-      accessible={false}
-      aria-hidden
-      importantForAccessibility="no-hide-descendants"
-      style={[props.style, { transform }]}
-    />
-  );
+  const { colors } = useTheme();
+  const subtitle = highlight ?? variant === 'overline';
+  const tint = color ?? (subtitle ? colors.accent : undefined);
+  return <Text {...rest} style={[styles[variant], tint ? { color: tint } : null, style]} />;
 }
 
 const useStyles = makeStyles((colors) => ({
@@ -53,11 +32,4 @@ const useStyles = makeStyles((colors) => ({
   label: { fontFamily: fonts.bold, fontSize: 15, lineHeight: 20, color: colors.text },
   caption: { fontFamily: fonts.regular, fontSize: 13, lineHeight: 18, color: colors.textMuted },
   overline: { fontFamily: fonts.bold, fontSize: 12, lineHeight: 16, letterSpacing: 1.6, color: colors.primary },
-  risoEcho: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    color: colors.risoEcho,
-  },
 }));

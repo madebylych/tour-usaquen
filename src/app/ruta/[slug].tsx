@@ -52,14 +52,14 @@ export default function RouteScreen() {
         <View style={styles.content}>
           <View style={styles.titleBlock}>
             <Txt variant="overline">RECORRIDO 01</Txt>
-            <Txt variant="title" riso color={colors.primary}>
+            <Txt variant="title" color={colors.primary}>
               {route.name}
             </Txt>
             <Txt variant="caption">{meta.join(' / ')}</Txt>
           </View>
           {route.description ? <Txt variant="body">{route.description}</Txt> : null}
 
-          <Txt variant="heading" style={styles.sectionTitle}>
+          <Txt variant="heading" highlight style={styles.sectionTitle}>
             Boletos
           </Txt>
           <View style={styles.list}>

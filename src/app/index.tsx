@@ -72,7 +72,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <Txt variant="display" riso style={styles.headline}>
+      <Txt variant="display" style={styles.headline}>
         Camina, escucha, descubre.
       </Txt>
 
@@ -95,7 +95,7 @@ export default function HomeScreen() {
         <Button label="Ver recorrido" icon="arrow-forward" iconRight onPress={openRoute} />
       </Appear>
 
-      <Txt variant="heading" style={styles.sectionTitle}>
+      <Txt variant="heading" highlight style={styles.sectionTitle}>
         Boletos del recorrido
       </Txt>
       <View style={styles.list}>

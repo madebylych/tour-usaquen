@@ -69,7 +69,7 @@ export default function CompleteScreen() {
             <Ionicons name={complete ? 'sparkles' : 'footsteps'} size={56} color={colors.onAccent} />
           </View>
         </Stamp>
-        <Txt variant="display" riso style={styles.center}>
+        <Txt variant="display" style={styles.center}>
           {complete ? '¡Recorrido completado!' : '¡Buen recorrido!'}
         </Txt>
         <Txt variant="body" style={styles.center}>

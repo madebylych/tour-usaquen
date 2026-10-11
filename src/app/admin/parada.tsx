@@ -229,7 +229,7 @@ export default function AdminPlaceScreen() {
           { paddingTop: insets.top + space.xl + space.l, paddingBottom: insets.bottom + space.xl },
         ]}
       >
-        <Txt variant="title" riso>
+        <Txt variant="title" color={colors.primary}>
           {original ? 'Editar parada' : 'Nueva parada'}
         </Txt>
 

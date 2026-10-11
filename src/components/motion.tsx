@@ -1,7 +1,6 @@
 // Animaciones de la app, pensadas desde la risografía: las cosas se
 // "imprimen" (aparecen deslizándose como una hoja que sale de la máquina),
-// se "estampan" (sellos que caen con fuerza y quedan torcidos) y las tintas
-// se "registran" (la copia amarilla se acomoda en su sitio).
+// se "estampan" (sellos que caen con fuerza y quedan torcidos).
 // Todo usa el driver nativo y respeta "Reducir movimiento" del sistema.
 
 import { ReactNode, useEffect, useState } from 'react';
@@ -99,16 +98,4 @@ export function Stamp({ children, delay = 0, rotate = '0deg', trigger = null, st
       {children}
     </Animated.View>
   );
-}
-
-// Desplazamiento animado de la tinta amarilla de un título "mal registrado":
-// arranca corrida y se acomoda en `rest` con un rebote.
-export function useRegistration(rest: number) {
-  const v = useEntrance(120, null, (value) =>
-    Animated.spring(value, { toValue: 1, friction: 4, tension: 60, useNativeDriver: true })
-  );
-  return [
-    { translateX: v.interpolate({ inputRange: [0, 1], outputRange: [-14, rest] }) },
-    { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [12, rest] }) },
-  ];
 }

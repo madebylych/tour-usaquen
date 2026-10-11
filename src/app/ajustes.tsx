@@ -30,7 +30,7 @@ const THEMES: { mode: ThemeMode; label: string; icon: 'sunny' | 'moon' | 'phone-
 export default function SettingsScreen() {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const { mode, setMode } = useTheme();
+  const { colors, mode, setMode } = useTheme();
   const current = useSettings();
   const auth = useAuth();
   const downloaded = useDownloads();
@@ -73,7 +73,7 @@ export default function SettingsScreen() {
           { paddingTop: insets.top + space.xl + space.l, paddingBottom: insets.bottom + space.xl },
         ]}
       >
-        <Txt variant="title" riso>
+        <Txt variant="title" color={colors.primary}>
           Ajustes
         </Txt>
 

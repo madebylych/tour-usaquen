@@ -24,9 +24,8 @@ export const lightColors = {
 
   accent: '#FFD83D', // amarillo riso
   onAccent: '#15151A', // sobre el amarillo siempre va tinta
-  risoEcho: '#FFD83D', // copia desplazada de los títulos (Txt riso)
 
-  background: '#F4F1EA', // papel
+  background: '#FFFFFF', // papel blanco
   surface: '#FFFFFF',
   text: '#15151A', // tinta
   textMuted: '#625F58',
@@ -44,8 +43,6 @@ export const darkColors: Colors = {
 
   accent: '#FFD83D',
   onAccent: '#15151A',
-  // Mostaza oscura: el amarillo puro brillaba más que el título y lo tapaba.
-  risoEcho: '#8C6C0E',
 
   background: '#131318', // papel negro
   surface: '#1E1E26',
