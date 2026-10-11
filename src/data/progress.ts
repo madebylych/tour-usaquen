@@ -51,9 +51,30 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
+// Para la sincronización con la cuenta (progressSync.ts).
+export const subscribeProgress = subscribe;
+
 export const progress = {
   isDiscovered(placeId: string): boolean {
     return placeId in state.discovered;
+  },
+
+  discovered(): Record<string, number> {
+    return state.discovered;
+  },
+
+  // Suma paradas descubiertas en otro lado (la cuenta), sin anunciarlas.
+  // Si una parada está en los dos, se queda la fecha más antigua.
+  merge(remote: Record<string, number>) {
+    const discovered = { ...state.discovered };
+    let changed = false;
+    for (const [id, at] of Object.entries(remote)) {
+      if (!(id in discovered) || at < discovered[id]) {
+        discovered[id] = at;
+        changed = true;
+      }
+    }
+    if (changed) setState({ ...state, discovered });
   },
 
   // Marca paradas como descubiertas. Devuelve solo las que son nuevas.

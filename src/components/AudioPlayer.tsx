@@ -4,7 +4,9 @@ import { useFocusEffect } from 'expo-router';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 
+import { setPlayerVolume } from '@/audio/volume';
 import Txt from '@/components/Txt';
+import { useSettings } from '@/data/settings';
 import { line, makeStyles, space, useTheme } from '@/theme';
 
 // Alturas de las barras de la onda (decorativa, igual para todos los audios).
@@ -23,6 +25,12 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
   const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
   const available = uri !== null;
+
+  // Volumen elegido en Ajustes; cambia en vivo si se ajusta mientras suena.
+  const { placeVolume } = useSettings();
+  useEffect(() => {
+    setPlayerVolume(player, placeVolume);
+  }, [player, placeVolume]);
 
   // Al terminar, vuelve al inicio para poder escucharlo otra vez.
   useEffect(() => {

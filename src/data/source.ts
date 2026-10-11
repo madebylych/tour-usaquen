@@ -6,6 +6,7 @@
 //   3. Datos de prueba incluidos en la app (sin fotos ni audios).
 
 import { Place, PlaceWithMedia, Route, RouteWithPlaces } from '@/types';
+import { pruneDownloads } from './cleanup';
 import { readDownloadedRoute } from './download';
 import { downloads } from './downloads';
 import { places, routePlaces, routes } from './local/testData';
@@ -39,7 +40,10 @@ function testRoute(slug: string): RemoteRoute | null {
 export async function listRoutes(): Promise<Route[]> {
   if (isRemoteConfigured()) {
     try {
-      return (await fetchRoutes()).filter((r) => r.published);
+      const published = (await fetchRoutes()).filter((r) => r.published);
+      // Lo que el servidor ya no publica se borra del celular.
+      pruneDownloads(published.map((r) => r.slug));
+      return published;
     } catch {
       // Sin conexión: se muestran las rutas descargadas que haya.
       return downloads

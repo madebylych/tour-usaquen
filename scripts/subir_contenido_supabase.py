@@ -1,6 +1,7 @@
 """Sube el contenido de content/ a Supabase: archivos al bucket "media" y
 rutas/paradas a las tablas. Se puede ejecutar varias veces: actualiza lo que
-ya existe (por slug) en vez de duplicarlo.
+ya existe (por slug) en vez de duplicarlo. Al final borra del bucket los
+archivos que ya no usa ninguna ruta ni parada.
 
 Requisitos en .env.local (NO se sube a git):
     EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
@@ -100,6 +101,36 @@ def upload_route(base: str, key: str, path: Path) -> None:
     print(f"  ruta     {route['slug']} (versión {route['version']}, {len(links)} paradas)")
 
 
+def list_bucket(base: str, key: str, prefix: str = "") -> list[str]:
+    """Todos los archivos del bucket (recorre las carpetas)."""
+    url = f"{base}/storage/v1/object/list/{BUCKET}"
+    body = json.dumps({"prefix": prefix, "limit": 1000, "offset": 0}).encode("utf-8")
+    items = request("POST", url, key, body, {"Content-Type": "application/json"}) or []
+    files = []
+    for item in items:
+        path = f"{prefix}{item['name']}"
+        if item.get("id") is None:  # sin id es una carpeta
+            files += list_bucket(base, key, path + "/")
+        else:
+            files.append(path)
+    return files
+
+
+def remove_orphans(base: str, key: str) -> int:
+    """Borra del bucket los archivos que ninguna ruta ni parada usa (versiones
+    viejas de fotos, audios y mapas)."""
+    places = request("GET", f"{base}/rest/v1/places?select=image_path,audio_path", key) or []
+    routes = request("GET", f"{base}/rest/v1/routes?select=cover_image_path,map_image_path", key) or []
+    used = {v for row in places + routes for v in row.values() if v}
+    orphans = [p for p in list_bucket(base, key) if p not in used]
+    if orphans:
+        body = json.dumps({"prefixes": orphans}).encode("utf-8")
+        request("DELETE", f"{base}/storage/v1/object/{BUCKET}", key, body, {"Content-Type": "application/json"})
+        for path in orphans:
+            print(f"  borrado  {path}")
+    return len(orphans)
+
+
 def main() -> None:
     env = read_env()
     base = env.get("EXPO_PUBLIC_SUPABASE_URL", "").rstrip("/")
@@ -113,7 +144,8 @@ def main() -> None:
     count = upload_media(base, key)
     for path in sorted((CONTENT / "routes").glob("*.json")):
         upload_route(base, key, path)
-    print(f"Listo: {count} archivos y {len(list((CONTENT / 'routes').glob('*.json')))} ruta(s).")
+    removed = remove_orphans(base, key)
+    print(f"Listo: {count} archivos y {len(list((CONTENT / 'routes').glob('*.json')))} ruta(s); {removed} archivo(s) sin uso borrado(s).")
 
 
 if __name__ == "__main__":

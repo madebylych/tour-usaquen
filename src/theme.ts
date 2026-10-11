@@ -89,17 +89,18 @@ export const shadows = (colors: Colors) => ({
 // --- Tema activo -----------------------------------------------------------
 
 // 'system' sigue el modo del celular; 'light' y 'dark' los fija la persona
-// con el botón del inicio (se recuerda entre sesiones).
+// en Ajustes (se recuerda entre sesiones).
 export type ThemeMode = 'system' | 'light' | 'dark';
 const STORAGE_KEY = 'theme.v1';
 
 type Theme = {
   colors: Colors;
   dark: boolean;
+  mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
 };
 
-const ThemeContext = createContext<Theme>({ colors: lightColors, dark: false, setMode: () => {} });
+const ThemeContext = createContext<Theme>({ colors: lightColors, dark: false, mode: 'system', setMode: () => {} });
 
 function readMode(): ThemeMode {
   const saved = storage.get(STORAGE_KEY);
@@ -115,13 +116,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     () => ({
       colors: dark ? darkColors : lightColors,
       dark,
+      mode,
       setMode: (next) => {
         setModeState(next);
         if (next === 'system') storage.remove(STORAGE_KEY);
         else storage.set(STORAGE_KEY, next);
       },
     }),
-    [dark]
+    [dark, mode]
   );
   return createElement(ThemeContext.Provider, { value }, children);
 }

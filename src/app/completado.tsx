@@ -11,6 +11,7 @@ import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { countDiscovered, progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
+import { forgetRemote } from '@/data/progressSync';
 import { useData } from '@/data/useData';
 import { line, makeStyles, space, useTheme } from '@/theme';
 
@@ -48,6 +49,7 @@ export default function CompleteScreen() {
           style: 'destructive',
           onPress: () => {
             progress.reset(ids);
+            forgetRemote(ids).catch(() => {});
             goHome();
           },
         },

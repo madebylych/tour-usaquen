@@ -22,7 +22,7 @@ async function loadFeaturedRoute() {
 }
 
 export default function HomeScreen() {
-  const { colors, dark, setMode } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const state = useData(loadFeaturedRoute, 'featured');
@@ -60,15 +60,14 @@ export default function HomeScreen() {
         </Txt>
         <View style={styles.topRight}>
           <Txt variant="overline">N.º 01</Txt>
-          {/* Papel claro o papel negro; queda guardado en el celular. */}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            onPress={() => setMode(dark ? 'light' : 'dark')}
+            accessibilityLabel="Ajustes"
+            onPress={() => router.push('/ajustes')}
             hitSlop={8}
             style={({ pressed }) => [styles.themeButton, pressed && styles.themeButtonPressed]}
           >
-            <Ionicons name={dark ? 'sunny' : 'moon'} size={18} color={colors.text} />
+            <Ionicons name="settings-sharp" size={18} color={colors.text} />
           </Pressable>
         </View>
       </View>

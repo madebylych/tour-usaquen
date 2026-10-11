@@ -10,6 +10,8 @@ import {
 } from '@expo-google-fonts/bricolage-grotesque';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
 
+import { runStartupCleanup } from '@/data/cleanup';
+import { startProgressSync } from '@/data/progressSync';
 import { fonts, ThemeProvider, useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -17,6 +19,11 @@ SplashScreen.preventAutoHideAsync();
 // Los audios del tour suenan aunque el iPhone esté en modo silencio:
 // el visitante los reproduce a propósito.
 setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+
+// Al abrir: borrar descargas a medias y caché de versiones anteriores, y
+// juntar el progreso con la cuenta si hay sesión.
+runStartupCleanup();
+startProgressSync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
