@@ -15,7 +15,7 @@ type Props = {
   discovered?: boolean;
 };
 
-// Parada como boleto: talón con el número (amarillo si ya se descubrió),
+// Parada como boleto: talón amarillo con el número (✓ si ya se descubrió),
 // línea punteada de corte y los datos de la parada. Los boletos salen uno
 // tras otro, como de una impresora.
 export default function PlaceListItem({ place, position, onPress, distance, discovered = false }: Props) {
@@ -29,10 +29,14 @@ export default function PlaceListItem({ place, position, onPress, distance, disc
         onPress={onPress}
         style={({ pressed }) => [styles.ticket, pressed && styles.pressed]}
       >
-        <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
-          <Txt variant="heading" color={discovered ? colors.onAccent : colors.primary} style={styles.number}>
-            {String(position).padStart(2, '0')}
-          </Txt>
+        <View style={styles.stub}>
+          {discovered ? (
+            <Ionicons name="checkmark" size={26} color={colors.onAccent} />
+          ) : (
+            <Txt variant="heading" color={colors.onAccent} style={styles.number}>
+              {String(position).padStart(2, '0')}
+            </Txt>
+          )}
         </View>
         {/* Línea de corte del boleto. Se dibuja con guiones porque el borde
             punteado de un solo lado falla en Android. */}
@@ -86,11 +90,10 @@ const useStyles = makeStyles((colors) => ({
     width: 56,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.accent,
   },
   cut: { width: line, justifyContent: 'space-between', paddingVertical: 3 },
   dash: { height: 4, backgroundColor: colors.border },
-  stubDone: { backgroundColor: colors.accent },
-  stubPending: { backgroundColor: colors.primarySoft },
   number: { fontFamily: fonts.display, fontSize: 20 },
   body: {
     flex: 1,
