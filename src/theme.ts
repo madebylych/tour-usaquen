@@ -51,6 +51,50 @@ export const darkColors: Colors = {
   border: '#F4F1EA',
 };
 
+// --- Color principal (Ajustes > Color) ---------------------------------------
+// El amarillo y la tinta son la identidad y no cambian; cambia el color
+// principal (títulos, botones, pines) y su versión suave. Cada par cumple
+// AA: en claro, texto blanco sobre el color y el color sobre blanco (≥5:1);
+// en oscuro, tinta sobre el color y el color sobre el papel negro (≥5.8:1).
+
+export type PaletteName = 'azul' | 'morado' | 'rosado' | 'verde' | 'naranja' | 'rojo';
+
+export const PALETTES: Record<PaletteName, { label: string; light: string; dark: string }> = {
+  azul: { label: 'Azul', light: '#1D5BD6', dark: '#5B8FF5' },
+  morado: { label: 'Morado', light: '#6D3FD1', dark: '#A98BFA' },
+  rosado: { label: 'Rosado', light: '#C2185B', dark: '#F48FB1' },
+  verde: { label: 'Verde', light: '#1B7A43', dark: '#5BD48A' },
+  naranja: { label: 'Naranja', light: '#C2410C', dark: '#FB923C' },
+  rojo: { label: 'Rojo', light: '#C62828', dark: '#F87171' },
+};
+
+// Mezcla dos colores (#rrggbb): t = 0 da `a`, t = 1 da `b`.
+function mix(a: string, b: string, t: number): string {
+  const ch = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  const out = [0, 1, 2].map((i) => Math.round(ch(a, i) + (ch(b, i) - ch(a, i)) * t));
+  return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+function withPalette(base: Colors, primary: string, dark: boolean): Colors {
+  return {
+    ...base,
+    primary,
+    // Suave: casi papel en claro; un tono oscuro del color en oscuro.
+    primarySoft: dark ? mix(base.background, primary, 0.22) : mix('#FFFFFF', primary, 0.18),
+  };
+}
+
+// Todas las combinaciones se arman una vez (makeStyles guarda estilos por paleta).
+const THEMES = Object.fromEntries(
+  (Object.keys(PALETTES) as PaletteName[]).map((name) => [
+    name,
+    {
+      light: withPalette(lightColors, PALETTES[name].light, false),
+      dark: withPalette(darkColors, PALETTES[name].dark, true),
+    },
+  ])
+) as Record<PaletteName, { light: Colors; dark: Colors }>;
+
 export const space = {
   xs: 4,
   s: 8,
@@ -95,9 +139,25 @@ type Theme = {
   dark: boolean;
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
+  palette: PaletteName;
+  setPalette: (palette: PaletteName) => void;
 };
 
-const ThemeContext = createContext<Theme>({ colors: lightColors, dark: false, mode: 'system', setMode: () => {} });
+const ThemeContext = createContext<Theme>({
+  colors: lightColors,
+  dark: false,
+  mode: 'system',
+  setMode: () => {},
+  palette: 'azul',
+  setPalette: () => {},
+});
+
+const PALETTE_KEY = 'palette.v1';
+
+function readPalette(): PaletteName {
+  const saved = storage.get(PALETTE_KEY);
+  return saved && saved in PALETTES ? (saved as PaletteName) : 'azul';
+}
 
 function readMode(): ThemeMode {
   const saved = storage.get(STORAGE_KEY);
@@ -107,20 +167,26 @@ function readMode(): ThemeMode {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const [mode, setModeState] = useState<ThemeMode>(readMode);
+  const [palette, setPaletteState] = useState<PaletteName>(readPalette);
   const dark = mode === 'system' ? system === 'dark' : mode === 'dark';
 
   const value = useMemo<Theme>(
     () => ({
-      colors: dark ? darkColors : lightColors,
+      colors: THEMES[palette][dark ? 'dark' : 'light'],
       dark,
       mode,
+      palette,
+      setPalette: (next) => {
+        setPaletteState(next);
+        storage.set(PALETTE_KEY, next);
+      },
       setMode: (next) => {
         setModeState(next);
         if (next === 'system') storage.remove(STORAGE_KEY);
         else storage.set(STORAGE_KEY, next);
       },
     }),
-    [dark, mode]
+    [dark, mode, palette]
   );
   return createElement(ThemeContext.Provider, { value }, children);
 }

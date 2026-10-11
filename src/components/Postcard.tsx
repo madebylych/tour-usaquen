@@ -56,7 +56,7 @@ export default function Postcard({ uri, label, caption, onPress, children }: Pro
           <View style={styles.photoBox}>
             <Animated.Image
               source={uri ? { uri } : require('../../assets/images/trama.png')}
-              style={[styles.photo, photo]}
+              style={[styles.photo, uri ? null : { tintColor: colors.primary }, photo]}
               resizeMode="cover"
             />
             {children}

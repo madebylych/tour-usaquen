@@ -4,7 +4,6 @@ import { useDrift } from '@/components/motion';
 import { makeStyles, useTheme } from '@/theme';
 
 const TRAMA = require('../../assets/images/trama.png');
-const TRAMA_OSCURO = require('../../assets/images/trama_oscuro.png');
 
 type Props = {
   uri?: string | null; // foto (archivo descargado o URL); si falta, se muestra la trama
@@ -14,27 +13,35 @@ type Props = {
 };
 
 // Foto de un lugar o ruta, tal cual. Sin foto se ve una trama de puntos de
-// risografía (generada con scripts/generar_trama.py), así el espacio nunca
-// se ve roto.
+// risografía (scripts/generar_trama.py) en el color principal elegido, así
+// el espacio nunca se ve roto.
 export default function MediaImage({ uri, style, label, drift = false }: Props) {
   const styles = useStyles();
-  const { dark } = useTheme();
-  const source = uri ? { uri } : dark ? TRAMA_OSCURO : TRAMA;
+  const { colors } = useTheme();
+  // Sin foto: trama de puntos pintada con el color principal elegido.
+  const source = uri ? { uri } : TRAMA;
+  const tint = uri ? undefined : colors.primary;
   return (
     <View style={[styles.box, style]} accessibilityRole="image" accessibilityLabel={label ?? 'Imagen'}>
       {drift ? (
-        <DriftImage source={source} />
+        <DriftImage source={source} tint={tint} />
       ) : (
-        <Animated.Image source={source} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <Animated.Image source={source} style={[StyleSheet.absoluteFill, tint ? { tintColor: tint } : null]} resizeMode="cover" />
       )}
     </View>
   );
 }
 
 // Aparte para que solo las portadas tengan el movimiento corriendo.
-function DriftImage({ source }: { source: ImageSourcePropType }) {
+function DriftImage({ source, tint }: { source: ImageSourcePropType; tint?: string }) {
   const scale = useDrift();
-  return <Animated.Image source={source} style={[StyleSheet.absoluteFill, { transform: [{ scale }] }]} resizeMode="cover" />;
+  return (
+    <Animated.Image
+      source={source}
+      style={[StyleSheet.absoluteFill, tint ? { tintColor: tint } : null, { transform: [{ scale }] }]}
+      resizeMode="cover"
+    />
+  );
 }
 
 const useStyles = makeStyles((colors) => ({

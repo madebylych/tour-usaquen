@@ -10,13 +10,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { setPlayerVolume } from '@/audio/volume';
 import BackButton from '@/components/BackButton';
 import Button from '@/components/Button';
-import { Appear, useHover, useReducedMotion } from '@/components/motion';
+import { Appear, Stamp, useHover, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { signInWithGoogle, signOut, useAuth } from '@/data/auth';
 import { deleteAllDownloads, downloadsSize } from '@/data/cleanup';
 import { useDownloads } from '@/data/downloads';
 import { settings, toVolume, useSettings, VOLUME_STEPS } from '@/data/settings';
-import { line, makeStyles, space, ThemeMode, useTheme } from '@/theme';
+import { line, makeStyles, PaletteName, PALETTES, space, ThemeMode, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 const DISCOVERY_SOUND = require('../../assets/sounds/ui/discovery.wav');
@@ -31,7 +31,7 @@ const THEMES: { mode: ThemeMode; label: string; icon: 'sunny' | 'moon' | 'phone-
 export default function SettingsScreen() {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const { colors, mode, setMode } = useTheme();
+  const { colors, mode, setMode, palette, setPalette } = useTheme();
   const current = useSettings();
   const auth = useAuth();
   const downloaded = useDownloads();
@@ -86,7 +86,15 @@ export default function SettingsScreen() {
           </View>
         </Section>
 
-        <Section index={1} title="Sonido">
+        <Section index={1} title="Color">
+          <View style={styles.swatches} accessibilityRole="radiogroup">
+            {(Object.keys(PALETTES) as PaletteName[]).map((name) => (
+              <Swatch key={name} name={name} selected={palette === name} onPress={() => setPalette(name)} />
+            ))}
+          </View>
+        </Section>
+
+        <Section index={2} title="Sonido">
           <Volume
             label="Audios de las paradas"
             value={current.placeVolume}
@@ -95,11 +103,11 @@ export default function SettingsScreen() {
           <Volume label="Sonidos de la app" value={current.uiVolume} onChange={setUiVolume} />
         </Section>
 
-        <Section index={2} title="Vibración">
+        <Section index={3} title="Vibración">
           <Toggle label="Vibrar al descubrir una parada" value={current.haptics} onChange={setHaptics} />
         </Section>
 
-        <Section index={3} title="Cuenta">
+        <Section index={4} title="Cuenta">
           {auth.status === 'signedIn' ? (
             <>
               <Txt variant="label">{auth.name ?? auth.email}</Txt>
@@ -127,7 +135,7 @@ export default function SettingsScreen() {
           )}
         </Section>
 
-        <Section index={4} title="Almacenamiento">
+        <Section index={5} title="Almacenamiento">
           <Txt variant="caption">
             {routesCount === 0
               ? 'No hay recorridos descargados.'
@@ -186,6 +194,42 @@ function Option({
           {label}
         </Txt>
       </Animated.View>
+    </Pressable>
+  );
+}
+
+// Muestra de color: cuadro con el tono (claro u oscuro, según el modo) y su
+// nombre. La elegida lleva ✓ y queda levantada sobre su sombra.
+function Swatch({ name, selected, onPress }: { name: PaletteName; selected: boolean; onPress: () => void }) {
+  const styles = useStyles();
+  const { colors, dark } = useTheme();
+  const hover = useHover();
+  const tone = PALETTES[name][dark ? 'dark' : 'light'];
+  const lift = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, -4] });
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      accessibilityLabel={PALETTES[name].label}
+      onPress={() => {
+        tap();
+        onPress();
+      }}
+      {...hover.handlers}
+      style={styles.swatchWrap}
+    >
+      <Animated.View style={{ transform: [{ translateY: lift }] }}>
+        <View style={[styles.swatch, { backgroundColor: tone }, selected && styles.swatchSelected]}>
+          {selected ? (
+            <Stamp rotate="-8deg">
+              <Ionicons name="checkmark" size={22} color={dark ? colors.onAccent : '#FFFFFF'} />
+            </Stamp>
+          ) : null}
+        </View>
+      </Animated.View>
+      <Txt variant="caption" style={styles.swatchLabel} color={selected ? colors.text : colors.textMuted}>
+        {PALETTES[name].label}
+      </Txt>
     </Pressable>
   );
 }
@@ -291,6 +335,18 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.border,
   },
   segmented: { flexDirection: 'row', gap: space.s },
+  swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
+  swatchWrap: { alignItems: 'center', gap: space.xs, minWidth: 52 },
+  swatch: {
+    width: 46,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: line,
+    borderColor: colors.border,
+  },
+  swatchSelected: { boxShadow: `4px 4px 0px ${colors.accent}` },
+  swatchLabel: { fontSize: 12 },
   optionWrap: { flex: 1 },
   option: {
     alignItems: 'center',

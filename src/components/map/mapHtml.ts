@@ -44,7 +44,7 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
   .user {
     width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%;
     background: ${colors.primary}; border: 3px solid ${colors.surface};
-    box-shadow: 0 0 0 2px ${colors.border}, 0 0 0 8px rgba(29, 91, 214, 0.22);
+    box-shadow: 0 0 0 2px ${colors.border}, 0 0 0 8px ${colors.primary}38;
   }
   .user.sim { width: 26px; height: 26px; border-style: dashed; }
   /* Animaciones: los pines caen como sellos, saltan al descubrirse y la
