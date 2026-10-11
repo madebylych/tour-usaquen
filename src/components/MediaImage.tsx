@@ -23,7 +23,7 @@ export default function MediaImage({ uri, style, label }: Props) {
       {uri ? (
         <>
           <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          <Image source={TRAMA_OVERLAY} style={[StyleSheet.absoluteFill, styles.overlay]} resizeMode="repeat" />
+          <Image source={TRAMA_OVERLAY} style={styles.overlay} resizeMode="stretch" />
         </>
       ) : (
         <Image source={dark ? TRAMA_OSCURO : TRAMA} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -34,5 +34,7 @@ export default function MediaImage({ uri, style, label }: Props) {
 
 const useStyles = makeStyles((colors) => ({
   box: { backgroundColor: colors.primarySoft, overflow: 'hidden' },
-  overlay: { opacity: 0.22 },
+  // Trama sobre fotos: se ve, pero la foto se sigue leyendo. Va a su tamaño
+  // natural (2048x1024, ya repetida) y la caja recorta lo que sobra.
+  overlay: { position: 'absolute', top: 0, left: 0, width: 2048, height: 1024, opacity: 0.4 },
 }));
