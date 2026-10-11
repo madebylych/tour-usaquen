@@ -43,6 +43,34 @@ export function buildMapHtml(): string {
     box-shadow: 0 0 0 2px ${colors.text}, 0 0 0 8px rgba(29, 91, 214, 0.22);
   }
   .user.sim { width: 26px; height: 26px; border-style: dashed; }
+  /* Animaciones: los pines caen como sellos, saltan al descubrirse y la
+     ubicación late. Envoltorios propios porque MapLibre usa el transform
+     del contenedor y .pin.selected usa el suyo. */
+  .drop { animation: pin-drop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .pop { animation: pin-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pin-drop {
+    0% { transform: translateY(-46px) scale(1.4) rotate(-18deg); opacity: 0; }
+    60% { opacity: 1; }
+    100% { transform: none; opacity: 1; }
+  }
+  @keyframes pin-pop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.7) rotate(12deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .user::after {
+    content: ''; position: absolute; left: 50%; top: 50%; width: 20px; height: 20px;
+    margin: -10px 0 0 -10px; border-radius: 50%; border: 2px solid ${colors.primary};
+    animation: user-pulse 1.8s ease-out infinite;
+  }
+  .user { position: relative; }
+  @keyframes user-pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(3.2); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .drop, .pop, .user::after { animation: none; }
+  }
   .maplibregl-ctrl-attrib { font-size: 10px; }
 </style>
 </head>
@@ -87,7 +115,7 @@ export function buildMapHtml(): string {
   var loaded = false;
   var pending = null; // último estado recibido antes de que cargue el mapa
   var fitted = false;
-  var markers = {}; // id -> { marker, el }
+  var markers = {}; // id -> { marker, el, wrap, done }
   var userMarker = null;
   var userEl = null;
   var currentImageUrl = null;
@@ -145,17 +173,28 @@ export function buildMapHtml(): string {
         // maplibregl-marker); el estilo va en un elemento interno para no
         // pisar esa clase.
         var container = document.createElement('div');
+        var wrap = document.createElement('div');
         var el = document.createElement('div');
-        container.appendChild(el);
+        wrap.className = 'drop';
+        wrap.style.animationDelay = (p.n - 1) * 90 + 'ms';
+        wrap.appendChild(el);
+        container.appendChild(wrap);
         el.addEventListener('click', function (ev) {
           ev.stopPropagation();
           send({ type: 'select', id: p.id });
         });
-        entry = { el: el, marker: new maplibregl.Marker({ element: container }).setLngLat([p.lng, p.lat]).addTo(map) };
+        entry = { el: el, wrap: wrap, marker: new maplibregl.Marker({ element: container }).setLngLat([p.lng, p.lat]).addTo(map) };
         markers[p.id] = entry;
       }
       entry.marker.setLngLat([p.lng, p.lat]);
       var done = state.discovered.indexOf(p.id) >= 0;
+      // Salto al pasar de pendiente a descubierta (no al cargar el mapa).
+      if (done && entry.done === false) {
+        entry.wrap.className = '';
+        void entry.wrap.offsetWidth; // reinicia la animación
+        entry.wrap.className = 'pop';
+      }
+      entry.done = done;
       entry.el.className = 'pin' + (done ? ' done' : '') + (p.id === state.selectedId ? ' selected' : '');
       entry.el.setAttribute('aria-label', 'Parada ' + p.n + (done ? ', descubierta' : ''));
       entry.el.textContent = done ? '✓' : String(p.n);

@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
+import { Appear, Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
 import { Place } from '@/types';
@@ -15,7 +16,8 @@ type Props = {
 };
 
 // Tarjeta de "¡Descubriste!" que sube desde abajo al descubrir una parada.
-// Si se descubren varias a la vez, se muestran una tras otra.
+// Si se descubren varias a la vez, se muestran una tras otra. El ícono cae
+// como un sello y los textos se imprimen detrás.
 export default function DiscoveryCard({ places, onOpen }: Props) {
   const { announcements } = useProgress();
   const insets = useSafeAreaInsets();
@@ -32,22 +34,26 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
     >
       <Pressable style={styles.backdrop} onPress={progress.dismissAnnouncement} accessibilityLabel="Cerrar" />
       {place ? (
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + space.l }]}>
-          <View style={styles.icon}>
-            <Ionicons name={categoryIcon(place.category)} size={34} color={colors.text} />
-          </View>
-          <Txt variant="overline" color={colors.accent} style={styles.center}>
-            PARADA {position} DESCUBIERTA
-          </Txt>
-          <Txt variant="title" color={colors.onPrimary} style={styles.center}>
-            ¡Descubriste {place.name}!
-          </Txt>
-          {place.observation_prompt ? (
-            <Txt variant="body" color={colors.onPrimary} style={[styles.center, styles.soft]}>
-              {place.observation_prompt}
+        <View key={place.id} style={[styles.sheet, { paddingBottom: insets.bottom + space.l }]}>
+          <Stamp delay={250} rotate="8deg" style={styles.iconSpace}>
+            <View style={styles.icon}>
+              <Ionicons name={categoryIcon(place.category)} size={34} color={colors.text} />
+            </View>
+          </Stamp>
+          <Appear delay={420} style={styles.texts}>
+            <Txt variant="overline" color={colors.accent} style={styles.center}>
+              PARADA {position} DESCUBIERTA
             </Txt>
-          ) : null}
-          <View style={styles.actions}>
+            <Txt variant="title" color={colors.onPrimary} style={styles.center}>
+              ¡Descubriste {place.name}!
+            </Txt>
+            {place.observation_prompt ? (
+              <Txt variant="body" color={colors.onPrimary} style={[styles.center, styles.soft]}>
+                {place.observation_prompt}
+              </Txt>
+            ) : null}
+          </Appear>
+          <Appear delay={560} style={styles.actions}>
             <Button
               label="Ver parada"
               variant="light"
@@ -61,7 +67,7 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
                 Seguir explorando
               </Txt>
             </Pressable>
-          </View>
+          </Appear>
         </View>
       ) : null}
     </Modal>
@@ -85,11 +91,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     borderWidth: line + 0.5,
     borderColor: colors.border,
-    transform: [{ rotate: '8deg' }],
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: space.m,
   },
+  iconSpace: { marginBottom: space.m },
+  texts: { alignSelf: 'stretch', gap: space.m - 4 },
   center: { textAlign: 'center' },
   soft: { opacity: 0.92 },
   actions: { alignSelf: 'stretch', gap: space.s, marginTop: space.m },

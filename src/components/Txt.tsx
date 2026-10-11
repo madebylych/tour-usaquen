@@ -1,5 +1,6 @@
-import { StyleSheet, Text, TextProps, View } from 'react-native';
+import { Animated, StyleSheet, Text, TextProps, View } from 'react-native';
 
+import { useRegistration } from '@/components/motion';
 import { colors, fonts } from '@/theme';
 
 // Texto con las variantes tipográficas de la app. Usar siempre este
@@ -22,15 +23,24 @@ export default function Txt({ variant = 'body', color, style, riso = false, ...r
   if (!riso) return text;
   return (
     <View>
-      <Text
-        {...rest}
-        accessible={false}
-        aria-hidden
-        importantForAccessibility="no-hide-descendants"
-        style={[styles[variant], style, styles.risoEcho]}
-      />
+      <RisoEcho {...rest} style={[styles[variant], style, styles.risoEcho]} />
       {text}
     </View>
+  );
+}
+
+// Copia amarilla del título. Al aparecer, la tinta llega corrida y se
+// "registra" en su desplazamiento final.
+function RisoEcho(props: TextProps) {
+  const transform = useRegistration(RISO_OFFSET);
+  return (
+    <Animated.Text
+      {...props}
+      accessible={false}
+      aria-hidden
+      importantForAccessibility="no-hide-descendants"
+      style={[props.style, { transform }]}
+    />
   );
 }
 
@@ -44,9 +54,9 @@ const styles = StyleSheet.create({
   overline: { fontFamily: fonts.bold, fontSize: 12, lineHeight: 16, letterSpacing: 1.6, color: colors.primary },
   risoEcho: {
     position: 'absolute',
-    top: RISO_OFFSET,
-    left: RISO_OFFSET,
-    right: -RISO_OFFSET,
+    top: 0,
+    left: 0,
+    right: 0,
     color: colors.accent,
   },
 });

@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { countDiscovered } from '@/data/progress';
 import { Place } from '@/types';
@@ -30,21 +31,19 @@ export default function Passport({ places, discovered }: Props) {
       <View style={styles.stamps}>
         {places.map((place, index) => {
           const isDone = place.id in discovered;
-          return (
-            <View
-              key={place.id}
-              style={[
-                styles.stamp,
-                isDone ? [styles.stampDone, { transform: [{ rotate: TILT[index % TILT.length] }] }] : styles.stampPending,
-              ]}
-            >
-              {isDone ? (
+          // El sello se estampa al descubrir la parada (y al abrir la
+          // pantalla, uno tras otro).
+          return isDone ? (
+            <Stamp key={place.id} rotate={TILT[index % TILT.length]} delay={150 + index * 90} trigger={isDone}>
+              <View style={[styles.stamp, styles.stampDone]}>
                 <Ionicons name="checkmark" size={22} color={colors.text} />
-              ) : (
-                <Txt variant="label" color={colors.textMuted} style={styles.number}>
-                  {String(index + 1).padStart(2, '0')}
-                </Txt>
-              )}
+              </View>
+            </Stamp>
+          ) : (
+            <View key={place.id} style={[styles.stamp, styles.stampPending]}>
+              <Txt variant="label" color={colors.textMuted} style={styles.number}>
+                {String(index + 1).padStart(2, '0')}
+              </Txt>
             </View>
           );
         })}

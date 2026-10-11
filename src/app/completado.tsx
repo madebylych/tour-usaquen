@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import Button from '@/components/Button';
+import InkConfetti from '@/components/InkConfetti';
+import { Appear, Stamp } from '@/components/motion';
 import Passport from '@/components/Passport';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
@@ -60,9 +62,11 @@ export default function CompleteScreen() {
           { paddingTop: insets.top + space.xl, paddingBottom: insets.bottom + space.l },
         ]}
       >
-        <View style={styles.medal}>
-          <Ionicons name={complete ? 'sparkles' : 'footsteps'} size={56} color={colors.text} />
-        </View>
+        <Stamp delay={200} rotate="-7deg" style={styles.medalSpace}>
+          <View style={styles.medal}>
+            <Ionicons name={complete ? 'sparkles' : 'footsteps'} size={56} color={colors.text} />
+          </View>
+        </Stamp>
         <Txt variant="display" riso style={styles.center}>
           {complete ? '¡Recorrido completado!' : '¡Buen recorrido!'}
         </Txt>
@@ -72,12 +76,14 @@ export default function CompleteScreen() {
             : `Descubriste ${done} de ${ids.length} paradas. Puedes volver cuando quieras a completar el pasaporte.`}
         </Txt>
 
-        <Passport places={route.places} discovered={discovered} />
+        <Appear delay={300}>
+          <Passport places={route.places} discovered={discovered} />
+        </Appear>
 
-        <View style={styles.credits}>
+        <Appear delay={450} style={styles.credits}>
           <Txt variant="overline">CRÉDITOS</Txt>
           <Txt variant="body">Un proyecto interdisciplinar de Creación Digital, Arquitectura y Música.</Txt>
-        </View>
+        </Appear>
 
         <View style={styles.actions}>
           <Button label="Volver al inicio" onPress={goHome} />
@@ -88,6 +94,7 @@ export default function CompleteScreen() {
           </Pressable>
         </View>
       </ScrollView>
+      {complete ? <InkConfetti /> : null}
     </View>
   );
 }
@@ -96,17 +103,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: space.l, gap: space.m + 4, alignItems: 'stretch' },
   medal: {
-    alignSelf: 'center',
     width: 120,
     height: 120,
     backgroundColor: colors.accent,
     borderWidth: line + 0.5,
     borderColor: colors.border,
-    transform: [{ rotate: '-7deg' }],
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: space.s,
   },
+  medalSpace: { alignSelf: 'center', marginBottom: space.s },
   center: { textAlign: 'center' },
   credits: { gap: space.xs },
   actions: { gap: space.xs, marginTop: space.s },

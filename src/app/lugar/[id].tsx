@@ -9,6 +9,7 @@ import BackButton from '@/components/BackButton';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
 import MediaImage from '@/components/MediaImage';
+import { Appear } from '@/components/motion';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
@@ -67,14 +68,16 @@ export default function PlaceScreen() {
           </View>
 
           {place.observation_prompt ? (
-            <View style={styles.prompt}>
+            <Appear delay={150} style={styles.prompt}>
               <Txt variant="label" style={styles.promptText}>
                 {place.observation_prompt}
               </Txt>
-            </View>
+            </Appear>
           ) : null}
 
-          <AudioPlayer uri={place.media.audio} title={place.audio_title} credit={place.audio_credit} />
+          <Appear delay={250}>
+            <AudioPlayer uri={place.media.audio} title={place.audio_title} credit={place.audio_credit} />
+          </Appear>
 
           {place.history ? <Section title="Historia" text={place.history} /> : null}
           {place.architecture ? <Section title="Arquitectura" text={place.architecture} /> : null}

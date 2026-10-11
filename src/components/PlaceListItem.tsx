@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Appear } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { Place } from '@/types';
 import { colors, fonts, line, space } from '@/theme';
@@ -15,53 +16,56 @@ type Props = {
 };
 
 // Parada como boleto: talón con el número (amarillo si ya se descubrió),
-// línea punteada de corte y los datos de la parada.
+// línea punteada de corte y los datos de la parada. Los boletos salen uno
+// tras otro, como de una impresora.
 export default function PlaceListItem({ place, position, onPress, distance, discovered = false }: Props) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Parada ${position}: ${place.name}${discovered ? ', descubierta' : ''}`}
-      onPress={onPress}
-      style={({ pressed }) => [styles.ticket, pressed && styles.pressed]}
-    >
-      <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
-        <Txt variant="heading" color={colors.primary} style={styles.number}>
-          {String(position).padStart(2, '0')}
-        </Txt>
-      </View>
-      {/* Línea de corte del boleto. Se dibuja con guiones porque el borde
-          punteado de un solo lado falla en Android. */}
-      <View style={styles.cut}>
-        {DASHES.map((i) => (
-          <View key={i} style={styles.dash} />
-        ))}
-      </View>
-      <View style={styles.body}>
-        <View style={styles.texts}>
-          <Txt variant="label" numberOfLines={1}>
-            {place.name}
+    <Appear index={position - 1} from="right">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Parada ${position}: ${place.name}${discovered ? ', descubierta' : ''}`}
+        onPress={onPress}
+        style={({ pressed }) => [styles.ticket, pressed && styles.pressed]}
+      >
+        <View style={[styles.stub, discovered ? styles.stubDone : styles.stubPending]}>
+          <Txt variant="heading" color={colors.primary} style={styles.number}>
+            {String(position).padStart(2, '0')}
           </Txt>
-          {discovered ? (
-            <View style={styles.discovered}>
-              <Ionicons name="checkmark" size={14} color={colors.primary} />
-              <Txt variant="caption" color={colors.primary}>
-                Descubierta
-              </Txt>
-            </View>
-          ) : (
-            <Txt variant="caption" numberOfLines={1}>
-              {place.category}
-            </Txt>
-          )}
         </View>
-        {distance != null ? (
-          <Txt variant="label" color={colors.primary}>
-            {formatDistance(distance)}
-          </Txt>
-        ) : null}
-        <Ionicons name="arrow-forward" size={18} color={colors.text} />
-      </View>
-    </Pressable>
+        {/* Línea de corte del boleto. Se dibuja con guiones porque el borde
+            punteado de un solo lado falla en Android. */}
+        <View style={styles.cut}>
+          {DASHES.map((i) => (
+            <View key={i} style={styles.dash} />
+          ))}
+        </View>
+        <View style={styles.body}>
+          <View style={styles.texts}>
+            <Txt variant="label" numberOfLines={1}>
+              {place.name}
+            </Txt>
+            {discovered ? (
+              <View style={styles.discovered}>
+                <Ionicons name="checkmark" size={14} color={colors.primary} />
+                <Txt variant="caption" color={colors.primary}>
+                  Descubierta
+                </Txt>
+              </View>
+            ) : (
+              <Txt variant="caption" numberOfLines={1}>
+                {place.category}
+              </Txt>
+            )}
+          </View>
+          {distance != null ? (
+            <Txt variant="label" color={colors.primary}>
+              {formatDistance(distance)}
+            </Txt>
+          ) : null}
+          <Ionicons name="arrow-forward" size={18} color={colors.text} />
+        </View>
+      </Pressable>
+    </Appear>
   );
 }
 

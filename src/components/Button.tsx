@@ -1,9 +1,10 @@
-import { ComponentProps } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { ComponentProps, useState } from 'react';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
-import { colors, line, shadow, space } from '@/theme';
+import { colors, line, space } from '@/theme';
 
 type Props = {
   label: string;
@@ -16,32 +17,53 @@ type Props = {
   iconRight?: boolean;
 };
 
+const DEPTH = 5; // cuánto se corre la sombra (la "segunda tinta")
+
 export default function Button({ label, onPress, variant = 'primary', icon, iconRight = false }: Props) {
+  const reduced = useReducedMotion();
+  const [press] = useState(() => new Animated.Value(0));
   const color = variant === 'primary' ? colors.onPrimary : colors.text;
   const iconColor = variant === 'primary' ? colors.accent : colors.text;
   const iconEl = icon ? <Ionicons name={icon} size={20} color={iconColor} /> : null;
+  const shadowColor = variant === 'primary' ? colors.accent : variant === 'light' ? colors.text : null;
+
+  // Al presionar, la cara del botón "baja" sobre su sombra y rebota al soltar.
+  const animateTo = (toValue: number) => {
+    if (reduced) return press.setValue(toValue);
+    Animated.spring(press, { toValue, friction: 6, tension: 260, useNativeDriver: true }).start();
+  };
+  const offset = press.interpolate({ inputRange: [0, 1], outputRange: [0, DEPTH - 1] });
+
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.base,
-        styles[variant],
-        iconRight && styles.spread,
-        // Al presionar, el botón "baja" sobre su sombra.
-        pressed && styles.pressed,
-      ]}
+      onPressIn={() => animateTo(1)}
+      onPressOut={() => animateTo(0)}
+      style={shadowColor ? styles.withShadow : null}
     >
-      {iconRight ? null : iconEl}
-      <Txt variant="label" color={color} style={styles.label}>
-        {label}
-      </Txt>
-      {iconRight ? iconEl : null}
+      {shadowColor ? <View style={[styles.shadow, { backgroundColor: shadowColor }]} /> : null}
+      <Animated.View
+        style={[
+          styles.base,
+          styles[variant],
+          iconRight && styles.spread,
+          { transform: [{ translateX: offset }, { translateY: offset }] },
+        ]}
+      >
+        {iconRight ? null : iconEl}
+        <Txt variant="label" color={color} style={styles.label}>
+          {label}
+        </Txt>
+        {iconRight ? iconEl : null}
+      </Animated.View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  withShadow: { marginRight: DEPTH, marginBottom: DEPTH },
+  shadow: { position: 'absolute', top: DEPTH, left: DEPTH, right: -DEPTH, bottom: -DEPTH },
   base: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -51,9 +73,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.l - 4,
   },
   spread: { justifyContent: 'space-between' },
-  primary: { backgroundColor: colors.primary, boxShadow: shadow.accent },
+  primary: { backgroundColor: colors.primary },
   secondary: { backgroundColor: colors.surface, borderWidth: line, borderColor: colors.border },
-  light: { backgroundColor: colors.accent, boxShadow: shadow.ink },
-  pressed: { transform: [{ translateX: 3 }, { translateY: 3 }], boxShadow: 'none' },
+  light: { backgroundColor: colors.accent },
   label: { fontSize: 16 },
 });

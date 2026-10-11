@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Button from '@/components/Button';
 import MediaImage from '@/components/MediaImage';
+import { Appear, Stamp } from '@/components/motion';
 import PlaceListItem from '@/components/PlaceListItem';
 import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
@@ -63,18 +64,22 @@ export default function HomeScreen() {
         Camina, escucha, descubre.
       </Txt>
 
-      <View>
+      <Appear delay={100}>
         <MediaImage uri={route.media.cover} style={styles.cover} label={route.name} />
-        <View style={styles.sticker}>
-          <Txt variant="label">Recorrido 01</Txt>
-        </View>
-      </View>
+        <Stamp delay={450} rotate="-6deg" style={styles.sticker}>
+          <View style={styles.stickerInk}>
+            <Txt variant="label">Recorrido 01</Txt>
+          </View>
+        </Stamp>
+      </Appear>
 
-      <View style={styles.routeInfo}>
+      <Appear delay={200} style={styles.routeInfo}>
         <Txt variant="title">{route.name}</Txt>
         <Txt variant="caption">{meta.join(' / ')}</Txt>
-      </View>
-      <Button label="Ver recorrido" icon="arrow-forward" iconRight onPress={openRoute} />
+      </Appear>
+      <Appear delay={280}>
+        <Button label="Ver recorrido" icon="arrow-forward" iconRight onPress={openRoute} />
+      </Appear>
 
       <Txt variant="heading" style={styles.sectionTitle}>
         Boletos del recorrido
@@ -104,16 +109,13 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headline: { marginTop: space.m, marginBottom: space.s },
   cover: { height: 220 },
-  sticker: {
-    position: 'absolute',
-    left: space.m - 4,
-    bottom: space.m + 4,
+  sticker: { position: 'absolute', left: space.m - 4, bottom: space.m + 4 },
+  stickerInk: {
     paddingVertical: space.s,
     paddingHorizontal: space.m - 4,
     backgroundColor: colors.accent,
     borderWidth: line,
     borderColor: colors.border,
-    transform: [{ rotate: '-6deg' }],
   },
   routeInfo: { gap: space.xs, marginTop: space.s },
   sectionTitle: { marginTop: space.m },

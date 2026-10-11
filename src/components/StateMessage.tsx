@@ -1,7 +1,8 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 
 import Button from '@/components/Button';
+import InkLoader from '@/components/InkLoader';
 import Txt from '@/components/Txt';
 import { colors, space } from '@/theme';
 
@@ -16,7 +17,7 @@ type Props = {
 export default function StateMessage({ message, loading = false, showHomeButton = false, onRetry }: Props) {
   return (
     <View style={styles.container}>
-      {loading ? <ActivityIndicator color={colors.primary} size="large" /> : null}
+      {loading ? <InkLoader /> : null}
       {message ? (
         <Txt variant="body" color={colors.textMuted} style={styles.text}>
           {message}
