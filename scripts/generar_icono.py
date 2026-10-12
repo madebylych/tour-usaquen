@@ -6,7 +6,8 @@ propuestas, y una hoja para compararlas.
     assets/icono/propuesta_c.png   U azul sobre blanco con un punto amarillo (una parada)
     assets/icono/comparar.png      las tres juntas, en tamaño de ícono y en pequeño
 
-Y con la elegida (A) genera los íconos que usa la app: assets/icon.png,
+Y genera los íconos que usa la app con el ícono final (U azul sobre
+blanco, assets/icono/final.png): assets/icon.png,
 favicon.png, android-icon-{foreground,background,monochrome}.png y
 splash-icon.png.
 
@@ -92,18 +93,27 @@ def capa_u(color, shadow, size_ratio) -> Image.Image:
     return img
 
 
+def icono_final() -> Image.Image:
+    """U del color principal (azul) sobre blanco, sin sombra: el look moderno."""
+    img = Image.new("RGB", (SIZE, SIZE), WHITE)
+    draw_u(img, BLUE, None)
+    return img
+
+
 def iconos_finales() -> None:
-    """Ícono elegido: propuesta A (Emily, 2026-10-10)."""
+    """Ícono elegido (Emily, 2026-10-11): U azul sobre blanco. Reemplaza la
+    propuesta A (U amarilla sobre azul) al quitar el amarillo de la app."""
     assets = ROOT / "assets"
-    icon = propuesta_a()
+    icon = icono_final()
     icon.save(assets / "icon.png")
+    icon.save(OUT / "final.png")
     icon.resize((48, 48), Image.LANCZOS).save(assets / "favicon.png")
     # Android adaptable: cada celular recorta con su forma (círculo, gota...)
     # y solo garantiza el centro (~66%), por eso la U va más pequeña.
-    capa_u(YELLOW, INK, 0.5).save(assets / "android-icon-foreground.png")
-    Image.new("RGB", (SIZE, SIZE), BLUE).save(assets / "android-icon-background.png")
+    capa_u(BLUE, None, 0.5).save(assets / "android-icon-foreground.png")
+    Image.new("RGB", (SIZE, SIZE), WHITE).save(assets / "android-icon-background.png")
     capa_u(WHITE, None, 0.5).save(assets / "android-icon-monochrome.png")  # íconos temáticos (Android 13+)
-    capa_u(YELLOW, INK, 0.62).save(assets / "splash-icon.png")
+    capa_u(BLUE, None, 0.62).save(assets / "splash-icon.png")
 
 
 def main() -> None:
@@ -113,7 +123,7 @@ def main() -> None:
         icon.save(OUT / f"propuesta_{name.lower()}.png")
     comparar(icons).save(OUT / "comparar.png")
     iconos_finales()
-    print(f"Propuestas en {OUT}; ícono A instalado en assets/")
+    print(f"Propuestas en {OUT}; ícono final instalado en assets/")
 
 
 if __name__ == "__main__":
