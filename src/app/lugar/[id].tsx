@@ -14,7 +14,7 @@ import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
 import { useData } from '@/data/useData';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 
 // La parada y su número dentro de la ruta.
 async function loadPlace(routeSlug: string, placeId: string) {
@@ -152,6 +152,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.accent,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
   promptText: { fontSize: 16, lineHeight: 23 },
   grow: { flex: 1 },
@@ -161,8 +162,9 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
-  fact: { padding: space.m + 2, gap: space.s, backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border },
+  fact: { padding: space.m + 2, gap: space.s, backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border, borderRadius: radius.m },
   factText: { fontSize: 16, lineHeight: 23 },
   credits: { marginTop: space.s },
   discoveredBadge: {
@@ -174,5 +176,6 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.accent,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.pill,
   },
 }));

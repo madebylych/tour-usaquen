@@ -12,7 +12,7 @@ import Txt from '@/components/Txt';
 import { getRoute, listRoutes } from '@/data/source';
 import { countDiscovered, useProgress } from '@/data/progress';
 import { useData } from '@/data/useData';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 import { formatDistance, formatDuration } from '@/utils/format';
 import { tap } from '@/audio/haptics';
 
@@ -161,6 +161,7 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: line,
     borderColor: colors.border,
     backgroundColor: colors.surface,
+    borderRadius: radius.pill,
   },
   themeButtonPressed: { backgroundColor: colors.accent },
   headline: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.m, marginBottom: space.s },
@@ -171,6 +172,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.accent,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.pill,
   },
   routeInfo: { gap: space.xs, marginTop: space.l },
   sectionTitle: { marginTop: space.m },

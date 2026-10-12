@@ -24,7 +24,7 @@ import { simulator } from '@/geo/simulator';
 import { useLocation } from '@/geo/useLocation';
 import { useProximity } from '@/geo/useProximity';
 import { Place, PlaceWithMedia } from '@/types';
-import { line, makeStyles, shadows, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, shadows, space, useTheme } from '@/theme';
 import { formatDistance } from '@/utils/format';
 import { thud } from '@/audio/haptics';
 
@@ -230,6 +230,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.accent,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.pill,
   },
   grow: { flex: 1 },
   floating: {
@@ -243,6 +244,7 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: line,
     borderColor: colors.border,
     boxShadow: shadows(colors).floating,
+    borderRadius: radius.m,
   },
   floatingRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingRight: space.xs },
   floatingMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.m - 4 },

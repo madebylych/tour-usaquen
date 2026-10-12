@@ -16,7 +16,7 @@ import { signInWithGoogle, signOut, useAuth } from '@/data/auth';
 import { deleteAllDownloads, downloadsSize } from '@/data/cleanup';
 import { useDownloads } from '@/data/downloads';
 import { settings, toVolume, useSettings, VOLUME_STEPS } from '@/data/settings';
-import { line, makeStyles, PaletteName, PALETTES, space, ThemeMode, useTheme } from '@/theme';
+import { line, makeStyles, PaletteName, PALETTES, radius, space, ThemeMode, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 const DISCOVERY_SOUND = require('../../assets/sounds/ui/discovery.wav');
@@ -333,6 +333,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
   segmented: { flexDirection: 'row', gap: space.s },
   swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
@@ -344,8 +345,10 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: 'center',
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.s,
   },
-  swatchSelected: { boxShadow: `4px 4px 0px ${colors.accent}` },
+  // Anillo alrededor del color elegido.
+  swatchSelected: { boxShadow: `0px 0px 0px 3px ${colors.background}, 0px 0px 0px 5px ${colors.text}` },
   swatchLabel: { fontSize: 12 },
   optionWrap: { flex: 1 },
   option: {
@@ -354,6 +357,7 @@ const useStyles = makeStyles((colors) => ({
     paddingVertical: space.m - 4,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.s,
   },
   optionSelected: { backgroundColor: colors.accent },
   volume: { gap: space.s },
@@ -361,7 +365,7 @@ const useStyles = makeStyles((colors) => ({
   blocks: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s, height: 44 },
   mute: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
   blockWrap: { flex: 1, justifyContent: 'flex-end' },
-  block: { borderWidth: line, borderColor: colors.border },
+  block: { borderWidth: line, borderColor: colors.border, borderRadius: 6 },
   blockOn: { backgroundColor: colors.primary },
   blockOff: { backgroundColor: colors.background },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space.m },
@@ -373,9 +377,10 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: line,
     borderColor: colors.border,
     backgroundColor: colors.background,
+    borderRadius: radius.pill,
   },
   trackOn: { backgroundColor: colors.primary },
-  knob: { width: 21, height: 21, backgroundColor: colors.border },
-  knobOn: { backgroundColor: colors.accent },
+  knob: { width: 21, height: 21, borderRadius: radius.pill, backgroundColor: colors.textMuted },
+  knobOn: { backgroundColor: '#FFFFFF' },
   version: { textAlign: 'center', marginTop: space.s },
 }));

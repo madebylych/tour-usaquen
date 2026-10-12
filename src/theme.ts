@@ -29,7 +29,7 @@ export const lightColors = {
   surface: '#FFFFFF',
   text: '#15151A', // tinta
   textMuted: '#625F58',
-  border: '#15151A', // bordes de tinta
+  border: '#E3E3EA', // bordes suaves
 };
 
 export type Colors = typeof lightColors;
@@ -48,7 +48,7 @@ export const darkColors: Colors = {
   surface: '#1E1E26',
   text: '#F4F1EA', // tinta color papel
   textMuted: '#A8A49B',
-  border: '#F4F1EA',
+  border: '#34343F', // bordes suaves en oscuro
 };
 
 // --- Color principal (Ajustes > Color) ---------------------------------------
@@ -75,12 +75,17 @@ function mix(a: string, b: string, t: number): string {
   return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('');
 }
 
-function withPalette(base: Colors, primary: string, dark: boolean): Colors {
+function withPalette(base: Colors, primary: string, dark: boolean, lightTone: string): Colors {
+  // Acento: tono clarito del color principal (reemplaza el amarillo). Siempre
+  // con texto en tinta encima, en claro y en oscuro.
+  const accent = mix('#FFFFFF', lightTone, 0.24);
   return {
     ...base,
     primary,
-    // Suave: casi papel en claro; un tono oscuro del color en oscuro.
-    primarySoft: dark ? mix(base.background, primary, 0.22) : mix('#FFFFFF', primary, 0.18),
+    // Suave: casi blanco en claro; un tono oscuro del color en oscuro.
+    primarySoft: dark ? mix(base.background, primary, 0.22) : mix('#FFFFFF', primary, 0.1),
+    accent,
+    accentOnPrimary: dark ? base.onPrimary : accent,
   };
 }
 
@@ -89,8 +94,8 @@ const THEMES = Object.fromEntries(
   (Object.keys(PALETTES) as PaletteName[]).map((name) => [
     name,
     {
-      light: withPalette(lightColors, PALETTES[name].light, false),
-      dark: withPalette(darkColors, PALETTES[name].dark, true),
+      light: withPalette(lightColors, PALETTES[name].light, false, PALETTES[name].light),
+      dark: withPalette(darkColors, PALETTES[name].dark, true, PALETTES[name].light),
     },
   ])
 ) as Record<PaletteName, { light: Colors; dark: Colors }>;
@@ -106,13 +111,13 @@ export const space = {
 // Esquinas rectas: es impresión, no app de delivery. `pill` queda solo
 // para círculos (pines del mapa, punto del usuario).
 export const radius = {
-  s: 0,
-  m: 0,
-  l: 0,
-  pill: 999,
+  s: 10, // campos, sellos, bloques pequeños
+  m: 16, // tarjetas, botones, boletos
+  l: 26, // hojas que suben desde abajo
+  pill: 999, // píldoras y círculos
 };
 
-export const line = 1.5; // grosor del borde de tinta
+export const line = 1; // grosor del borde
 
 export const fonts = {
   display: 'BricolageGrotesque_800ExtraBold',
@@ -124,7 +129,8 @@ export const fonts = {
 
 // Sombras duras, sin desenfoque: la "segunda tinta" desplazada.
 export const shadows = (colors: Colors) => ({
-  floating: `4px 4px 0px ${colors.border}`,
+  floating: `0px 8px 24px ${colors.text}29`,
+  soft: `0px 4px 14px ${colors.text}1F`,
 });
 
 // --- Tema activo -----------------------------------------------------------

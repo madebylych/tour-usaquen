@@ -8,7 +8,7 @@ import { setPlayerVolume } from '@/audio/volume';
 import { useHover, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { useSettings } from '@/data/settings';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 // Alturas de las barras de la onda (decorativa, igual para todos los audios).
@@ -145,6 +145,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.m - 2 },
   playButton: {
@@ -153,6 +154,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.pill,
   },
   playIcon: { marginLeft: 3 }, // centra ópticamente el triángulo
   disabled: { opacity: 0.35 },

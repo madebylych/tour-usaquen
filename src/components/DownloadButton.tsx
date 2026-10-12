@@ -6,7 +6,7 @@ import { tap, thud } from '@/audio/haptics';
 import { Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { DownloadStatus } from '@/data/useRouteDownload';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = {
   status: DownloadStatus;
@@ -102,6 +102,7 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: line,
     borderColor: colors.border,
     overflow: 'hidden',
+    borderRadius: radius.m,
   },
   soft: { backgroundColor: colors.surface },
   pressed: { opacity: 0.8 },

@@ -1,7 +1,7 @@
 import { TextInput, TextInputProps, View } from 'react-native';
 
 import Txt from '@/components/Txt';
-import { fonts, line, makeStyles, space, useTheme } from '@/theme';
+import { fonts, line, makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = Omit<TextInputProps, 'style'> & {
   label: string;
@@ -39,6 +39,7 @@ const useStyles = makeStyles((colors) => ({
     color: colors.text,
     fontFamily: fonts.regular,
     fontSize: 16,
+    borderRadius: radius.s,
   },
   multiline: { minHeight: 110, textAlignVertical: 'top' },
 }));

@@ -12,7 +12,7 @@ import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { AdminRoute, loadAdminRoutes, reorderPlaces, saveRoute } from '@/data/admin';
 import { useAuth } from '@/data/auth';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 
 // Panel de administración: rutas y paradas (incluidas las no publicadas).
 // Solo se muestra a admins; aunque alguien llegara aquí sin serlo, la base
@@ -180,9 +180,10 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  badge: { paddingVertical: space.xs, paddingHorizontal: space.s + 2, borderWidth: line, borderColor: colors.border },
+  badge: { paddingVertical: space.xs, paddingHorizontal: space.s + 2, borderWidth: line, borderColor: colors.border, borderRadius: radius.pill },
   badgeOn: { backgroundColor: colors.accent },
   row: { flexDirection: 'row', gap: space.m - 4 },
   grow: { flex: 1 },

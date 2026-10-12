@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Appear, Stamp, useHover, usePressSpring } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { Place } from '@/types';
-import { fonts, line, makeStyles, space, useTheme } from '@/theme';
+import { fonts, line, makeStyles, radius, space, useTheme } from '@/theme';
 import { formatDistance } from '@/utils/format';
 import { tap } from '@/audio/haptics';
 
@@ -95,11 +95,13 @@ const DASHES = [0, 1, 2, 3, 4, 5, 6, 7];
 
 const useStyles = makeStyles((colors) => ({
   ticket: {
+    overflow: 'hidden', // el talón respeta las esquinas redondeadas
     flexDirection: 'row',
     minHeight: 66,
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
   pressed: { backgroundColor: colors.primarySoft },
   stub: {

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useHover } from '@/components/motion';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 // Botón circular flotante para volver, sobre imágenes a pantalla completa.
@@ -47,5 +47,6 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.pill,
   },
 }));

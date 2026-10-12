@@ -8,7 +8,7 @@ import { Appear, Stamp } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { progress, useProgress } from '@/data/progress';
 import { Place } from '@/types';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 import { categoryIcon } from '@/utils/categories';
 
 type Props = {
@@ -88,6 +88,8 @@ const useStyles = makeStyles((colors) => ({
     paddingTop: space.xl,
     gap: space.m - 4,
     alignItems: 'center',
+    borderTopLeftRadius: radius.l,
+    borderTopRightRadius: radius.l,
   },
   icon: {
     width: 86,
@@ -97,6 +99,7 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.l,
   },
   iconSpace: { marginBottom: space.m },
   texts: { alignSelf: 'stretch', gap: space.m - 4 },

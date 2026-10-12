@@ -3,11 +3,10 @@ import { Animated, Pressable, View } from 'react-native';
 
 import { useHover } from '@/components/motion';
 import Txt from '@/components/Txt';
-import { fonts, line, makeStyles, space, useTheme } from '@/theme';
+import { fonts, line, makeStyles, radius, space, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 const IMAGE_HEIGHT = 210;
-const DEPTH = 6; // sombra dura de la postal
 
 type Props = {
   uri: string | null; // foto; sin foto se ve la trama
@@ -33,13 +32,6 @@ export default function Postcard({ uri, label, caption, onPress, children }: Pro
     ],
   };
   const photo = { transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.07] }) }] };
-  const shadow = {
-    transform: [
-      { translateX: v.interpolate({ inputRange: [0, 1], outputRange: [DEPTH, DEPTH + 4] }) },
-      { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [DEPTH, DEPTH + 4] }) },
-      { rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['-1.5deg', '0deg'] }) },
-    ],
-  };
   // La estampilla se tuerce un poco más al pasar el mouse, como si se despegara.
   const stamp = { transform: [{ rotate: v.interpolate({ inputRange: [0, 1], outputRange: ['4deg', '10deg'] }) }] };
 
@@ -51,7 +43,6 @@ export default function Postcard({ uri, label, caption, onPress, children }: Pro
       }}
       {...hover.handlers} accessibilityRole={onPress ? 'button' : 'image'} accessibilityLabel={label}>
       <View style={styles.wrap}>
-        <Animated.View style={[styles.shadow, shadow]} />
         <Animated.View style={[styles.card, card]}>
           <View style={styles.photoBox}>
             <Animated.Image
@@ -85,16 +76,17 @@ export default function Postcard({ uri, label, caption, onPress, children }: Pro
 }
 
 const useStyles = makeStyles((colors) => ({
-  wrap: { marginRight: DEPTH, marginBottom: DEPTH },
-  shadow: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.border },
+  wrap: { paddingBottom: 6 },
   card: {
     padding: space.s + 2,
     paddingBottom: 0,
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
+    boxShadow: `0px 10px 28px ${colors.text}2E`,
   },
-  photoBox: { height: IMAGE_HEIGHT, overflow: 'hidden', backgroundColor: colors.primarySoft },
+  photoBox: { height: IMAGE_HEIGHT, overflow: 'hidden', borderRadius: radius.s, backgroundColor: colors.primarySoft },
   photo: { width: '100%', height: '100%' },
   footer: {
     flexDirection: 'row',
@@ -112,6 +104,7 @@ const useStyles = makeStyles((colors) => ({
     right: 14,
     padding: 3,
     backgroundColor: colors.accent,
+    borderRadius: 8,
   },
   stampInner: {
     width: 54,
@@ -121,6 +114,7 @@ const useStyles = makeStyles((colors) => ({
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: colors.onAccent,
+    borderRadius: 6,
   },
   stampSmall: { fontFamily: fonts.bold, fontSize: 8, lineHeight: 10, letterSpacing: 1 },
   stampBig: { fontSize: 22, lineHeight: 24 },

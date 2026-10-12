@@ -33,18 +33,18 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
   body { -webkit-tap-highlight-color: transparent; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; }
   .pin {
     width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%;
-    background: ${colors.primary}; border: 2px solid ${colors.border};
+    background: ${colors.primary}; border: 3px solid #FFFFFF;
     color: ${colors.onPrimary}; font-weight: 800; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 3px 3px 0 ${colors.border}; cursor: pointer; position: relative;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); cursor: pointer; position: relative;
     transition: transform 0.15s;
   }
   .pin.done { background: ${colors.accent}; color: ${colors.onAccent}; }
-  .pin.selected { transform: scale(1.2); box-shadow: 3px 3px 0 ${colors.accent}, 5px 5px 0 ${colors.border}; }
+  .pin.selected { transform: scale(1.2); box-shadow: 0 0 0 4px ${colors.accent}, 0 4px 14px rgba(0, 0, 0, 0.35); }
   .user {
     width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%;
     background: ${colors.primary}; border: 3px solid ${colors.surface};
-    box-shadow: 0 0 0 2px ${colors.border}, 0 0 0 8px ${colors.primary}38;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 8px ${colors.primary}38;
   }
   .user.sim { width: 26px; height: 26px; border-style: dashed; }
   /* Animaciones: los pines caen como sellos, saltan al descubrirse y la

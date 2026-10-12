@@ -13,7 +13,7 @@ import { countDiscovered, progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
 import { forgetRemote } from '@/data/progressSync';
 import { useData } from '@/data/useData';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 
 // Final del recorrido: resumen del pasaporte y créditos.
 export default function CompleteScreen() {
@@ -112,6 +112,7 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.l,
   },
   medalSpace: { alignSelf: 'center', marginBottom: space.s },
   center: { textAlign: 'center' },

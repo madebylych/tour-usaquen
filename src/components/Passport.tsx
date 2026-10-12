@@ -6,7 +6,7 @@ import { Breathe, Stamp, useHover } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { countDiscovered } from '@/data/progress';
 import { Place } from '@/types';
-import { fonts, line, makeStyles, space, useTheme } from '@/theme';
+import { fonts, line, makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = {
   places: Place[]; // paradas de la ruta, en orden
@@ -105,14 +105,15 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.s },
-  track: { height: 10, borderWidth: line, borderColor: colors.border, backgroundColor: colors.background, overflow: 'hidden' },
+  track: { height: 10, borderWidth: line, borderColor: colors.border, backgroundColor: colors.background, overflow: 'hidden', borderRadius: radius.pill },
   fill: { ...StyleSheet.absoluteFill, backgroundColor: colors.accent, transformOrigin: 'left' },
   stamps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s + 2 },
   stamp: { width: STAMP, height: STAMP, alignItems: 'center', justifyContent: 'center' },
-  stampDone: { backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border },
-  stampNext: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.primary },
-  stampPending: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.textMuted },
+  stampDone: { backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border, borderRadius: radius.s },
+  stampNext: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.primary, borderRadius: radius.s },
+  stampPending: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.textMuted, borderRadius: radius.s },
   number: { fontFamily: fonts.display },
 }));

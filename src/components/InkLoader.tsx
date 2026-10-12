@@ -48,5 +48,5 @@ export default function InkLoader() {
 
 const useStyles = makeStyles((colors) => ({
   row: { flexDirection: 'row', gap: 10, height: 40, alignItems: 'flex-end' },
-  square: { width: 18, height: 18, borderWidth: line, borderColor: colors.border },
+  square: { width: 18, height: 18, borderWidth: line, borderColor: colors.border, borderRadius: 5 },
 }));

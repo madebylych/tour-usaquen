@@ -14,7 +14,7 @@ import { deletePlace, loadPlace, MediaKind, pickAndUpload, PlaceDraft, removeMed
 import { useAuth } from '@/data/auth';
 import { mediaUrl } from '@/data/remote';
 import { Place } from '@/types';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 
 // Campos de texto del formulario (todos como texto para editarlos).
 type Form = {
@@ -335,11 +335,12 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.m,
   },
   row: { flexDirection: 'row', gap: space.m - 4, alignItems: 'flex-end' },
   grow: { flex: 1 },
-  publish: { padding: space.m - 4, borderWidth: line, borderColor: colors.border, alignItems: 'center' },
+  publish: { padding: space.m - 4, borderWidth: line, borderColor: colors.border, alignItems: 'center', borderRadius: radius.s },
   publishOn: { backgroundColor: colors.accent },
-  preview: { height: 180, borderWidth: line, borderColor: colors.border },
+  preview: { height: 180, borderWidth: line, borderColor: colors.border, borderRadius: radius.s },
   delete: { alignItems: 'center', paddingVertical: space.m },
 }));

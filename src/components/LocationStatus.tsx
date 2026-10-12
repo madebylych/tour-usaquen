@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Appear, Breathe } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { UserLocation } from '@/geo/useLocation';
-import { line, makeStyles, space, useTheme } from '@/theme';
+import { line, makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = {
   location: UserLocation;
@@ -86,6 +86,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderWidth: line,
     borderColor: colors.border,
+    borderRadius: radius.pill,
   },
   highlight: { backgroundColor: colors.accent },
   text: { fontSize: 13, flexShrink: 1 },
