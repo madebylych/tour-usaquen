@@ -18,6 +18,10 @@ export const supabase: SupabaseClient | null =
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: false,
+          // PKCE: Google devuelve un código de un solo uso que solo sirve
+          // junto con un secreto guardado en este dispositivo. Si alguien
+          // intercepta la dirección de regreso, no obtiene la sesión.
+          flowType: 'pkce',
         },
       })
     : null;

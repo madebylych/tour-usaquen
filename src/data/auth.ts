@@ -68,11 +68,13 @@ if (supabase) {
   });
 }
 
-// Lee access_token y refresh_token de la dirección a la que Supabase
-// devuelve después de Google (vienen después de "#" o de "?").
-function tokensFrom(url: string) {
-  const params = new URLSearchParams(url.split('#')[1] ?? url.split('?')[1] ?? '');
-  return { access: params.get('access_token'), refresh: params.get('refresh_token'), error: params.get('error_description') };
+// Lee el código de un solo uso (PKCE) de la dirección a la que Supabase
+// devuelve después de Google (viene después de "?"; los errores pueden
+// venir después de "#").
+function codeFrom(url: string) {
+  const query = new URLSearchParams(url.split('?')[1]?.split('#')[0] ?? '');
+  const hash = new URLSearchParams(url.split('#')[1] ?? '');
+  return { code: query.get('code'), error: query.get('error_description') ?? hash.get('error_description') };
 }
 
 // Entrar con Google: se abre el navegador con la página de Google y, al
@@ -92,10 +94,10 @@ export async function signInWithGoogle(): Promise<string | null> {
 
   const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
   if (result.type !== 'success') return null; // la persona cerró la ventana
-  const { access, refresh, error: oauthError } = tokensFrom(result.url);
+  const { code, error: oauthError } = codeFrom(result.url);
   if (oauthError) return oauthError;
-  if (!access || !refresh) return 'Google no devolvió la sesión. Intenta de nuevo.';
-  const { error: sessionError } = await supabase.auth.setSession({ access_token: access, refresh_token: refresh });
+  if (!code) return 'Google no devolvió la sesión. Intenta de nuevo.';
+  const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
   return sessionError ? 'No se pudo guardar la sesión.' : null;
 }
 
