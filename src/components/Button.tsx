@@ -4,15 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Nudge, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
-import { line, makeStyles, radius, shadows, space, useTheme } from '@/theme';
+import { makeStyles, radius, shadows, space, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 type Props = {
   label: string;
   onPress: () => void;
-  // primary: color principal. secondary: blanco con borde suave.
-  // light: tono clarito del color principal, con texto en tinta.
-  variant?: 'primary' | 'secondary' | 'light';
+  // primary: píldora negra (la acción principal de la pantalla).
+  // accent: relleno del color de acento. secondary: panel gris.
+  // light: tono clarito del acento, con texto en tinta.
+  variant?: 'primary' | 'accent' | 'secondary' | 'light';
   icon?: ComponentProps<typeof Ionicons>['name'];
   // Flecha a la derecha y texto a la izquierda (botones de "seguir").
   iconRight?: boolean;
@@ -24,8 +25,15 @@ export default function Button({ label, onPress, variant = 'primary', icon, icon
   const reduced = useReducedMotion();
   const [press] = useState(() => new Animated.Value(0));
   const [hover] = useState(() => new Animated.Value(0));
-  const color = variant === 'primary' ? colors.onPrimary : variant === 'light' ? colors.onAccent : colors.text;
-  const iconColor = variant === 'primary' ? colors.accentOnPrimary : color;
+  const color =
+    variant === 'primary'
+      ? colors.onInk
+      : variant === 'accent'
+        ? colors.onPrimary
+        : variant === 'light'
+          ? colors.onAccent
+          : colors.text;
+  const iconColor = color;
   const iconEl = icon ? <Ionicons name={icon} size={20} color={iconColor} /> : null;
 
   // Al presionar se encoge un poco y rebota al soltar; con el mouse encima
@@ -75,13 +83,14 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: space.s,
-    minHeight: 54,
-    paddingHorizontal: space.l - 4,
-    borderRadius: radius.m,
+    minHeight: 56,
+    paddingHorizontal: space.l,
+    borderRadius: radius.pill,
   },
   spread: { justifyContent: 'space-between' },
-  primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.surface, borderWidth: line, borderColor: colors.border },
+  primary: { backgroundColor: colors.ink },
+  accent: { backgroundColor: colors.primary },
+  secondary: { backgroundColor: colors.panel },
   light: { backgroundColor: colors.accent },
   label: { fontSize: 16 },
 }));

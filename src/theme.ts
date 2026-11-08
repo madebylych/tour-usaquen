@@ -1,72 +1,90 @@
-// Sistema visual "Risografía" (dirección E del Figma): los talleres de
-// impresión y los fanzines del distrito. Azul y amarillo de risografía
-// sobre papel, bordes de tinta, esquinas rectas, sombras duras desplazadas
-// (como una segunda tinta mal registrada), fotos en trama de puntos y
-// paradas como boletos.
+// Sistema visual "Pastel" (rediseño 2026-11 a partir del moodboard de
+// referencia, página "Referencia recreada" del Figma): base blanca con
+// paneles gris claro, un solo acento de color para lo interactivo (naranja
+// por defecto), píldora negra para la acción principal, tarjetas muy
+// redondeadas con sombras suaves y títulos en Lilita One.
 //
-// Dos paletas: papel (claro) y "papel negro" (oscuro), la misma impresión
-// sobre cartulina negra: texto y bordes color papel, azul más claro y el
-// mismo amarillo. Todos los pares de texto cumplen contraste AA (4.5:1).
-// Las pantallas toman los colores con useTheme() y los estilos con
-// makeStyles(); los archivos no deben importar una paleta directamente.
+// Contraste: el naranja brillante no aguanta texto blanco encima (2.6:1),
+// así que sobre los rellenos de color va tinta (onPrimary se calcula para
+// cada color) y el texto de color sobre el fondo usa primaryText, una
+// versión ajustada que cumple AA (4.5:1). Las pantallas toman los colores
+// con useTheme() y los estilos con makeStyles(); los archivos no deben
+// importar una paleta directamente.
 
 import { createContext, createElement, ReactNode, useContext, useMemo, useState } from 'react';
 import { StyleSheet, useColorScheme } from 'react-native';
 
 import { storage } from '@/data/storage';
 
+const INK = '#15151A';
+
 export const lightColors = {
-  primary: '#1D5BD6', // azul riso (5.6:1 con blanco)
-  primaryDark: '#15151A', // tinta, para texto sobre fondos de color
-  primarySoft: '#D6E2FA', // azul claro: fondos suaves, trama
-  onPrimary: '#FFFFFF',
-  accentOnPrimary: '#FFD83D', // etiquetas sobre fondo azul
+  primary: '#FF7A12', // relleno de acento: botones pequeños, selección, toggles
+  onPrimary: INK, // texto e íconos sobre el relleno de acento (se recalcula por color)
+  primaryText: '#B34D00', // acento usado como texto sobre el fondo (AA)
+  primarySoft: '#FFF1E6', // fondos suaves del acento
+  primaryDark: INK,
+  accentOnPrimary: INK,
 
-  accent: '#FFD83D', // amarillo riso
-  onAccent: '#15151A', // sobre el amarillo siempre va tinta
+  accent: '#FFE3CC', // tono clarito del acento, siempre con tinta encima
+  hero: '#FFB57F', // fondo cálido de las cabeceras (Inicio)
+  onAccent: INK,
 
-  background: '#FFFFFF', // papel blanco
-  surface: '#FFFFFF',
-  text: '#15151A', // tinta
-  textMuted: '#625F58',
-  border: '#E3E3EA', // bordes suaves
+  ink: '#111111', // píldora de la acción principal
+  onInk: '#FFFFFF',
+
+  background: '#FFFFFF',
+  surface: '#FFFFFF', // tarjetas
+  panel: '#F5F5F7', // paneles grises dentro de las tarjetas y filas
+  text: INK,
+  textMuted: '#6F6F78',
+  border: '#ECECF0',
+  success: '#1E8E3E',
 };
 
 export type Colors = typeof lightColors;
 
 export const darkColors: Colors = {
-  primary: '#5B8FF5', // azul más claro para leerse sobre negro
-  primaryDark: '#15151A',
-  primarySoft: '#1E2A47',
-  onPrimary: '#15151A', // sobre este azul, tinta (5.8:1)
-  accentOnPrimary: '#15151A', // el amarillo no se lee sobre el azul claro
+  primary: '#FF8A2A',
+  onPrimary: INK,
+  primaryText: '#FF9D4D',
+  primarySoft: '#3A2514',
+  primaryDark: INK,
+  accentOnPrimary: INK,
 
-  accent: '#FFD83D',
-  onAccent: '#15151A',
+  accent: '#FFD2AD',
+  hero: '#7A4A26',
+  onAccent: INK,
 
-  background: '#131318', // papel negro
+  ink: '#F4F1EA', // en oscuro la píldora principal es clara
+  onInk: INK,
+
+  background: '#131318',
   surface: '#1E1E26',
-  text: '#F4F1EA', // tinta color papel
-  textMuted: '#A8A49B',
-  border: '#34343F', // bordes suaves en oscuro
+  panel: '#272730',
+  text: '#F4F1EA',
+  textMuted: '#A8A6B0',
+  border: '#33333D',
+  success: '#5BD48A',
 };
 
-// --- Color principal (Ajustes > Color) ---------------------------------------
-// El amarillo y la tinta son la identidad y no cambian; cambia el color
-// principal (títulos, botones, pines) y su versión suave. Cada par cumple
-// AA: en claro, texto blanco sobre el color y el color sobre blanco (≥5:1);
-// en oscuro, tinta sobre el color y el color sobre el papel negro (≥5.8:1).
+// --- Color de acento (Ajustes > Color) ---------------------------------------
+// La tinta, el blanco y los paneles no cambian; cambia el acento. `light` y
+// `dark` son el relleno en cada modo; el texto sobre el relleno y la versión
+// para texto se calculan para que cumplan AA.
 
-export type PaletteName = 'azul' | 'morado' | 'rosado' | 'verde' | 'naranja' | 'rojo';
+export type PaletteName = 'naranja' | 'azul' | 'morado' | 'rosado' | 'verde' | 'rojo';
 
 export const PALETTES: Record<PaletteName, { label: string; light: string; dark: string }> = {
+  naranja: { label: 'Naranja', light: '#FF7A12', dark: '#FF8A2A' },
   azul: { label: 'Azul', light: '#1D5BD6', dark: '#5B8FF5' },
   morado: { label: 'Morado', light: '#6D3FD1', dark: '#A98BFA' },
-  rosado: { label: 'Rosado', light: '#C2185B', dark: '#F48FB1' },
-  verde: { label: 'Verde', light: '#1B7A43', dark: '#5BD48A' },
-  naranja: { label: 'Naranja', light: '#C2410C', dark: '#FB923C' },
-  rojo: { label: 'Rojo', light: '#C62828', dark: '#F87171' },
+  rosado: { label: 'Rosado', light: '#E0368A', dark: '#F48FB1' },
+  verde: { label: 'Verde', light: '#1B9E55', dark: '#5BD48A' },
+  rojo: { label: 'Rojo', light: '#E53935', dark: '#F87171' },
 };
+
+const DEFAULT_PALETTE: PaletteName = 'naranja';
 
 // Mezcla dos colores (#rrggbb): t = 0 da `a`, t = 1 da `b`.
 function mix(a: string, b: string, t: number): string {
@@ -75,17 +93,39 @@ function mix(a: string, b: string, t: number): string {
   return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('');
 }
 
-function withPalette(base: Colors, primary: string, dark: boolean, lightTone: string): Colors {
-  // Acento: tono clarito del color principal (reemplaza el amarillo). Siempre
-  // con texto en tinta encima, en claro y en oscuro.
-  const accent = mix('#FFFFFF', lightTone, 0.24);
+function luminance(hex: string): number {
+  const [r, g, b] = [0, 1, 2].map((i) => {
+    const c = parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+export function contrast(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+// Acerca `color` a `toward` hasta que cumpla AA sobre `background`.
+function readableOn(color: string, background: string, toward: string): string {
+  for (let t = 0; t <= 1; t += 0.05) {
+    const candidate = mix(color, toward, t);
+    if (contrast(candidate, background) >= 4.5) return candidate;
+  }
+  return toward;
+}
+
+function withPalette(base: Colors, primary: string, dark: boolean): Colors {
   return {
     ...base,
     primary,
-    // Suave: casi blanco en claro; un tono oscuro del color en oscuro.
+    // Sobre el relleno: blanco si se lee bien, si no tinta.
+    onPrimary: contrast('#FFFFFF', primary) >= 4.5 ? '#FFFFFF' : INK,
+    accentOnPrimary: contrast('#FFFFFF', primary) >= 4.5 ? '#FFFFFF' : INK,
+    primaryText: readableOn(primary, base.background, dark ? '#FFFFFF' : '#000000'),
     primarySoft: dark ? mix(base.background, primary, 0.22) : mix('#FFFFFF', primary, 0.1),
-    accent,
-    accentOnPrimary: dark ? base.onPrimary : accent,
+    accent: dark ? mix('#FFFFFF', primary, 0.32) : mix('#FFFFFF', primary, 0.2),
+    hero: dark ? mix(base.background, primary, 0.45) : mix('#FFFFFF', primary, 0.55),
   };
 }
 
@@ -94,8 +134,8 @@ const THEMES = Object.fromEntries(
   (Object.keys(PALETTES) as PaletteName[]).map((name) => [
     name,
     {
-      light: withPalette(lightColors, PALETTES[name].light, false, PALETTES[name].light),
-      dark: withPalette(darkColors, PALETTES[name].dark, true, PALETTES[name].light),
+      light: withPalette(lightColors, PALETTES[name].light, false),
+      dark: withPalette(darkColors, PALETTES[name].dark, true),
     },
   ])
 ) as Record<PaletteName, { light: Colors; dark: Colors }>;
@@ -108,29 +148,27 @@ export const space = {
   xl: 40,
 };
 
-// Esquinas rectas: es impresión, no app de delivery. `pill` queda solo
-// para círculos (pines del mapa, punto del usuario).
 export const radius = {
-  s: 10, // campos, sellos, bloques pequeños
-  m: 16, // tarjetas, botones, boletos
-  l: 26, // hojas que suben desde abajo
+  s: 12, // baldosas pequeñas, fotos de fila
+  m: 20, // tarjetas, filas
+  l: 28, // tarjetas grandes y hojas que suben desde abajo
   pill: 999, // píldoras y círculos
 };
 
 export const line = 1; // grosor del borde
 
 export const fonts = {
-  display: 'BricolageGrotesque_800ExtraBold',
-  displayBold: 'BricolageGrotesque_700Bold',
+  display: 'LilitaOne', // títulos grandes con carácter
+  displayBold: 'DMSans_700Bold',
   regular: 'DMSans_400Regular',
   medium: 'DMSans_500Medium',
   bold: 'DMSans_700Bold',
 };
 
-// Sombras duras, sin desenfoque: la "segunda tinta" desplazada.
+// Sombras suaves y difusas.
 export const shadows = (colors: Colors) => ({
-  floating: `0px 8px 24px ${colors.text}29`,
-  soft: `0px 4px 14px ${colors.text}1F`,
+  floating: `0px 10px 30px ${colors.text}1F`,
+  soft: `0px 4px 16px ${colors.text}14`,
 });
 
 // --- Tema activo -----------------------------------------------------------
@@ -154,15 +192,17 @@ const ThemeContext = createContext<Theme>({
   dark: false,
   mode: 'system',
   setMode: () => {},
-  palette: 'azul',
+  palette: DEFAULT_PALETTE,
   setPalette: () => {},
 });
 
-const PALETTE_KEY = 'palette.v1';
+// v2: con el rediseño el color por defecto pasó a naranja; quien había
+// elegido otro color en la versión anterior empieza en naranja.
+const PALETTE_KEY = 'palette.v2';
 
 function readPalette(): PaletteName {
   const saved = storage.get(PALETTE_KEY);
-  return saved && saved in PALETTES ? (saved as PaletteName) : 'azul';
+  return saved && saved in PALETTES ? (saved as PaletteName) : DEFAULT_PALETTE;
 }
 
 function readMode(): ThemeMode {

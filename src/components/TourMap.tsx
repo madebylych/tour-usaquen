@@ -118,8 +118,8 @@ export default function TourMap({
 
       {error && !ready ? (
         <View style={[StyleSheet.absoluteFill, styles.errorBox]}>
-          <Ionicons name="cloud-offline-outline" size={36} color={colors.primary} />
-          <Txt variant="caption" color={colors.primary} style={styles.errorText}>
+          <Ionicons name="cloud-offline-outline" size={36} color={colors.primaryText} />
+          <Txt variant="caption" color={colors.primaryText} style={styles.errorText}>
             No se pudo cargar el mapa. Revisa tu conexión. La lista de paradas sigue funcionando.
           </Txt>
         </View>
@@ -132,7 +132,7 @@ export default function TourMap({
           onPress={centerOnUser}
           style={styles.centerButton}
         >
-          <Ionicons name="navigate" size={20} color={colors.primary} />
+          <Ionicons name="navigate" size={20} color={colors.primaryText} />
         </Pressable>
       ) : null}
     </View>

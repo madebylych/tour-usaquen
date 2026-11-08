@@ -51,7 +51,7 @@ export default function Passport({ places, discovered }: Props) {
             // La próxima casilla por llenar "respira" para que se note cuál sigue.
             <Breathe key={place.id} amount={0.1}>
               <View style={[styles.stamp, styles.stampNext]}>
-                <Txt variant="label" color={colors.primary} style={styles.number}>
+                <Txt variant="label" color={colors.primaryText} style={styles.number}>
                   {String(index + 1).padStart(2, '0')}
                 </Txt>
               </View>

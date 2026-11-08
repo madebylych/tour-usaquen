@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Appear } from '@/components/motion';
-import { line, makeStyles, space } from '@/theme';
+import { makeStyles, space } from '@/theme';
 
 // Barra fija abajo para la acción principal de la pantalla. Sube al abrir
 // la pantalla.
@@ -29,8 +29,6 @@ const useStyles = makeStyles((colors) => ({
     gap: space.s + 4,
     paddingTop: space.m,
     paddingHorizontal: space.m + 4,
-    backgroundColor: colors.surface,
-    borderTopWidth: line,
-    borderColor: colors.border,
+    backgroundColor: colors.background,
   },
 }));

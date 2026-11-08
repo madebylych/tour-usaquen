@@ -74,7 +74,7 @@ export default function SettingsScreen() {
           { paddingTop: insets.top + space.xl + space.l, paddingBottom: insets.bottom + space.xl },
         ]}
       >
-        <Txt variant="title" color={colors.primary}>
+        <Txt variant="title" color={colors.primaryText}>
           Ajustes
         </Txt>
 

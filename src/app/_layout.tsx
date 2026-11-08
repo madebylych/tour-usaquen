@@ -3,11 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { setAudioModeAsync } from 'expo-audio';
 import * as SplashScreen from 'expo-splash-screen';
-import {
-  BricolageGrotesque_700Bold,
-  BricolageGrotesque_800ExtraBold,
-  useFonts,
-} from '@expo-google-fonts/bricolage-grotesque';
+import { useFonts } from 'expo-font';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
 
 import { runStartupCleanup } from '@/data/cleanup';
@@ -27,8 +23,7 @@ startProgressSync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    BricolageGrotesque_700Bold,
-    BricolageGrotesque_800ExtraBold,
+    LilitaOne: require('../../assets/fonts/LilitaOne-Regular.ttf'),
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_700Bold,

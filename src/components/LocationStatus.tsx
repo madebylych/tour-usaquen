@@ -39,7 +39,7 @@ export default function LocationStatus({ location, onLongPress }: Props) {
       <Appear key={location.status} style={[styles.pill, highlight && styles.highlight]}>
         {location.status === 'requesting' ? (
           <Breathe amount={0.25}>
-            <Ionicons name={icon} size={16} color={colors.primary} />
+            <Ionicons name={icon} size={16} color={colors.primaryText} />
           </Breathe>
         ) : (
           <Ionicons name={icon} size={16} color={highlight ? colors.onAccent : colors.primary} />

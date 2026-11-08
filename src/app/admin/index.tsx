@@ -49,7 +49,7 @@ export default function AdminScreen() {
           { paddingTop: insets.top + space.xl + space.l, paddingBottom: insets.bottom + space.xl },
         ]}
       >
-        <Txt variant="title" color={colors.primary}>
+        <Txt variant="title" color={colors.primaryText}>
           Administración
         </Txt>
         <Txt variant="caption">
@@ -135,7 +135,7 @@ function RouteEditor({ route, onChanged }: { route: AdminRoute; onChanged: () =>
       </Txt>
       {route.places.map((place, index) => (
         <View key={place.id} style={styles.stop}>
-          <Txt variant="label" color={colors.primary} style={styles.stopNumber}>
+          <Txt variant="label" color={colors.primaryText} style={styles.stopNumber}>
             {String(index + 1).padStart(2, '0')}
           </Txt>
           <Pressable

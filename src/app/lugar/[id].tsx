@@ -72,7 +72,7 @@ export default function PlaceScreen() {
             <Txt variant="overline">
               PARADA {String(position).padStart(2, '0')}, {place.category.toUpperCase()}
             </Txt>
-            <Txt variant="title" color={colors.primary}>
+            <Txt variant="title" color={colors.primaryText}>
               {place.name}
             </Txt>
           </Appear>
