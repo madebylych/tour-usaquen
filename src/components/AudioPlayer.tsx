@@ -8,7 +8,7 @@ import { setPlayerVolume } from '@/audio/volume';
 import { useHover, useReducedMotion } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { useSettings } from '@/data/settings';
-import { line, makeStyles, radius, space, useTheme } from '@/theme';
+import { makeStyles, radius, space, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 // Alturas de las barras de la onda (decorativa, igual para todos los audios).
@@ -142,9 +142,7 @@ const useStyles = makeStyles((colors) => ({
   card: {
     gap: space.s + 2,
     padding: space.m,
-    backgroundColor: colors.surface,
-    borderWidth: line,
-    borderColor: colors.border,
+    backgroundColor: colors.panel,
     borderRadius: radius.m,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.m - 2 },

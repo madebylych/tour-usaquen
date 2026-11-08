@@ -31,16 +31,19 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
 <style>
   html, body, #map { margin: 0; padding: 0; width: 100%; height: 100%; background: ${colors.primarySoft}; }
   body { -webkit-tap-highlight-color: transparent; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  /* Pines: cuadros redondeados blancos con el número; la siguiente parada
+     lleva borde del color de acento y las descubiertas van rellenas con ✓. */
   .pin {
-    width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%;
-    background: ${colors.primary}; border: 3px solid #FFFFFF;
-    color: ${colors.onPrimary}; font-weight: 800; font-size: 15px;
+    width: 36px; height: 36px; box-sizing: border-box; border-radius: 12px;
+    background: #FFFFFF; border: 3px solid #FFFFFF;
+    color: #8A8794; font-weight: 800; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); cursor: pointer; position: relative;
+    box-shadow: 0 4px 12px rgba(21, 21, 26, 0.28); cursor: pointer; position: relative;
     transition: transform 0.15s;
   }
-  .pin.done { background: ${colors.accent}; color: ${colors.onAccent}; }
-  .pin.selected { transform: scale(1.2); box-shadow: 0 0 0 4px ${colors.accent}, 0 4px 14px rgba(0, 0, 0, 0.35); }
+  .pin.next { width: 44px; height: 44px; border-radius: 14px; border-color: ${colors.primary}; color: #15151A; font-size: 17px; }
+  .pin.done { background: ${colors.primary}; color: ${colors.onPrimary}; }
+  .pin.selected { transform: scale(1.18); box-shadow: 0 0 0 3px #15151A, 0 6px 16px rgba(21, 21, 26, 0.35); }
   .user {
     width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%;
     background: ${colors.primary}; border: 3px solid ${colors.surface};
@@ -172,6 +175,10 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
 
     // Marcadores de las paradas: se crean una vez y se actualizan.
     var seen = {};
+    var nextId = null; // primera parada sin descubrir, en el orden de la ruta
+    for (var k = 0; k < state.places.length; k++) {
+      if (state.discovered.indexOf(state.places[k].id) < 0) { nextId = state.places[k].id; break; }
+    }
     state.places.forEach(function (p) {
       seen[p.id] = true;
       var entry = markers[p.id];
@@ -202,7 +209,7 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
         entry.wrap.className = 'pop';
       }
       entry.done = done;
-      entry.el.className = 'pin' + (done ? ' done' : '') + (p.id === state.selectedId ? ' selected' : '');
+      entry.el.className = 'pin' + (done ? ' done' : '') + (p.id === nextId ? ' next' : '') + (p.id === state.selectedId ? ' selected' : '');
       entry.el.setAttribute('aria-label', 'Parada ' + p.n + (done ? ', descubierta' : ''));
       entry.el.textContent = done ? '✓' : String(p.n);
     });

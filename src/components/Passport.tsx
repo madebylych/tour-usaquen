@@ -6,7 +6,7 @@ import { Breathe, Stamp, useHover } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { countDiscovered } from '@/data/progress';
 import { Place } from '@/types';
-import { fonts, line, makeStyles, radius, space, useTheme } from '@/theme';
+import { fonts, makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = {
   places: Place[]; // paradas de la ruta, en orden
@@ -43,7 +43,7 @@ export default function Passport({ places, discovered }: Props) {
             <Stamp key={place.id} rotate={TILT[index % TILT.length]} delay={150 + index * 90} trigger={isDone}>
               <Wiggle>
                 <View style={[styles.stamp, styles.stampDone]}>
-                  <Ionicons name="checkmark" size={22} color={colors.onAccent} />
+                  <Ionicons name="checkmark" size={22} color={colors.onPrimary} />
                 </View>
               </Wiggle>
             </Stamp>
@@ -103,17 +103,16 @@ const useStyles = makeStyles((colors) => ({
     padding: space.m + 2,
     gap: space.m - 4,
     backgroundColor: colors.surface,
-    borderWidth: line,
-    borderColor: colors.border,
-    borderRadius: radius.m,
+    borderRadius: radius.l,
+    boxShadow: `0px 4px 16px ${colors.text}14`,
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.s },
-  track: { height: 10, borderWidth: line, borderColor: colors.border, backgroundColor: colors.background, overflow: 'hidden', borderRadius: radius.pill },
-  fill: { ...StyleSheet.absoluteFill, backgroundColor: colors.accent, transformOrigin: 'left' },
+  track: { height: 12, backgroundColor: colors.accent, overflow: 'hidden', borderRadius: radius.pill },
+  fill: { ...StyleSheet.absoluteFill, backgroundColor: colors.primary, transformOrigin: 'left' },
   stamps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s + 2 },
   stamp: { width: STAMP, height: STAMP, alignItems: 'center', justifyContent: 'center' },
-  stampDone: { backgroundColor: colors.accent, borderWidth: line, borderColor: colors.border, borderRadius: radius.s },
-  stampNext: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.primary, borderRadius: radius.s },
-  stampPending: { borderWidth: line, borderStyle: 'dashed', borderColor: colors.textMuted, borderRadius: radius.s },
+  stampDone: { backgroundColor: colors.primary, borderRadius: radius.pill },
+  stampNext: { borderWidth: 2, borderStyle: 'dashed', borderColor: colors.primaryText, borderRadius: radius.pill },
+  stampPending: { backgroundColor: colors.panel, borderRadius: radius.pill },
   number: { fontFamily: fonts.display },
 }));

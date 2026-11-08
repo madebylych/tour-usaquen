@@ -16,22 +16,22 @@ import { signInWithGoogle, signOut, useAuth } from '@/data/auth';
 import { deleteAllDownloads, downloadsSize } from '@/data/cleanup';
 import { useDownloads } from '@/data/downloads';
 import { settings, toVolume, useSettings, VOLUME_STEPS } from '@/data/settings';
-import { line, makeStyles, PaletteName, PALETTES, radius, space, ThemeMode, useTheme } from '@/theme';
+import { contrast, makeStyles, PaletteName, PALETTES, radius, shadows, space, ThemeMode, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
 
 const DISCOVERY_SOUND = require('../../assets/sounds/ui/discovery.wav');
 
-const THEMES: { mode: ThemeMode; label: string; icon: 'sunny' | 'moon' | 'phone-portrait-outline' }[] = [
-  { mode: 'light', label: 'Claro', icon: 'sunny' },
-  { mode: 'dark', label: 'Oscuro', icon: 'moon' },
-  { mode: 'system', label: 'Dispositivo', icon: 'phone-portrait-outline' },
+const THEMES: { mode: ThemeMode; label: string; hint: string; icon: 'sunny' | 'moon' | 'phone-portrait-outline' }[] = [
+  { mode: 'light', label: 'Claro', hint: 'Para el día', icon: 'sunny' },
+  { mode: 'dark', label: 'Oscuro', hint: 'Para la noche', icon: 'moon' },
+  { mode: 'system', label: 'Dispositivo', hint: 'Sigue al celular', icon: 'phone-portrait-outline' },
 ];
 
 // Ajustes: tema, sonido, vibración, cuenta y almacenamiento.
 export default function SettingsScreen() {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const { colors, mode, setMode, palette, setPalette } = useTheme();
+  const { mode, setMode, palette, setPalette, dark } = useTheme();
   const current = useSettings();
   const auth = useAuth();
   const downloaded = useDownloads();
@@ -66,7 +66,7 @@ export default function SettingsScreen() {
     ]);
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, !dark && styles.screenGray]}>
       <BackButton />
       <ScrollView
         contentContainerStyle={[
@@ -74,14 +74,19 @@ export default function SettingsScreen() {
           { paddingTop: insets.top + space.xl + space.l, paddingBottom: insets.bottom + space.xl },
         ]}
       >
-        <Txt variant="title" color={colors.primaryText}>
-          Ajustes
-        </Txt>
+        <Txt variant="display">Ajustes</Txt>
 
         <Section index={0} title="Tema">
           <View style={styles.segmented} accessibilityRole="radiogroup">
             {THEMES.map((t) => (
-              <Option key={t.mode} selected={mode === t.mode} onPress={() => setMode(t.mode)} label={t.label} icon={t.icon} />
+              <Option
+                key={t.mode}
+                selected={mode === t.mode}
+                onPress={() => setMode(t.mode)}
+                label={t.label}
+                hint={t.hint}
+                icon={t.icon}
+              />
             ))}
           </View>
         </Section>
@@ -163,36 +168,48 @@ function Section({ title, index, children }: { title: string; index: number; chi
   );
 }
 
+// Opción tipo "plan": círculo de selección, ícono, nombre y una pista.
 function Option({
   selected,
   onPress,
   label,
+  hint,
   icon,
 }: {
   selected: boolean;
   onPress: () => void;
   label: string;
+  hint: string;
   icon: (typeof THEMES)[number]['icon'];
 }) {
   const styles = useStyles();
   const { colors } = useTheme();
-  const color = selected ? colors.onAccent : colors.text;
   const hover = useHover();
-  // Con hover la opción sube un poco y el ícono se agranda.
-  const lift = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, -3] });
-  const iconScale = hover.value.interpolate({ inputRange: [0, 1], outputRange: [1, 1.25] });
+  // Con hover la opción se corre un poco a la derecha.
+  const slide = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, 3] });
   return (
-    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => {
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      onPress={() => {
         tap();
         onPress();
-      }} {...hover.handlers} style={styles.optionWrap}>
-      <Animated.View style={[styles.option, selected && styles.optionSelected, { transform: [{ translateY: lift }] }]}>
-        <Animated.View style={{ transform: [{ scale: iconScale }] }}>
-          <Ionicons name={icon} size={18} color={color} />
-        </Animated.View>
-        <Txt variant="label" color={color}>
+      }}
+      {...hover.handlers}
+    >
+      <Animated.View style={[styles.option, selected && styles.optionSelected, { transform: [{ translateX: slide }] }]}>
+        <View style={[styles.radio, selected && styles.radioOn]}>
+          {selected ? (
+            <Stamp rotate="-8deg">
+              <Ionicons name="checkmark" size={16} color={colors.onPrimary} />
+            </Stamp>
+          ) : null}
+        </View>
+        <Ionicons name={icon} size={18} color={colors.text} />
+        <Txt variant="label" style={styles.grow}>
           {label}
         </Txt>
+        <Txt variant="caption">{hint}</Txt>
       </Animated.View>
     </Pressable>
   );
@@ -222,7 +239,7 @@ function Swatch({ name, selected, onPress }: { name: PaletteName; selected: bool
         <View style={[styles.swatch, { backgroundColor: tone }, selected && styles.swatchSelected]}>
           {selected ? (
             <Stamp rotate="-8deg">
-              <Ionicons name="checkmark" size={22} color={dark ? colors.onAccent : '#FFFFFF'} />
+              <Ionicons name="checkmark" size={22} color={contrast('#FFFFFF', tone) >= 3 ? '#FFFFFF' : '#15151A'} />
             </Stamp>
           ) : null}
         </View>
@@ -311,7 +328,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
           style={[
             styles.knob,
             value && styles.knobOn,
-            { transform: [{ translateX: x.interpolate({ inputRange: [0, 1], outputRange: [0, 26] }) }] },
+            { transform: [{ translateX: x.interpolate({ inputRange: [0, 1], outputRange: [0, 24] }) }] },
           ]}
         />
       </View>
@@ -326,16 +343,16 @@ function formatBytes(bytes: number): string {
 
 const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { paddingHorizontal: space.m + 6, gap: space.m },
+  screenGray: { backgroundColor: colors.panel },
+  content: { paddingHorizontal: space.m + 4, gap: space.m },
   section: {
     gap: space.m - 4,
     padding: space.m + 2,
     backgroundColor: colors.surface,
-    borderWidth: line,
-    borderColor: colors.border,
-    borderRadius: radius.m,
+    borderRadius: radius.l,
+    boxShadow: shadows(colors).soft,
   },
-  segmented: { flexDirection: 'row', gap: space.s },
+  segmented: { gap: space.xs },
   swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s },
   swatchWrap: { alignItems: 'center', gap: space.xs, minWidth: 52 },
   swatch: {
@@ -343,44 +360,49 @@ const useStyles = makeStyles((colors) => ({
     height: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: line,
-    borderColor: colors.border,
-    borderRadius: radius.s,
+    borderRadius: radius.pill,
   },
   // Anillo alrededor del color elegido.
   swatchSelected: { boxShadow: `0px 0px 0px 3px ${colors.background}, 0px 0px 0px 5px ${colors.text}` },
   swatchLabel: { fontSize: 12 },
-  optionWrap: { flex: 1 },
   option: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: space.xs,
+    gap: space.m - 4,
     paddingVertical: space.m - 4,
-    borderWidth: line,
-    borderColor: colors.border,
-    borderRadius: radius.s,
+    paddingHorizontal: space.m - 4,
+    borderRadius: radius.m - 4,
   },
-  optionSelected: { backgroundColor: colors.accent },
+  optionSelected: { backgroundColor: colors.panel },
+  radio: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+  },
+  radioOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   volume: { gap: space.s },
   volumeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   blocks: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s, height: 44 },
   mute: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
   blockWrap: { flex: 1, justifyContent: 'flex-end' },
-  block: { borderWidth: line, borderColor: colors.border, borderRadius: 6 },
+  block: { borderRadius: 6 },
   blockOn: { backgroundColor: colors.primary },
-  blockOff: { backgroundColor: colors.background },
+  blockOff: { backgroundColor: colors.panel },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space.m },
   grow: { flex: 1 },
   track: {
-    width: 56,
+    width: 54,
     height: 30,
     padding: 3,
-    borderWidth: line,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
+    backgroundColor: colors.border,
     borderRadius: radius.pill,
   },
   trackOn: { backgroundColor: colors.primary },
-  knob: { width: 21, height: 21, borderRadius: radius.pill, backgroundColor: colors.textMuted },
+  knob: { width: 24, height: 24, borderRadius: radius.pill, backgroundColor: '#FFFFFF', boxShadow: '0px 1px 3px #15151A40' },
   knobOn: { backgroundColor: '#FFFFFF' },
   version: { textAlign: 'center', marginTop: space.s },
 }));

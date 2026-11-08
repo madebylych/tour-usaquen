@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Appear, Breathe } from '@/components/motion';
 import Txt from '@/components/Txt';
 import { UserLocation } from '@/geo/useLocation';
-import { line, makeStyles, radius, space, useTheme } from '@/theme';
+import { makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = {
   location: UserLocation;
@@ -42,7 +42,7 @@ export default function LocationStatus({ location, onLongPress }: Props) {
             <Ionicons name={icon} size={16} color={colors.primaryText} />
           </Breathe>
         ) : (
-          <Ionicons name={icon} size={16} color={highlight ? colors.onAccent : colors.primary} />
+          <Ionicons name={icon} size={16} color={highlight ? colors.onAccent : colors.primaryText} />
         )}
         <Txt variant="label" color={highlight ? colors.onAccent : colors.text} style={styles.text}>
           {text}
@@ -84,9 +84,8 @@ const useStyles = makeStyles((colors) => ({
     paddingVertical: space.s,
     paddingHorizontal: space.m - 2,
     backgroundColor: colors.surface,
-    borderWidth: line,
-    borderColor: colors.border,
     borderRadius: radius.pill,
+    boxShadow: `0px 4px 14px ${colors.text}24`,
   },
   highlight: { backgroundColor: colors.accent },
   text: { fontSize: 13, flexShrink: 1 },
