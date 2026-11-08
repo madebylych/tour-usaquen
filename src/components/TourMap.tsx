@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { FromMap, MapImage, ToMap } from '@/components/map/bridge';
+import { FromMap, MapFog, MapImage, ToMap } from '@/components/map/bridge';
 import { imageUrlForMap } from '@/components/map/imageUrl';
 import { buildMapHtml } from '@/components/map/mapHtml';
 import MapSurface, { MapSurfaceHandle } from '@/components/map/MapSurface';
@@ -22,6 +22,7 @@ type Props = {
   onMapPress: (coordinate: Coordinates) => void;
   // Mapa ilustrado de la ruta (imagen descargada o URL) y sus esquinas.
   illustratedMap: { uri: string; bounds: MapBounds } | null;
+  fog: MapFog | null; // mapa para raspar
 };
 
 // Mapa del tour: MapLibre + OpenFreeMap (OpenStreetMap), sin API key, con
@@ -38,6 +39,7 @@ export default function TourMap({
   simulated,
   onMapPress,
   illustratedMap,
+  fog,
 }: Props) {
   const { colors, dark } = useTheme();
   const styles = useStyles();
@@ -93,12 +95,20 @@ export default function TourMap({
     latestState.current = state;
   }, [state]);
 
+  // La niebla va aparte: solo se envía cuando se destapa algo.
+  const latestFog = useRef(fog);
+  useEffect(() => {
+    latestFog.current = fog;
+    if (ready && fog) surface.current?.send(fog);
+  }, [ready, fog]);
+
   const handleMessage = useCallback(
     (msg: FromMap) => {
       if (msg.type === 'ready') {
         setReady(true);
         setError(null);
         surface.current?.send(latestState.current);
+        if (latestFog.current) surface.current?.send(latestFog.current);
       } else if (msg.type === 'select') onSelect(msg.id);
       else if (msg.type === 'press') onMapPress({ latitude: msg.lat, longitude: msg.lng });
       else if (msg.type === 'error') setError(msg.message);

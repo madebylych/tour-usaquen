@@ -22,8 +22,19 @@ export type MapImage = {
   bounds: [[number, number], [number, number]];
 };
 
+// Niebla del mapa para raspar: cubre el mundo menos los hexágonos destapados
+// ("q,r", ver geo/scratch.ts). Va en su propio mensaje porque solo cambia al
+// destapar algo.
+export type MapFog = {
+  type: 'fog';
+  radius: number; // metros
+  cosLat: number;
+  revealed: string[];
+};
+
 // De la app al mapa.
 export type ToMap =
+  | MapFog
   | {
       type: 'state';
       places: MapPlace[];

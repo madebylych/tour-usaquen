@@ -3,6 +3,7 @@ import { Alert, Animated, Pressable, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import AudioList from '@/components/AudioList';
 import BackButton from '@/components/BackButton';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
 import Button from '@/components/Button';
@@ -29,11 +30,11 @@ export default function RouteScreen() {
   const styles = useStyles();
   // La foto de arriba se queda un poco atrás al bajar (parallax).
   const parallax = useParallax(HERO);
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { slug, tab: initialTab } = useLocalSearchParams<{ slug: string; tab?: string }>();
   const state = useData(() => getRoute(slug), slug);
   const download = useRouteDownload(slug);
   const { discovered } = useProgress();
-  const [tab, setTab] = useState<'paradas' | 'info'>('paradas');
+  const [tab, setTab] = useState<'paradas' | 'audios' | 'info'>(initialTab === 'audios' ? 'audios' : 'paradas');
 
   if (state.status === 'loading') return <StateMessage loading />;
   if (state.status === 'error')
@@ -50,6 +51,7 @@ export default function RouteScreen() {
   const total = route.places.length;
   const done = countDiscovered(route.places.map((p) => p.id), discovered);
   const nextPlace = route.places.find((p) => !(p.id in discovered));
+  const lastDone = route.places.filter((p) => p.id in discovered).pop();
   const meta = [
     `${total} paradas`,
     route.distance_m != null ? formatDistance(route.distance_m) : null,
@@ -75,10 +77,17 @@ export default function RouteScreen() {
           {/* Tarjeta del pasaporte: cuántas paradas lleva. */}
           <Appear delay={60} style={styles.card}>
             <View style={styles.progressRow}>
-              <MediaImage uri={route.places[0]?.media.image ?? route.media.cover} style={styles.avatar} />
+              {/* La foto es el sello ganado: sin paradas descubiertas no se muestra ninguna. */}
+              {lastDone ? (
+                <MediaImage uri={lastDone.media.image} style={styles.avatar} label={lastDone.name} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarEmpty]}>
+                  <Ionicons name="book-outline" size={22} color={colors.textMuted} />
+                </View>
+              )}
               <View style={styles.grow}>
                 <View style={styles.track}>
-                  <View style={[styles.fill, { width: `${Math.max(done / total, 0.06) * 100}%` }]} />
+                  <View style={[styles.fill, { width: `${(done / total) * 100}%` }]} />
                 </View>
                 <Txt variant="caption" style={styles.progressText}>
                   {done === total ? '¡Pasaporte completo!' : `${done} de ${total} sellos en tu pasaporte`}
@@ -111,7 +120,8 @@ export default function RouteScreen() {
             {(
               [
                 ['paradas', 'Paradas', 'location-outline'],
-                ['info', 'Sobre la ruta', 'information-circle-outline'],
+                ['audios', 'Audios', 'headset-outline'],
+                ['info', 'Info', 'information-circle-outline'],
               ] as const
             ).map(([key, label, icon]) => {
               const on = tab === key;
@@ -148,6 +158,8 @@ export default function RouteScreen() {
                 />
               ))}
             </View>
+          ) : tab === 'audios' ? (
+            <AudioList places={route.places} />
           ) : (
             <Appear style={styles.info}>
               <Txt variant="body">
@@ -229,6 +241,7 @@ const useStyles = makeStyles((colors) => ({
   },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: space.m - 4 },
   avatar: { width: 52, height: 52, borderRadius: radius.pill, borderWidth: 3, borderColor: colors.surface, boxShadow: shadows(colors).soft },
+  avatarEmpty: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.panel },
   track: { height: 14, backgroundColor: colors.accent, borderRadius: radius.pill, overflow: 'hidden' },
   fill: { height: '100%', backgroundColor: colors.primary, borderRadius: radius.pill },
   progressText: { marginTop: space.xs + 2 },

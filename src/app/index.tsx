@@ -105,7 +105,7 @@ export default function HomeScreen() {
             <View style={styles.divider} />
             <View style={styles.shortcuts}>
               <Shortcut icon="map-outline" label="Mapa" onPress={openTour} />
-              <Shortcut icon="headset-outline" label="Audios" onPress={() => openPlace(nextPlace.id)} />
+              <Shortcut icon="headset-outline" label="Audios" onPress={() => router.push(`/ruta/${route.slug}?tab=audios`)} />
               <Shortcut icon="eye-outline" label="Observa" onPress={() => openPlace(nextPlace.id)} />
               <Shortcut
                 icon="book-outline"

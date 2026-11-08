@@ -2,7 +2,7 @@ import { ComponentProps, useState } from 'react';
 import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { useDiscoveryFeedback } from '@/audio/useDiscoveryFeedback';
 import BottomBar, { BOTTOM_BAR_SPACE } from '@/components/BottomBar';
@@ -23,6 +23,7 @@ import { distanceInMeters } from '@/geo/distance';
 import { simulator } from '@/geo/simulator';
 import { useLocation } from '@/geo/useLocation';
 import { useProximity } from '@/geo/useProximity';
+import { useScratch } from '@/geo/useScratch';
 import { Place, PlaceWithMedia } from '@/types';
 import { makeStyles, radius, shadows, space, useTheme } from '@/theme';
 import { formatDistance } from '@/utils/format';
@@ -52,6 +53,7 @@ export default function TourScreen() {
 
   const places = state.status === 'ready' && state.data ? state.data.places : NO_PLACES;
   useProximity(places, location, celebrate);
+  const explored = useScratch(places, location);
 
   if (!slug) return <StateMessage message="No se sabe qué recorrido abrir." showHomeButton />;
   if (state.status === 'loading') return <StateMessage loading />;
@@ -112,8 +114,25 @@ export default function TourScreen() {
           illustratedMap={
             route.media.map && route.map_bounds ? { uri: route.media.map, bounds: route.map_bounds } : null
           }
+          fog={explored.fog}
         />
         <LocationStatus location={location} onLongPress={toggleSimulation} />
+        {selected ? null : (
+          <View style={styles.mapPills} pointerEvents="none">
+            <View style={styles.mapPill}>
+              <Ionicons name="location-outline" size={16} color={colors.text} />
+              <Txt variant="label" style={styles.mapPillText}>
+                Usaquén, Bogotá
+              </Txt>
+            </View>
+            <View style={styles.mapPill} accessible accessibilityLabel={`${explored.percent} por ciento explorado`}>
+              <MaterialCommunityIcons name="hexagon-outline" size={16} color={colors.primaryText} />
+              <Txt variant="label" color={colors.primaryText} style={styles.mapPillText}>
+                {explored.percent} %
+              </Txt>
+            </View>
+          </View>
+        )}
         {selected ? (
           <SelectedPlace
             key={selected.id}
@@ -174,6 +193,25 @@ export default function TourScreen() {
           </View>
         </Appear>
 
+        {/* Lo que va destapando en esta visita. */}
+        <View style={styles.pill}>
+          <View style={styles.hexBadge}>
+            <MaterialCommunityIcons name="hexagon-outline" size={20} color={colors.primaryText} />
+          </View>
+          <View style={styles.grow}>
+            <Txt variant="label" style={styles.pillTitle}>
+              {explored.newZones === 0
+                ? 'El mapa está cubierto'
+                : explored.newZones === 1
+                  ? 'Destapaste 1 zona nueva'
+                  : `Destapaste ${explored.newZones} zonas nuevas`}
+            </Txt>
+            <Txt variant="caption" numberOfLines={2}>
+              {next ? `Camina hacia ${next.name} para destapar más` : 'Sigue caminando para destapar más'}
+            </Txt>
+          </View>
+        </View>
+
         <Txt variant="title" style={styles.sectionTitle}>
           Tu recorrido
         </Txt>
@@ -191,8 +229,20 @@ export default function TourScreen() {
             label="Tiempo a pie"
             value={nextDistance != null ? `${Math.max(1, Math.round(nextDistance / WALK_SPEED / 60))} min` : '—'}
           />
+          <View style={styles.stat}>
+            <View style={styles.statHead}>
+              <MaterialCommunityIcons name="hexagon-outline" size={18} color="#FF9A3D" />
+              <Txt variant="label" style={styles.statLabel} numberOfLines={1}>
+                Explorado
+              </Txt>
+            </View>
+            <View style={styles.exploredTrack}>
+              <View style={[styles.exploredFill, { width: `${Math.min(explored.ratio, 1) * 100}%` }]} />
+            </View>
+          </View>
           <Stat icon="star-outline" color="#FFB020" label="Sellos" value={`${done} de ${total}`} />
           <Stat icon="locate-outline" color="#5FBF73" label="Precisión GPS" value={gps} />
+          <Stat icon="footsteps-outline" color="#8E9BEA" label="Caminado" value={formatDistance(explored.walkedM)} />
         </View>
 
         <Txt variant="title" style={styles.sectionTitle}>
@@ -344,6 +394,21 @@ const useStyles = makeStyles((colors) => ({
     borderRadius: radius.m,
   },
   pillTitle: { fontSize: 14 },
+  hexBadge: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accent, borderRadius: radius.pill },
+  mapPills: { position: 'absolute', right: space.m, bottom: 26 + space.s, flexDirection: 'row', gap: space.s },
+  mapPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs + 2,
+    paddingHorizontal: space.m - 4,
+    paddingVertical: space.s,
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    boxShadow: shadows(colors).soft,
+  },
+  mapPillText: { fontSize: 14 },
+  exploredTrack: { height: 10, marginVertical: space.s, backgroundColor: colors.background, borderRadius: radius.pill, overflow: 'hidden' },
+  exploredFill: { height: '100%', backgroundColor: colors.primary, borderRadius: radius.pill },
   sectionTitle: { fontSize: 22, lineHeight: 28, marginTop: space.s },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s + 2 },
   stat: {

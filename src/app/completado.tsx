@@ -15,6 +15,7 @@ import Txt from '@/components/Txt';
 import { countDiscovered, progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
 import { forgetRemote } from '@/data/progressSync';
+import { scratch } from '@/data/scratch';
 import { useData } from '@/data/useData';
 import { makeStyles, radius, shadows, space, useTheme } from '@/theme';
 import { formatDistance, formatDuration } from '@/utils/format';
@@ -65,6 +66,7 @@ export default function CompleteScreen() {
           style: 'destructive',
           onPress: () => {
             progress.reset(ids);
+            scratch.reset();
             forgetRemote(ids).catch(() => {});
             goHome();
           },

@@ -160,7 +160,96 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
     if (!image) return;
     map.addSource('illustrated', { type: 'image', url: image.url, coordinates: corners(image.bounds) });
     // Debajo de la precisión, la ruta y los marcadores.
-    map.addLayer({ id: 'illustrated', type: 'raster', source: 'illustrated', paint: { 'raster-fade-duration': 0 } }, 'accuracy');
+    map.addLayer({ id: 'illustrated', type: 'raster', source: 'illustrated', paint: { 'raster-fade-duration': 0 } }, 'fog');
+  }
+
+  // Mapa para raspar: una capa naranja sobre el mundo entero con un hueco por
+  // cada hexágono destapado. Misma fórmula que geo/scratch.ts.
+  var FOG_COLOR = '#FF7A12';
+  var FOG_OPACITY = 0.35;
+  var METERS_PER_DEGREE = 111320;
+  var WORLD = [[-180, -85.06], [180, -85.06], [180, 85.06], [-180, 85.06], [-180, -85.06]];
+  var MAX_LINE_CELLS = 5000;
+  var fog = null; // { radius, cosLat, open }
+  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function hexRing(q, r, scale) {
+    var R = fog.radius;
+    var lng = R * Math.sqrt(3) * (q + r / 2) / (METERS_PER_DEGREE * fog.cosLat);
+    var lat = R * 1.5 * r / METERS_PER_DEGREE;
+    var dLat = scale * R / METERS_PER_DEGREE;
+    var dLng = scale * R / (METERS_PER_DEGREE * fog.cosLat);
+    var ring = [];
+    for (var i = 0; i <= 6; i++) {
+      var a = Math.PI / 6 + (i % 6) * Math.PI / 3;
+      ring.push([lng + dLng * Math.cos(a), lat + dLat * Math.sin(a)]);
+    }
+    return ring;
+  }
+
+  function ringOf(key, scale) {
+    var parts = key.split(',');
+    return hexRing(Number(parts[0]), Number(parts[1]), scale);
+  }
+
+  function polygons(rings) {
+    return {
+      type: 'FeatureCollection',
+      features: rings.map(function (ring) {
+        return { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } };
+      })
+    };
+  }
+
+  // La cuadrícula del mundo no cabe en memoria: las líneas se dibujan solo
+  // para lo que está a la vista. Lejos, los hexágonos ya no se distinguirían.
+  function drawFogLines() {
+    if (!fog) return;
+    var source = map.getSource('fog-lines');
+    var center = map.getCenter();
+    var metersPerPixel = 78271.5 * Math.cos(center.lat * Math.PI / 180) / Math.pow(2, map.getZoom());
+    if (fog.radius / metersPerPixel < 4) { source.setData(EMPTY); return; }
+    var b = map.getBounds();
+    var padLng = (b.getEast() - b.getWest()) / 2;
+    var padLat = (b.getNorth() - b.getSouth()) / 2;
+    var R = fog.radius;
+    var toX = METERS_PER_DEGREE * fog.cosLat;
+    var firstRow = Math.floor((b.getSouth() - padLat) * METERS_PER_DEGREE / (1.5 * R));
+    var lastRow = Math.ceil((b.getNorth() + padLat) * METERS_PER_DEGREE / (1.5 * R));
+    var rings = [];
+    for (var r = firstRow; r <= lastRow; r++) {
+      var first = Math.floor((b.getWest() - padLng) * toX / (Math.sqrt(3) * R) - r / 2);
+      var last = Math.ceil((b.getEast() + padLng) * toX / (Math.sqrt(3) * R) - r / 2);
+      for (var q = first; q <= last; q++) {
+        if (fog.open[q + ',' + r]) continue;
+        rings.push(hexRing(q, r, 1));
+        if (rings.length > MAX_LINE_CELLS) { source.setData(EMPTY); return; }
+      }
+    }
+    source.setData(polygons(rings));
+  }
+
+  function applyFog(msg) {
+    var previous = fog ? fog.open : null;
+    var open = {};
+    msg.revealed.forEach(function (key) { open[key] = true; });
+    fog = { radius: msg.radius, cosLat: msg.cosLat, open: open };
+    // Huecos apenas más pequeños que el hexágono: si dos huecos compartieran
+    // borde, el polígono quedaría inválido y se dibujaría mal.
+    var holes = msg.revealed.map(function (key) { return ringOf(key, 0.97).reverse(); });
+    map.getSource('fog').setData({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [WORLD].concat(holes) } });
+    map.getSource('fog-open').setData(polygons(msg.revealed.map(function (key) { return ringOf(key, 1); })));
+    drawFogLines();
+    var fresh = previous ? msg.revealed.filter(function (key) { return !previous[key]; }) : [];
+    if (fresh.length === 0 || reducedMotion) return;
+    // Lo recién destapado arranca cubierto y se desvanece: el "raspado".
+    map.getSource('fog-flash').setData(polygons(fresh.map(function (key) { return ringOf(key, 1); })));
+    map.setPaintProperty('fog-flash', 'fill-opacity-transition', { duration: 0 });
+    map.setPaintProperty('fog-flash', 'fill-opacity', FOG_OPACITY);
+    setTimeout(function () {
+      map.setPaintProperty('fog-flash', 'fill-opacity-transition', { duration: 800 });
+      map.setPaintProperty('fog-flash', 'fill-opacity', 0);
+    }, 60);
   }
 
   function apply(state) {
@@ -259,6 +348,26 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
     map.on('load', function () {
       map.addSource('route', { type: 'geojson', data: EMPTY });
       map.addSource('accuracy', { type: 'geojson', data: EMPTY });
+      map.addSource('fog', { type: 'geojson', data: EMPTY, tolerance: 0.1 });
+      map.addSource('fog-lines', { type: 'geojson', data: EMPTY });
+      map.addSource('fog-open', { type: 'geojson', data: EMPTY });
+      map.addSource('fog-flash', { type: 'geojson', data: EMPTY });
+      map.addLayer({
+        id: 'fog', type: 'fill', source: 'fog',
+        paint: { 'fill-color': FOG_COLOR, 'fill-opacity': FOG_OPACITY, 'fill-antialias': false }
+      });
+      map.addLayer({
+        id: 'fog-lines', type: 'line', source: 'fog-lines',
+        paint: { 'line-color': '#FFFFFF', 'line-width': 1, 'line-opacity': 0.45 }
+      });
+      map.addLayer({
+        id: 'fog-flash', type: 'fill', source: 'fog-flash',
+        paint: { 'fill-color': FOG_COLOR, 'fill-opacity': 0, 'fill-antialias': false }
+      });
+      map.addLayer({
+        id: 'fog-open', type: 'line', source: 'fog-open',
+        paint: { 'line-color': PRIMARY, 'line-width': 1.25, 'line-opacity': 0.55 }
+      });
       map.addLayer({
         id: 'accuracy', type: 'fill', source: 'accuracy',
         paint: { 'fill-color': PRIMARY, 'fill-opacity': 0.1, 'fill-outline-color': PRIMARY }
@@ -269,6 +378,7 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
         paint: { 'line-color': PRIMARY, 'line-width': 4, 'line-dasharray': [2, 1.5] }
       });
       loaded = true;
+      map.on('moveend', drawFogLines);
       if (pending) apply(pending);
       send({ type: 'ready', online: result.online });
     });
@@ -292,6 +402,8 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
     if (!msg) return;
     if (msg.type === 'state') {
       if (loaded) apply(msg); else pending = msg;
+    } else if (msg.type === 'fog') {
+      if (loaded) applyFog(msg);
     } else if (msg.type === 'center' && loaded) {
       map.easeTo({ center: [msg.lng, msg.lat], zoom: Math.max(map.getZoom(), 16), duration: 400 });
     }
