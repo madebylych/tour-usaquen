@@ -38,6 +38,7 @@ export type ToMap =
   | {
       type: 'state';
       places: MapPlace[];
+      path: [number, number][]; // línea de la ruta: [longitud, latitud]
       selectedId: string | null;
       discovered: string[];
       user: MapUser | null;

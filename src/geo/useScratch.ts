@@ -4,6 +4,7 @@ import { MapFog } from '@/components/map/bridge';
 import { scratch, useScratchState } from '@/data/scratch';
 import { Place } from '@/types';
 import { buildGrid, HEX_RADIUS_M, keysAround } from './scratch';
+import { streetPath } from './streetPath';
 import { MAX_ACCURACY_FOR_DISCOVERY_M } from './useProximity';
 import { UserLocation } from './useLocation';
 
@@ -12,7 +13,7 @@ import { UserLocation } from './useLocation';
 export function useScratch(places: Place[], location: UserLocation) {
   const { position, accuracy } = location;
   const { revealed, walkedM, newZones } = useScratchState();
-  const grid = useMemo(() => buildGrid(places), [places]);
+  const grid = useMemo(() => buildGrid(streetPath(places)), [places]);
 
   useEffect(() => {
     scratch.beginSession();
@@ -32,8 +33,8 @@ export function useScratch(places: Place[], location: UserLocation) {
 
   const explored = grid.zone.filter((key) => key in revealed).length;
   const ratio = grid.zone.length > 0 ? explored / grid.zone.length : 0;
-  // Si ya destapó algo nunca debe decir 0 %.
-  const percent = explored === 0 ? 0 : Math.max(1, Math.round(ratio * 100));
+  // Nunca dice 0 % si ya destapó algo, ni 100 % si le falta algo por destapar.
+  const percent = explored === 0 ? 0 : explored === grid.zone.length ? 100 : Math.min(99, Math.max(1, Math.round(ratio * 100)));
 
   return { fog, percent, ratio, walkedM, newZones };
 }

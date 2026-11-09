@@ -8,6 +8,7 @@ import { buildMapHtml } from '@/components/map/mapHtml';
 import MapSurface, { MapSurfaceHandle } from '@/components/map/MapSurface';
 import Txt from '@/components/Txt';
 import { Coordinates } from '@/geo/distance';
+import { streetPath } from '@/geo/streetPath';
 import { MapBounds, Place } from '@/types';
 import { makeStyles, radius, space, useTheme } from '@/theme';
 
@@ -72,6 +73,7 @@ export default function TourMap({
     () => ({
       type: 'state',
       places: places.map((p, i) => ({ id: p.id, n: i + 1, lat: p.latitude, lng: p.longitude })),
+      path: streetPath(places).map((p): [number, number] => [p.longitude, p.latitude]),
       selectedId,
       discovered: Object.keys(discoveredIds),
       user: userPosition

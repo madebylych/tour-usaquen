@@ -9,7 +9,9 @@ import { Coordinates } from './distance';
 
 export const HEX_RADIUS_M = 22;
 const METERS_PER_DEGREE = 111320;
-const ZONE_WIDTH_M = 60; // lo que cuenta para el % explorado, a cada lado de la ruta
+// Lo que cuenta para el % explorado, a cada lado de la ruta. Debe ser menor que
+// lo que se destapa al pasar para que recorrerla completa pueda llegar a 100 %.
+const ZONE_WIDTH_M = 25;
 const SQRT3 = Math.sqrt(3);
 const NEIGHBORS = [
   [0, 0],
@@ -56,11 +58,12 @@ function distanceToSegment(p: Point, a: Point, b: Point): number {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-export function buildGrid(stops: Coordinates[]): ScratchGrid {
-  if (stops.length === 0) return EMPTY_GRID;
+// path: el camino de la ruta, de la primera parada a la última.
+export function buildGrid(path: Coordinates[]): ScratchGrid {
+  if (path.length === 0) return EMPTY_GRID;
   // Redondeado para que la escala no cambie con ajustes pequeños de las paradas.
-  const cosLat = Math.cos((Math.round(stops[0].latitude * 10) / 10) * (Math.PI / 180));
-  const points = stops.map((s) => project(s, cosLat));
+  const cosLat = Math.cos((Math.round(path[0].latitude * 10) / 10) * (Math.PI / 180));
+  const points = path.map((s) => project(s, cosLat));
   const segments = points.length === 1 ? [[points[0], points[0]]] : points.slice(1).map((p, i) => [points[i], p]);
   const minX = Math.min(...points.map((p) => p.x)) - ZONE_WIDTH_M;
   const maxX = Math.max(...points.map((p) => p.x)) + ZONE_WIDTH_M;

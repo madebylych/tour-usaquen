@@ -259,7 +259,7 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
     // Línea de la ruta.
     map.getSource('route').setData({
       type: 'Feature', properties: {},
-      geometry: { type: 'LineString', coordinates: state.places.map(function (p) { return [p.lng, p.lat]; }) }
+      geometry: { type: 'LineString', coordinates: state.path }
     });
 
     // Marcadores de las paradas: se crean una vez y se actualizan.
