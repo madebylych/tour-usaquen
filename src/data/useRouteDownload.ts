@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { deleteDownloadedRoute, downloadRoute, isDownloadSupported } from './download';
 import { useDownloads } from './downloads';
 import { isRemoteConfigured } from './remote';
+import { settings } from './settings';
 import { getRemoteVersion, getRouteForDownload } from './source';
 
 export type DownloadStatus =
@@ -32,6 +33,10 @@ export function useRouteDownload(slug: string) {
   }, [slug, downloadedVersion]);
 
   const start = async () => {
+    if (settings.get().offline) {
+      setError('Apaga el modo sin señal para descargar');
+      return;
+    }
     setError(null);
     setProgress({ done: 0, total: 1 });
     try {

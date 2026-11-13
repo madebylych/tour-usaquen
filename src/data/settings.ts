@@ -13,9 +13,11 @@ export type Settings = {
   placeVolume: number; // audios de las paradas, 0 a VOLUME_STEPS
   uiVolume: number; // sonidos de la app (descubrir una parada), 0 a VOLUME_STEPS
   haptics: boolean; // vibración
+  autoPlay: boolean; // al descubrir una parada, su audio suena solo
+  offline: boolean; // modo sin señal: no se consulta el servidor
 };
 
-const DEFAULTS: Settings = { placeVolume: VOLUME_STEPS, uiVolume: 4, haptics: true };
+const DEFAULTS: Settings = { placeVolume: VOLUME_STEPS, uiVolume: 4, haptics: true, autoPlay: false, offline: false };
 
 function clampStep(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value)
@@ -31,6 +33,8 @@ function load(): Settings {
       placeVolume: clampStep(parsed.placeVolume, DEFAULTS.placeVolume),
       uiVolume: clampStep(parsed.uiVolume, DEFAULTS.uiVolume),
       haptics: typeof parsed.haptics === 'boolean' ? parsed.haptics : DEFAULTS.haptics,
+      autoPlay: typeof parsed.autoPlay === 'boolean' ? parsed.autoPlay : DEFAULTS.autoPlay,
+      offline: typeof parsed.offline === 'boolean' ? parsed.offline : DEFAULTS.offline,
     };
   } catch {
     return DEFAULTS;

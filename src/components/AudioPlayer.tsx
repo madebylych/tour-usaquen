@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
@@ -27,10 +27,12 @@ type Props = {
   uri: string | null; // archivo local descargado o URL remota; null si no hay audio
   title: string | null;
   credit: string | null;
+  autoPlay?: boolean; // empieza a sonar solo apenas cargue (Ajustes > Audio automático)
+  startAt?: number; // segundo desde el que empieza (sigue lo que sonaba en ¡Descubriste!)
 };
 
 // Tarjeta "Escucha este lugar". Sin audio, se muestra desactivada.
-export default function AudioPlayer({ uri, title, credit }: Props) {
+export default function AudioPlayer({ uri, title, credit, autoPlay = false, startAt = 0 }: Props) {
   const { colors } = useTheme();
   const styles = useStyles();
   const player = useAudioPlayer(uri);
@@ -38,6 +40,18 @@ export default function AudioPlayer({ uri, title, credit }: Props) {
   const available = uri !== null;
   const beat = useBeat(status.playing);
   const hover = useHover();
+
+  // Arranque automático: una sola vez, cuando el archivo ya cargó.
+  const started = useRef(false);
+  useEffect(() => {
+    if (!autoPlay || started.current || !status.isLoaded) return;
+    started.current = true;
+    const at = startAt > 0 && (status.duration === 0 || startAt < status.duration) ? startAt : 0;
+    player
+      .seekTo(at)
+      .catch(() => {})
+      .then(() => player.play());
+  }, [autoPlay, startAt, status.isLoaded, status.duration, player]);
 
   // Volumen elegido en Ajustes; cambia en vivo si se ajusta mientras suena.
   const { placeVolume } = useSettings();

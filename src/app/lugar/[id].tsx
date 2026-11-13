@@ -15,6 +15,7 @@ import StateMessage from '@/components/StateMessage';
 import Txt from '@/components/Txt';
 import { countDiscovered, progress, useProgress } from '@/data/progress';
 import { getRoute } from '@/data/source';
+import { useSettings } from '@/data/settings';
 import { useData } from '@/data/useData';
 import { fonts, makeStyles, radius, shadows, space, useTheme } from '@/theme';
 import { tap } from '@/audio/haptics';
@@ -33,7 +34,11 @@ async function loadPlace(routeSlug: string, placeId: string) {
 export default function PlaceScreen() {
   const { colors } = useTheme();
   const styles = useStyles();
-  const { id, route: routeSlug } = useLocalSearchParams<{ id: string; route: string }>();
+  const { id, route: routeSlug, auto, t } = useLocalSearchParams<{ id: string; route: string; auto?: string; t?: string }>();
+  const { autoPlay } = useSettings();
+  // Audio automático: si se llegó desde ¡Descubriste! (sigue donde iba) o al
+  // tocar "Ya estoy aquí".
+  const [autoStart, setAutoStart] = useState(auto === '1');
   const state = useData(() => loadPlace(routeSlug, id), `${routeSlug}/${id}`);
   const { discovered } = useProgress();
   const celebrate = useDiscoveryFeedback();
@@ -53,7 +58,9 @@ export default function PlaceScreen() {
   const nextPlace = route.places[position]; // la que sigue en el orden de la ruta
   // "Ya estoy aquí": respaldo para cuando el GPS no detecta la llegada.
   const discoverManually = () => {
-    if (progress.discover([place.id], { announce: false }).length > 0) celebrate();
+    if (progress.discover([place.id], { announce: false }).length === 0) return;
+    celebrate();
+    if (autoPlay) setAutoStart(true);
   };
   const goNext = () =>
     nextPlace
@@ -167,7 +174,14 @@ export default function PlaceScreen() {
           ) : null}
 
           <View onLayout={(e) => setAudioY(e.nativeEvent.layout.y)}>
-            <AudioPlayer uri={place.media.audio} title={place.audio_title} credit={place.audio_credit} />
+            <AudioPlayer
+              key={autoStart ? 'auto' : 'manual'}
+              uri={place.media.audio}
+              title={place.audio_title}
+              credit={place.audio_credit}
+              autoPlay={autoPlay && autoStart}
+              startAt={Number(t) || 0}
+            />
           </View>
 
           {place.history ? <Section title="Historia" text={place.history} /> : null}

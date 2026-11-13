@@ -3,14 +3,28 @@
 // Orden de prioridad para una ruta:
 //   1. Descargada en el celular (funciona sin conexión).
 //   2. Servidor de contenido, si está configurado (remote.ts).
-//   3. Datos de prueba incluidos en la app (sin fotos ni audios).
+//   3. Datos incluidos en la app (sin fotos ni audios).
+//
+// Con "Modo sin señal" (Ajustes) se salta el servidor: no se espera a una
+// conexión débil. Se usa lo descargado y, si no hay, lo incluido en la app.
 
 import { Place, PlaceWithMedia, Route, RouteWithPlaces } from '@/types';
 import { pruneDownloads } from './cleanup';
 import { readDownloadedRoute } from './download';
 import { downloads } from './downloads';
 import { places, routePlaces, routes } from './local/testData';
-import { fetchRoute, fetchRoutes, isRemoteConfigured, mediaUrl, RemoteRoute } from './remote';
+import { fetchRoute, fetchRoutes, isRemoteConfigured as isServerConfigured, mediaUrl, RemoteRoute } from './remote';
+import { settings } from './settings';
+
+// Si se consulta el servidor ahora mismo.
+export const isRemoteConfigured = () => isServerConfigured() && !settings.get().offline;
+
+function downloadedRoutes(): RemoteRoute[] {
+  return downloads
+    .slugs()
+    .map((slug) => readDownloadedRoute(slug)?.route)
+    .filter((r): r is RemoteRoute => r !== undefined);
+}
 
 // Convierte la ruta "cruda" en lo que usa la app, resolviendo cada archivo
 // a una dirección concreta (local o remota).
@@ -46,13 +60,12 @@ export async function listRoutes(): Promise<Route[]> {
       return published;
     } catch {
       // Sin conexión: se muestran las rutas descargadas que haya.
-      return downloads
-        .slugs()
-        .map((slug) => readDownloadedRoute(slug)?.route)
-        .filter((r): r is RemoteRoute => r !== undefined);
+      return downloadedRoutes();
     }
   }
-  return routes.filter((r) => r.published);
+  // Modo sin señal: lo descargado; si no hay nada, lo incluido en la app.
+  const saved = isServerConfigured() ? downloadedRoutes() : [];
+  return saved.length > 0 ? saved : routes.filter((r) => r.published);
 }
 
 export async function getRoute(slug: string): Promise<RouteWithPlaces | null> {

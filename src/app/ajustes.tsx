@@ -106,6 +106,11 @@ export default function SettingsScreen() {
             onChange={(step) => settings.update({ placeVolume: step })}
           />
           <Volume label="Sonidos de la app" value={current.uiVolume} onChange={setUiVolume} />
+          <Toggle
+            label="Audio automático: al descubrir una parada, su audio suena solo"
+            value={current.autoPlay}
+            onChange={(on) => settings.update({ autoPlay: on })}
+          />
         </Section>
 
         <Section index={3} title="Vibración">
@@ -140,7 +145,19 @@ export default function SettingsScreen() {
           )}
         </Section>
 
-        <Section index={5} title="Almacenamiento">
+        <Section index={5} title="Sin señal y almacenamiento">
+          <Toggle
+            label="Modo sin señal: usar solo lo guardado en el celular"
+            value={current.offline}
+            onChange={(on) => settings.update({ offline: on })}
+          />
+          <Txt variant="caption">
+            {current.offline
+              ? routesCount > 0
+                ? 'La app no espera a internet: usa el recorrido descargado.'
+                : 'Se usa la versión incluida en la app, sin fotos ni audios. Apaga este modo y descarga la ruta para tenerlo todo.'
+              : 'Útil cuando la señal es débil: la app no se queda esperando a internet.'}
+          </Txt>
           <Txt variant="caption">
             {routesCount === 0
               ? 'No hay recorridos descargados.'

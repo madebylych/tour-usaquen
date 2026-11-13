@@ -63,7 +63,13 @@ export default function TourScreen() {
 
   const selectedIndex = route.places.findIndex((p) => p.id === selectedId);
   const selected = selectedIndex >= 0 ? route.places[selectedIndex] : null;
-  const openPlace = (id: string) => router.push(`/lugar/${id}?route=${route.slug}`);
+  // atSeconds llega desde ¡Descubriste! con Audio automático: la ficha sigue sonando desde ahí.
+  const openPlace = (id: string, atSeconds?: number) =>
+    router.push(
+      atSeconds === undefined
+        ? `/lugar/${id}?route=${route.slug}`
+        : `/lugar/${id}?route=${route.slug}&auto=1&t=${Math.floor(atSeconds)}`
+    );
   const total = route.places.length;
   const done = countDiscovered(route.places.map((p) => p.id), discovered);
   const complete = done === total;

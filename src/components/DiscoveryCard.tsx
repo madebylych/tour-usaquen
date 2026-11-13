@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { Modal, Pressable, View } from 'react-native';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,13 +10,16 @@ import MediaImage from '@/components/MediaImage';
 import { Appear, Stamp, Wobble } from '@/components/motion';
 import PlaceStamps from '@/components/PlaceStamps';
 import Txt from '@/components/Txt';
+import { setPlayerVolume } from '@/audio/volume';
 import { progress, useProgress } from '@/data/progress';
+import { useSettings } from '@/data/settings';
 import { PlaceWithMedia } from '@/types';
 import { fonts, makeStyles, radius, space, useTheme } from '@/theme';
 
 type Props = {
   places: PlaceWithMedia[]; // paradas de la ruta actual
-  onOpen: (placeId: string) => void;
+  // atSeconds: hasta dónde sonó el audio aquí (Audio automático), para seguir en la ficha.
+  onOpen: (placeId: string, atSeconds?: number) => void;
 };
 
 // Hoja de "¡Descubriste!" que sube desde abajo al descubrir una parada: la
@@ -25,6 +30,8 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
   const styles = useStyles();
   const { announcements, discovered } = useProgress();
   const insets = useSafeAreaInsets();
+  const { autoPlay } = useSettings();
+  const heard = useRef(0); // segundos que sonó el audio en la tarjeta
 
   const place = places.find((p) => p.id === announcements[0]);
   const position = place ? places.indexOf(place) + 1 : 0;
@@ -88,6 +95,17 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
             </Txt>
           </Appear>
 
+          {autoPlay && place.media.audio ? (
+            <Appear delay={500} style={styles.audio}>
+              <AutoAudio
+                key={place.id}
+                uri={place.media.audio}
+                title={place.audio_title}
+                onTime={(seconds) => (heard.current = seconds)}
+              />
+            </Appear>
+          ) : null}
+
           <Appear delay={560} style={styles.stamps}>
             <PlaceStamps places={places} discovered={discovered} size={46} overlap={8} />
           </Appear>
@@ -97,7 +115,8 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
               label="Ver la parada"
               onPress={() => {
                 progress.dismissAnnouncement();
-                onOpen(place.id);
+                onOpen(place.id, autoPlay && place.media.audio ? heard.current : undefined);
+                heard.current = 0;
               }}
             />
             <Pressable onPress={progress.dismissAnnouncement} style={styles.secondary} accessibilityRole="button">
@@ -114,7 +133,81 @@ export default function DiscoveryCard({ places, onOpen }: Props) {
   );
 }
 
+// Audio automático: el audio de la parada empieza solo, después del sonido
+// de descubrimiento. Se puede pausar; al cerrar la tarjeta se detiene.
+function AutoAudio({ uri, title, onTime }: { uri: string; title: string | null; onTime: (seconds: number) => void }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
+  const { placeVolume } = useSettings();
+  const player = useAudioPlayer(uri);
+  const status = useAudioPlayerStatus(player);
+  const started = useRef(false);
+
+  useEffect(() => {
+    setPlayerVolume(player, placeVolume);
+  }, [player, placeVolume]);
+
+  useEffect(() => {
+    if (started.current || !status.isLoaded) return;
+    started.current = true;
+    const timer = setTimeout(() => player.play(), 1200);
+    return () => clearTimeout(timer);
+  }, [status.isLoaded, player]);
+
+  useEffect(() => {
+    onTime(status.currentTime);
+  }, [status.currentTime, onTime]);
+
+  useEffect(
+    () => () => {
+      try {
+        player.pause();
+      } catch {
+        // El reproductor puede estar ya liberado.
+      }
+    },
+    [player]
+  );
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={status.playing ? 'Pausar audio' : 'Reproducir audio'}
+      onPress={() => (status.playing ? player.pause() : player.play())}
+      style={styles.audioRow}
+    >
+      <View style={styles.audioButton}>
+        <Ionicons name={status.playing ? 'pause' : 'play'} size={18} color={colors.onPrimary} />
+      </View>
+      <View style={styles.grow}>
+        <Txt variant="label" numberOfLines={1}>
+          {title ?? 'Escucha este lugar'}
+        </Txt>
+        <Txt variant="caption">{status.playing ? 'Sonando' : status.isLoaded ? 'En pausa' : 'Cargando…'}</Txt>
+      </View>
+    </Pressable>
+  );
+}
+
 const useStyles = makeStyles((colors) => ({
+  grow: { flex: 1 },
+  audio: { alignSelf: 'stretch' },
+  audioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.m - 4,
+    padding: space.s + 2,
+    backgroundColor: colors.panel,
+    borderRadius: radius.pill,
+  },
+  audioButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+  },
   backdrop: { flex: 1, backgroundColor: 'rgba(21, 21, 26, 0.45)' },
   sheet: {
     backgroundColor: colors.surface,

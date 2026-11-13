@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { useSettings } from './settings';
+
 type State<T> =
   | { status: 'loading' }
   | { status: 'ready'; data: T }
@@ -12,7 +14,9 @@ type State<T> =
 // `reload` vuelve a cargar con la misma key (botón "Reintentar").
 export function useData<T>(load: () => Promise<T>, key: string): State<T> & { reload: () => void } {
   const [attempt, setAttempt] = useState(0);
-  const fullKey = `${key}#${attempt}`;
+  // Al prender o apagar "Modo sin señal" cambia de dónde salen los datos.
+  const { offline } = useSettings();
+  const fullKey = `${key}#${attempt}#${offline ? 'offline' : 'online'}`;
   const [result, setResult] = useState<{ key: string; state: State<T> } | null>(null);
 
   useEffect(() => {
