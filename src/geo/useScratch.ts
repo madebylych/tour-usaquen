@@ -31,10 +31,20 @@ export function useScratch(places: Place[], location: UserLocation) {
     return { type: 'fog', radius: HEX_RADIUS_M, cosLat: grid.cosLat, revealed: Object.keys(revealed) };
   }, [grid, revealed]);
 
-  const explored = grid.zone.filter((key) => key in revealed).length;
-  const ratio = grid.zone.length > 0 ? explored / grid.zone.length : 0;
-  // Nunca dice 0 % si ya destapó algo, ni 100 % si le falta algo por destapar.
-  const percent = explored === 0 ? 0 : explored === grid.zone.length ? 100 : Math.min(99, Math.max(1, Math.round(ratio * 100)));
+  return { fog, ...exploredOf(grid.zone, revealed), walkedM, newZones };
+}
 
-  return { fog, percent, ratio, walkedM, newZones };
+// Solo lectura (Pasaporte): % explorado y lo caminado, sin tocar el GPS.
+export function useExplored(places: Place[]) {
+  const { revealed, walkedM } = useScratchState();
+  const zone = useMemo(() => buildGrid(streetPath(places)).zone, [places]);
+  return { ...exploredOf(zone, revealed), walkedM };
+}
+
+function exploredOf(zone: string[], revealed: Record<string, true>) {
+  const explored = zone.filter((key) => key in revealed).length;
+  const ratio = zone.length > 0 ? explored / zone.length : 0;
+  // Nunca dice 0 % si ya destapó algo, ni 100 % si le falta algo por destapar.
+  const percent = explored === 0 ? 0 : explored === zone.length ? 100 : Math.min(99, Math.max(1, Math.round(ratio * 100)));
+  return { percent, ratio };
 }

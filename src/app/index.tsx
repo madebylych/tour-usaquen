@@ -109,9 +109,9 @@ export default function HomeScreen() {
               <Shortcut icon="eye-outline" label="Observa" onPress={() => openPlace(nextPlace.id)} />
               <Shortcut
                 icon="book-outline"
-                label="Sellos"
+                label="Pasaporte"
                 badge={done}
-                onPress={() => router.push({ pathname: '/completado', params: { route: route.slug } })}
+                onPress={() => router.push({ pathname: '/pasaporte', params: { route: route.slug } })}
               />
             </View>
           </Appear>
