@@ -252,10 +252,10 @@ const useStyles = makeStyles((colors) => ({
     borderRadius: radius.pill,
   },
   sealCount: { fontFamily: fonts.display, fontSize: 24, lineHeight: 28 },
-  sealLabel: { fontFamily: fonts.bold, fontSize: 9, lineHeight: 11, letterSpacing: 1.2 },
+  sealLabel: { fontFamily: fonts.bold, fontSize: 12, lineHeight: 14, letterSpacing: 0.5 },
   bookRule: { height: 1, opacity: 0.3 },
   bookFields: { flexDirection: 'row', gap: space.m },
-  fieldLabel: { fontFamily: fonts.medium, fontSize: 10, lineHeight: 13, letterSpacing: 1.2 },
+  fieldLabel: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 15, letterSpacing: 1.2 },
   stats: { flexDirection: 'row', gap: space.s + 2 },
   stat: {
     flex: 1,

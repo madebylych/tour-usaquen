@@ -36,7 +36,7 @@ export function buildMapHtml(colors: Colors, dark: boolean): string {
   .pin {
     width: 36px; height: 36px; box-sizing: border-box; border-radius: 12px;
     background: #FFFFFF; border: 3px solid #FFFFFF;
-    color: #8A8794; font-weight: 800; font-size: 15px;
+    color: #55525F; font-weight: 800; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 12px rgba(21, 21, 26, 0.28); cursor: pointer; position: relative;
     transition: transform 0.15s;

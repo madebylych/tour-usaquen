@@ -292,7 +292,7 @@ function Volume({ label, value, onChange }: { label: string; value: number; onCh
           <Ionicons name={value === 0 ? 'volume-mute' : 'volume-low'} size={20} color={colors.text} />
         </Pressable>
         {Array.from({ length: VOLUME_STEPS }, (_, i) => i + 1).map((step) => (
-          <VolumeBlock key={step} step={step} on={step <= value} onPress={() => onChange(step)} />
+          <VolumeBlock key={step} step={step} on={step <= value} onPress={() => onChange(step)} label={`${label}: ${step} de ${VOLUME_STEPS}`} />
         ))}
       </View>
     </View>
@@ -300,12 +300,15 @@ function Volume({ label, value, onChange }: { label: string; value: number; onCh
 }
 
 // Un bloque del volumen: con hover sube un poco.
-function VolumeBlock({ step, on, onPress }: { step: number; on: boolean; onPress: () => void }) {
+function VolumeBlock({ step, on, onPress, label }: { step: number; on: boolean; onPress: () => void; label: string }) {
   const styles = useStyles();
   const hover = useHover();
   const lift = hover.value.interpolate({ inputRange: [0, 1], outputRange: [0, -5] });
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: on }}
       onPress={() => {
         tap();
         onPress();
@@ -404,12 +407,12 @@ const useStyles = makeStyles((colors) => ({
   volume: { gap: space.s },
   volumeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   blocks: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s, height: 44 },
-  mute: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
-  blockWrap: { flex: 1, justifyContent: 'flex-end' },
+  mute: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  blockWrap: { flex: 1, alignSelf: 'stretch', justifyContent: 'flex-end' },
   block: { borderRadius: 6 },
   blockOn: { backgroundColor: colors.primary },
   blockOff: { backgroundColor: colors.panel },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space.m },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 44 },
   grow: { flex: 1 },
   track: {
     width: 54,

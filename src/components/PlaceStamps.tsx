@@ -71,5 +71,5 @@ const useStyles = makeStyles((colors) => ({
   },
   fill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   check: { ...{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },
-  number: { fontFamily: fonts.display, color: '#8A8794' },
+  number: { fontFamily: fonts.display, color: '#55525F' },
 }));

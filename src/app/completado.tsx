@@ -226,7 +226,7 @@ const useStyles = makeStyles((colors) => ({
   },
   center: { textAlign: 'center' },
   muted: { color: colors.textMuted },
-  link: { alignItems: 'center', paddingVertical: space.s + 2 },
+  link: { alignItems: 'center', justifyContent: 'center', minHeight: 44, paddingVertical: space.s + 2 },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -93,6 +93,6 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.surface,
     borderRadius: radius.pill,
   },
-  badgeText: { fontSize: 11, lineHeight: 14, fontWeight: '700' },
+  badgeText: { fontSize: 12, lineHeight: 15, fontWeight: '700' },
   label: { color: colors.text, fontSize: 12 },
 }));

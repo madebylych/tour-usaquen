@@ -37,7 +37,7 @@ export const lightColors = {
   surface: '#FFFFFF', // tarjetas
   panel: '#F5F5F7', // paneles grises dentro de las tarjetas y filas
   text: INK,
-  textMuted: '#6F6F78',
+  textMuted: '#62626B', // AA también sobre el gris de los paneles
   border: '#ECECF0',
   success: '#1E8E3E',
 };

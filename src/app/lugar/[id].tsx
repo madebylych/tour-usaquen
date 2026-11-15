@@ -360,7 +360,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: '#E9EEF6',
     borderRadius: 6,
   },
-  ccText: { color: '#3B6FD8', fontFamily: fonts.bold },
+  ccText: { color: '#2A57B8', fontFamily: fonts.bold },
   content: { padding: space.m + 4, gap: space.m, marginTop: space.s },
   prompt: { padding: space.m + 2, gap: space.s, backgroundColor: colors.accent, borderRadius: radius.m },
   promptHead: { flexDirection: 'row', alignItems: 'center', gap: space.s - 2 },

@@ -49,6 +49,8 @@ export default function RouteScreen() {
   if (!route) return <StateMessage message="Este recorrido no existe." showHomeButton />;
 
   const total = route.places.length;
+  const hasAudio = route.places.some((p) => p.audio_path);
+  const shown = tab === 'audios' && !hasAudio ? 'paradas' : tab;
   const done = countDiscovered(route.places.map((p) => p.id), discovered);
   const nextPlace = route.places.find((p) => !(p.id in discovered));
   const lastDone = route.places.filter((p) => p.id in discovered).pop();
@@ -123,8 +125,10 @@ export default function RouteScreen() {
                 ['audios', 'Audios', 'headset-outline'],
                 ['info', 'Info', 'information-circle-outline'],
               ] as const
-            ).map(([key, label, icon]) => {
-              const on = tab === key;
+            )
+              .filter(([key]) => key !== 'audios' || hasAudio)
+              .map(([key, label, icon]) => {
+              const on = shown === key;
               return (
                 <Pressable
                   key={key}
@@ -145,7 +149,7 @@ export default function RouteScreen() {
             })}
           </View>
 
-          {tab === 'paradas' ? (
+          {shown === 'paradas' ? (
             <View style={styles.list}>
               {route.places.map((place, index) => (
                 <PlaceListItem
@@ -158,7 +162,7 @@ export default function RouteScreen() {
                 />
               ))}
             </View>
-          ) : tab === 'audios' ? (
+          ) : shown === 'audios' ? (
             <AudioList places={route.places} />
           ) : (
             <Appear style={styles.info}>
@@ -253,6 +257,7 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: space.s - 2,
+    minHeight: 44,
     paddingVertical: space.s + 2,
     borderRadius: radius.s,
   },

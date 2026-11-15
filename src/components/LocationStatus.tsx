@@ -81,6 +81,7 @@ const useStyles = makeStyles((colors) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.xs + 2,
+    minHeight: 44,
     paddingVertical: space.s,
     paddingHorizontal: space.m - 2,
     backgroundColor: colors.surface,

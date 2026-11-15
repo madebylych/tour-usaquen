@@ -105,7 +105,9 @@ export default function HomeScreen() {
             <View style={styles.divider} />
             <View style={styles.shortcuts}>
               <Shortcut icon="map-outline" label="Mapa" onPress={openTour} />
-              <Shortcut icon="headset-outline" label="Audios" onPress={() => router.push(`/ruta/${route.slug}?tab=audios`)} />
+              {route.places.some((p) => p.audio_path) ? (
+                <Shortcut icon="headset-outline" label="Audios" onPress={() => router.push(`/ruta/${route.slug}?tab=audios`)} />
+              ) : null}
               <Shortcut icon="eye-outline" label="Observa" onPress={() => openPlace(nextPlace.id)} />
               <Shortcut
                 icon="book-outline"
@@ -350,8 +352,8 @@ const useStyles = makeStyles((colors) => ({
   },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   settingsButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surface,
@@ -379,7 +381,7 @@ const useStyles = makeStyles((colors) => ({
     borderColor: '#15151A',
     borderRadius: 6,
   },
-  stampText: { fontFamily: fonts.bold, fontSize: 10, lineHeight: 12, letterSpacing: 1 },
+  stampText: { fontFamily: fonts.bold, fontSize: 12, lineHeight: 14, letterSpacing: 1 },
   content: { paddingHorizontal: space.m + 4, gap: space.m, marginTop: -78 },
   card: {
     padding: space.m + 4,
@@ -417,7 +419,7 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.surface,
     borderRadius: radius.pill,
   },
-  badgeText: { fontSize: 10, lineHeight: 12, fontWeight: '700' },
+  badgeText: { fontSize: 12, lineHeight: 14, fontWeight: '700' },
   cardTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   stop: { flexDirection: 'row', alignItems: 'center', gap: space.m - 2, borderRadius: radius.s },
   stopPressed: { opacity: 0.7 },

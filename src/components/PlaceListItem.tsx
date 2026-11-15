@@ -110,7 +110,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.surface,
     borderRadius: radius.pill,
   },
-  numberText: { fontSize: 11, lineHeight: 14, fontWeight: '700' },
+  numberText: { fontSize: 12, lineHeight: 15, fontWeight: '700' },
   texts: { flex: 1, gap: 2 },
   go: {
     paddingHorizontal: space.m + 2,

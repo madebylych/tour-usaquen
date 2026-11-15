@@ -390,7 +390,7 @@ const useStyles = makeStyles((colors) => ({
   },
   dayNext: { backgroundColor: colors.primary },
   daySelected: { boxShadow: `0px 0px 0px 2px ${colors.text}` },
-  dayName: { fontSize: 11, lineHeight: 14 },
+  dayName: { fontSize: 12, lineHeight: 15 },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',

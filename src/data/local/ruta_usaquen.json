@@ -1,18 +1,18 @@
 {
-  "_nota": "Fuente única del contenido de la ruta. La usa la app (datos incluidos, src/data/local/testData.ts) y scripts/generar_contenido.py (lo que se sube a Supabase). Hechos verificados el 2026-10-10 con las fuentes de cada parada. Coordenadas de OpenStreetMap; las de Casa Usaquén y el Mercado de las Pulgas son aproximadas y hay que confirmarlas en campo. Al cambiar algo, subir 'version'. Fotos: Wikimedia Commons con licencia libre (crédito en image_credit); los archivos están en media/. La portada es de Felipe Restrepo Acosta, CC BY-SA 4.0.",
+  "_nota": "Fuente única del contenido de la ruta. La usa la app (datos incluidos, src/data/local/testData.ts) y scripts/generar_contenido.py (lo que se sube a Supabase). Hechos verificados el 2026-10-10 con las fuentes de cada parada. Coordenadas de OpenStreetMap; las de Huitaca Café y La Galería de Usaquén son aproximadas y hay que confirmarlas en campo. Al cambiar algo, subir 'version'. Fotos: Wikimedia Commons con licencia libre (crédito en image_credit); los archivos están en media/. La portada es de Felipe Restrepo Acosta, CC BY-SA 4.0.",
   "route": {
     "id": "ruta-usaquen-centro",
     "slug": "usaquen-centro",
     "name": "Hecho en Usaquén",
-    "description": "Usaquén fue un municipio independiente hasta 1954, cuando quedó integrado a Bogotá. Su centro histórico conserva la plaza y la iglesia del antiguo pueblo, y hoy es uno de los distritos creativos de la ciudad. Este recorrido va de la plaza fundacional a los artesanos, cafés y galerías que trabajan alrededor de ella, y termina en una casona que se volvió centro comercial: una pregunta sobre qué conservar y qué transformar.",
-    "duration_min": 75,
-    "distance_m": 1000,
+    "description": "Usaquén fue un municipio independiente hasta 1954, cuando quedó integrado a Bogotá. Su centro histórico conserva la plaza y la iglesia del antiguo pueblo, y hoy es uno de los distritos creativos de la ciudad. Este recorrido va de la plaza fundacional a los artesanos, el café y la galería que trabajan alrededor de ella, y termina en una casona que se volvió centro comercial: una pregunta sobre qué conservar y qué transformar.",
+    "duration_min": 87,
+    "distance_m": 1200,
     "cover_image_path": "images/routes/usaquen-centro.jpg",
     "map_image_path": null,
     "map_bounds": null,
-    "version": 23,
+    "version": 24,
     "published": true,
-    "updated_at": "2026-11-12T00:00:00Z"
+    "updated_at": "2026-11-14T00:00:00Z"
   },
   "places": [
     {
@@ -22,7 +22,7 @@
       "category": "Espacio público",
       "latitude": 4.6951569,
       "longitude": -74.0309529,
-      "activation_radius": 35,
+      "activation_radius": 20,
       "summary": "La plaza fundacional del antiguo pueblo, con la Parroquia de Santa Bárbara en su costado oriental.",
       "history": "Esta plaza fue el centro del municipio de Usaquén antes de que lo integraran a Bogotá en 1954. En su costado oriental está la Parroquia de Santa Bárbara, construida en 1665, que según la Alcaldía de Bogotá conserva su diseño inicial. En los años ochenta el centro histórico de Usaquén fue declarado monumento nacional.",
       "architecture": null,
@@ -35,29 +35,29 @@
       "audio_credit": null,
       "sources": "bogota.gov.co/mi-ciudad/gobierno/patrimonio-cultural-de-la-localidad-de-usaquen-en-bogota-2025; Álbum histórico de la localidad de Usaquén, Secretaría General de Bogotá (2026)",
       "published": true,
-      "updated_at": "2026-11-12T00:00:00Z"
+      "updated_at": "2026-11-14T00:00:00Z"
     },
     {
-      "id": "mercado-pulgas-usaquen",
-      "slug": "mercado-pulgas-usaquen",
-      "name": "Mercado de las Pulgas",
-      "category": "Mercado",
-      "latitude": 4.69633,
-      "longitude": -74.03073,
-      "activation_radius": 30,
-      "summary": "Mercado de artesanos, diseñadores y artistas que ocupa las calles junto a la plaza los domingos y festivos.",
-      "history": "Los domingos y lunes festivos, la carrera 6A entre las calles 119 y 120A se llena de carpas. Artesanos, diseñadores independientes y artistas venden joyería, marroquinería, arte y objetos antiguos. Funciona más o menos de 9 de la mañana a 6 de la tarde, y la entrada es libre. Una cuadra al sur, en la carrera 6A entre las calles 118 y 119, está La Galería de Usaquén, otro espacio de artesanos, artistas y emprendedores que la Secretaría de Cultura incluye en el Distrito Creativo.",
+      "id": "galeria-usaquen",
+      "slug": "galeria-usaquen",
+      "name": "La Galería de Usaquén",
+      "category": "Artesanos",
+      "latitude": 4.69527,
+      "longitude": -74.03126,
+      "activation_radius": 15,
+      "summary": "Espacio de artesanos, artistas y emprendedores sobre la carrera 6A, en el costado occidental de la plaza.",
+      "history": "En la carrera 6A, entre las calles 118 y 119, funciona La Galería de Usaquén, un espacio de artesanos, artistas y emprendedores que la Secretaría de Cultura incluye en el directorio del Distrito Creativo. La Alcaldía, en sus programas para el sector artesanal de Usaquén y La Candelaria, distingue al artesano que produce del que solo revende: el oficio está en hacer. Los fines de semana, a una cuadra hacia el norte, el Mercado de las Pulgas lleva ese mismo comercio a la calle.",
       "architecture": null,
       "did_you_know": null,
-      "observation_prompt": "Si hoy hay mercado, recorre la cuadra completa y elige un objeto hecho a mano. Si no hay, mira la calle vacía e imagina dónde irían las carpas.",
-      "image_path": "images/places/mercado-pulgas-usaquen.jpg",
-      "image_credit": "Edgar Zuniga Jr., CC BY 2.0, vía Wikimedia Commons",
+      "observation_prompt": "Entra y busca una pieza hecha a mano. Si quien atiende tiene tiempo, pregúntale: ¿la hizo usted?, ¿cuánto tardó?, ¿de dónde viene el material? No grabes ni fotografíes a nadie sin permiso.",
+      "image_path": null,
+      "image_credit": null,
       "audio_path": null,
       "audio_title": null,
       "audio_credit": null,
-      "sources": "bogota.gov.co/mi-ciudad/turismo/historia-y-horarios-de-los-mercados-de-las-pulgas-de-bogota; visitbogota.co; Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025)",
+      "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); bogota.gov.co/mi-ciudad/desarrollo-economico/plan-piloto-para-reactivar-el-sector-artesanal; Instagram @asoarcoarus",
       "published": true,
-      "updated_at": "2026-11-12T00:00:00Z"
+      "updated_at": "2026-11-14T00:00:00Z"
     },
     {
       "architecture": null,
@@ -76,7 +76,7 @@
       "summary": "Café de especialidad donde también se venden productos de emprendimientos de Cundinamarca.",
       "history": "Está en la calle 120A #6-05, a una cuadra de la plaza. La Secretaría de Cultura de Bogotá lo incluye en el directorio del Distrito Creativo Usaquén como café cultural: una cafetería de especialidad \"experiencial\" donde se encuentran productos de distintos emprendimientos cundinamarqueses. Según ese directorio, abre de 9 de la mañana a 9 de la noche.",
       "did_you_know": "Huitaca es el nombre de una figura de la mitología muisca.",
-      "observation_prompt": "Mira qué se vende además del café. ¿De dónde viene cada producto y quién lo hizo? Compara con lo que viste en el mercado.",
+      "observation_prompt": "Mira qué se vende además del café. ¿De dónde viene cada producto y quién lo hizo? Compara con lo que viste en La Galería de Usaquén.",
       "image_path": null,
       "image_credit": null,
       "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); Instagram @huitacacafe"
