@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react';
-import { Alert, Animated, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Animated, Linking, Platform, Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -161,6 +161,7 @@ export default function HomeScreen() {
           </Appear>
 
           <OfflineBanner route={route} />
+          <AndroidBanner />
 
           <Txt variant="caption" style={styles.footer}>
             Un proyecto de Creación Digital, Arquitectura y Música.
@@ -293,6 +294,41 @@ function OfflineBanner({ route }: { route: RouteWithPlaces }) {
           <View style={styles.bannerButton}>
             <Ionicons name={ready ? 'checkmark' : 'download-outline'} size={22} color={colors.onInk} />
           </View>
+        </View>
+      </Pressable>
+    </Appear>
+  );
+}
+
+// Solo en la versión web: enlace a la APK para Android, que se publica junto al
+// sitio (public/tour-usaquen.apk). En GitHub Pages el sitio vive en /tour-usaquen.
+function AndroidBanner() {
+  const styles = useStyles();
+  const { colors } = useTheme();
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  const base = window.location.pathname.startsWith('/tour-usaquen') ? '/tour-usaquen' : '';
+  const url = `${window.location.origin}${base}/tour-usaquen.apk`;
+  return (
+    <Appear delay={340}>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel="Descargar la app para Android"
+        onPress={() => {
+          tap();
+          Linking.openURL(url);
+        }}
+        style={styles.banner}
+      >
+        <View style={styles.grow}>
+          <Txt variant="display" style={styles.bannerTitle}>
+            ¿Tienes{'\n'}Android?
+          </Txt>
+          <Txt variant="caption" color={colors.text} style={styles.bannerText}>
+            Descarga la app: GPS, sellos y modo sin señal
+          </Txt>
+        </View>
+        <View style={styles.androidButton}>
+          <Ionicons name="logo-android" size={30} color={colors.onInk} />
         </View>
       </Pressable>
     </Appear>
@@ -454,6 +490,16 @@ const useStyles = makeStyles((colors) => ({
     bottom: -8,
     width: 44,
     height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.ink,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    borderRadius: radius.pill,
+  },
+  androidButton: {
+    width: 64,
+    height: 64,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.ink,
