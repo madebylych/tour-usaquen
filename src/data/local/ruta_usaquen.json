@@ -10,7 +10,7 @@
     "cover_image_path": "images/routes/usaquen-centro.jpg",
     "map_image_path": null,
     "map_bounds": null,
-    "version": 27,
+    "version": 28,
     "published": true,
     "updated_at": "2026-11-17T00:00:00Z"
   },
@@ -77,8 +77,8 @@
       "history": "Está en la calle 120A #6-05, a una cuadra de la plaza. La Secretaría de Cultura de Bogotá lo incluye en el directorio del Distrito Creativo Usaquén como café cultural: una cafetería de especialidad \"experiencial\" donde se encuentran productos de distintos emprendimientos cundinamarqueses.",
       "did_you_know": "Huitaca es el nombre de una figura de la mitología muisca.",
       "observation_prompt": "Mira qué se vende además del café. ¿De dónde viene cada producto y quién lo hizo? Compara con lo que viste en La Galería de Usaquén.",
-      "image_path": null,
-      "image_credit": null,
+      "image_path": "images/places/huitaca-cafe.jpg",
+      "image_credit": "Huitaca Café, vía Tripadvisor",
       "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); Instagram @huitaca.cafe; beacons.ai/huitaca.cafe"
     },
     {
