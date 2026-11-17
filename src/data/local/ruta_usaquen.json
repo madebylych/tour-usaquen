@@ -1,18 +1,18 @@
 {
-  "_nota": "Fuente única del contenido de la ruta. La usa la app (datos incluidos, src/data/local/testData.ts) y scripts/generar_contenido.py (lo que se sube a Supabase). Hechos verificados el 2026-10-10 con las fuentes de cada parada. Coordenadas de OpenStreetMap; las de Huitaca Café y La Galería de Usaquén son aproximadas y hay que confirmarlas en campo. Al cambiar algo, subir 'version'. Fotos: Wikimedia Commons con licencia libre (crédito en image_credit); los archivos están en media/. La portada es de Felipe Restrepo Acosta, CC BY-SA 4.0.",
+  "_nota": "Fuente única del contenido de la ruta. La usa la app (datos incluidos, src/data/local/testData.ts) y scripts/generar_contenido.py (lo que se sube a Supabase). Al cambiar algo, subir 'version'. Fotos: Wikimedia Commons con licencia libre (crédito en image_credit); los archivos están en media/.",
   "route": {
     "id": "ruta-usaquen-centro",
     "slug": "usaquen-centro",
     "name": "Hecho en Usaquén",
-    "description": "Usaquén fue un municipio independiente hasta 1954, cuando quedó integrado a Bogotá. Su centro histórico conserva la plaza y la iglesia del antiguo pueblo, y hoy es uno de los distritos creativos de la ciudad. Este recorrido va de la plaza fundacional a los artesanos, el café y la galería que trabajan alrededor de ella, y termina en una casona que se volvió centro comercial: una pregunta sobre qué conservar y qué transformar.",
-    "duration_min": 88,
-    "distance_m": 1280,
+    "description": "Usaquén fue un municipio independiente hasta 1954, cuando quedó integrado a Bogotá. Su centro histórico conserva la plaza y la iglesia del antiguo pueblo, y hoy es uno de los distritos creativos de la ciudad. Este recorrido va de la plaza fundacional al café y la galería que trabajan alrededor de ella, pasa por una casona que se volvió centro comercial y termina en la estación del tren que unía al pueblo con Bogotá. Los sábados y domingos suma una parada extra: La Galería de Usaquén.",
+    "duration_min": 116,
+    "distance_m": 2235,
     "cover_image_path": "images/routes/usaquen-centro.jpg",
     "map_image_path": null,
     "map_bounds": null,
-    "version": 25,
+    "version": 26,
     "published": true,
-    "updated_at": "2026-11-15T00:00:00Z"
+    "updated_at": "2026-11-17T00:00:00Z"
   },
   "places": [
     {
@@ -41,12 +41,12 @@
       "id": "galeria-usaquen",
       "slug": "galeria-usaquen",
       "name": "La Galería de Usaquén",
-      "category": "Artesanos",
+      "category": "Parada extra, sábados y domingos",
       "latitude": 4.6951956,
       "longitude": -74.0313675,
       "activation_radius": 15,
-      "summary": "Espacio de artesanos, artistas y emprendedores sobre la carrera 6A, en el costado occidental de la plaza.",
-      "history": "En la carrera 6A, entre las calles 118 y 119, funciona La Galería de Usaquén, un espacio de artesanos, artistas y emprendedores que la Secretaría de Cultura incluye en el directorio del Distrito Creativo. La Alcaldía, en sus programas para el sector artesanal de Usaquén y La Candelaria, distingue al artesano que produce del que solo revende: el oficio está en hacer. Los fines de semana, a una cuadra hacia el norte, el Mercado de las Pulgas lleva ese mismo comercio a la calle.",
+      "summary": "Parada extra de fin de semana: artesanos, artistas y emprendedores sobre la carrera 6A, junto a la plaza.",
+      "history": "Los sábados y domingos, sobre la carrera 6A, junto a la plaza, abre La Galería de Usaquén: un espacio de artesanos, artistas y emprendedores que la Secretaría de Cultura incluye en el directorio del Distrito Creativo. La Alcaldía, en sus programas para el sector artesanal de Usaquén y La Candelaria, distingue al artesano que produce del que solo revende: el oficio está en hacer.",
       "architecture": null,
       "did_you_know": null,
       "observation_prompt": "Entra y busca una pieza hecha a mano. Si quien atiende tiene tiempo, pregúntale: ¿la hizo usted?, ¿cuánto tardó?, ¿de dónde viene el material? No grabes ni fotografíes a nadie sin permiso.",
@@ -55,9 +55,9 @@
       "audio_path": null,
       "audio_title": null,
       "audio_credit": null,
-      "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); bogota.gov.co/mi-ciudad/desarrollo-economico/plan-piloto-para-reactivar-el-sector-artesanal; Instagram @asoarcoarus",
+      "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); lagaleriadeusaquen.com; Instagram @lagaleriadeusaquen; bogota.gov.co/mi-ciudad/desarrollo-economico/plan-piloto-para-reactivar-el-sector-artesanal",
       "published": true,
-      "updated_at": "2026-11-15T00:00:00Z"
+      "updated_at": "2026-11-17T00:00:00Z"
     },
     {
       "architecture": null,
@@ -65,21 +65,21 @@
       "audio_title": null,
       "audio_credit": null,
       "published": true,
-      "updated_at": "2026-11-15T00:00:00Z",
+      "updated_at": "2026-11-17T00:00:00Z",
       "id": "huitaca-cafe",
       "slug": "huitaca-cafe",
-      "name": "Huitaca Café (Quinchana)",
+      "name": "Huitaca Café",
       "category": "Café cultural",
-      "latitude": 4.6967404,
-      "longitude": -74.0301063,
-      "activation_radius": 20,
-      "summary": "Café de especialidad con café de Silvania y productos de emprendimientos de Cundinamarca.",
-      "history": "Está en la calle 120A #6-23, a una cuadra de la plaza. La Secretaría de Cultura de Bogotá lo incluye en el directorio del Distrito Creativo Usaquén como café cultural: una cafetería de especialidad \"experiencial\" donde se encuentran productos de distintos emprendimientos cundinamarqueses. Hoy funciona con el nombre Quinchana, que se presenta como café de Cundinamarca en Usaquén y sirve café de Silvania.",
+      "latitude": 4.69715,
+      "longitude": -74.03015,
+      "activation_radius": 25,
+      "summary": "Café de especialidad donde también se venden productos de emprendimientos de Cundinamarca.",
+      "history": "Está en la calle 120A #6-05, a una cuadra de la plaza. La Secretaría de Cultura de Bogotá lo incluye en el directorio del Distrito Creativo Usaquén como café cultural: una cafetería de especialidad \"experiencial\" donde se encuentran productos de distintos emprendimientos cundinamarqueses.",
       "did_you_know": "Huitaca es el nombre de una figura de la mitología muisca.",
       "observation_prompt": "Mira qué se vende además del café. ¿De dónde viene cada producto y quién lo hizo? Compara con lo que viste en La Galería de Usaquén.",
       "image_path": null,
       "image_credit": null,
-      "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); ficha de Google Maps «Huitaca café (Quinchana)» e Instagram @quinchanacoffee (consultados el 15 de noviembre de 2026)"
+      "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); Instagram @huitaca.cafe; beacons.ai/huitaca.cafe"
     },
     {
       "architecture": null,
@@ -115,7 +115,7 @@
       "history": "A finales del siglo XIX e inicios del XX, esta hacienda perteneció al empresario José María Sierra, conocido como Pepe Sierra. En 1987 empezó la construcción del centro comercial: se conservó la casona, con el arco del patio de la pila, la puerta de piedra y los balcones de madera, y alrededor se levantó el edificio nuevo. Abrió en diciembre de 1989.",
       "architecture": null,
       "did_you_know": "La avenida Pepe Sierra (calle 116) se trazó sobre terrenos que fueron de esta hacienda, y por eso lleva el nombre de su antiguo dueño.",
-      "observation_prompt": "Párate donde veas al mismo tiempo la casona y el edificio nuevo. Después de este recorrido: ¿qué debería conservar Usaquén y qué puede cambiar para quienes crean, trabajan y viven aquí?",
+      "observation_prompt": "Párate donde veas al mismo tiempo la casona y el edificio nuevo. ¿Qué se conservó y qué cambió? ¿A quién le sirve hoy este lugar?",
       "image_path": "images/places/hacienda-santa-barbara.jpg",
       "image_credit": "Lucía Estévez (JuanGris), CC BY-SA 3.0, vía Wikimedia Commons",
       "audio_path": null,
@@ -124,6 +124,28 @@
       "sources": "pulzo.com (historia de la Hacienda Santa Bárbara); semana.com (Pepe Sierra)",
       "published": true,
       "updated_at": "2026-11-12T00:00:00Z"
+    },
+    {
+      "architecture": null,
+      "audio_path": null,
+      "audio_title": null,
+      "audio_credit": null,
+      "published": true,
+      "updated_at": "2026-11-17T00:00:00Z",
+      "id": "estacion-usaquen",
+      "slug": "estacion-usaquen",
+      "name": "Estación de Usaquén",
+      "category": "Patrimonio ferroviario",
+      "latitude": 4.6907552,
+      "longitude": -74.0377968,
+      "activation_radius": 30,
+      "summary": "La estación del tren de la Sabana, sobre la avenida carrera 9 con calle 110.",
+      "history": "Está en la avenida carrera 9 con calle 110, frente al centro comercial Santa Ana. La Secretaría de Cultura la nombra entre los rasgos del Distrito Creativo Usaquén junto a la plaza, los mercados de artesanías y la Hacienda Santa Bárbara. Es una de las paradas del Tren de la Sabana, la vía que unió a Bogotá con los pueblos del norte: por aquí llegaba y salía el antiguo pueblo de Usaquén.",
+      "did_you_know": null,
+      "observation_prompt": "Mira los rieles y síguelos con la vista. ¿Cómo cambia la ciudad alrededor cuando aparece la vía del tren?",
+      "image_path": "images/places/estacion-usaquen.jpg",
+      "image_credit": "Juan Diego Santacruz, CC BY-SA 3.0, vía Wikimedia Commons",
+      "sources": "Secretaría de Cultura, Recreación y Deporte, Distritos Creativos (culturarecreacionydeporte.gov.co/es/economia-estudios-y-politica/distritos-creativos); bogota.gov.co (paradas del Tren de la Sabana)"
     }
   ]
 }
