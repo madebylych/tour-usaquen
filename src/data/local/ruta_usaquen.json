@@ -10,7 +10,7 @@
     "cover_image_path": "images/routes/usaquen-centro.jpg",
     "map_image_path": null,
     "map_bounds": null,
-    "version": 28,
+    "version": 29,
     "published": true,
     "updated_at": "2026-11-17T00:00:00Z"
   },
@@ -50,8 +50,8 @@
       "architecture": null,
       "did_you_know": null,
       "observation_prompt": "Entra y busca una pieza hecha a mano. Si quien atiende tiene tiempo, pregúntale: ¿la hizo usted?, ¿cuánto tardó?, ¿de dónde viene el material? No grabes ni fotografíes a nadie sin permiso.",
-      "image_path": null,
-      "image_credit": null,
+      "image_path": "images/places/galeria-usaquen.jpg",
+      "image_credit": "La Galería de Usaquén (lagaleriadeusaquen.com)",
       "audio_path": "audio/places/galeria-usaquen.mp3",
       "audio_title": "Relaxing Guitar Loop",
       "audio_credit": "Música: Idoberg, Pixabay (licencia de contenido de Pixabay, uso libre)",
@@ -99,8 +99,8 @@
       "history": "Está en la carrera 6A #119B-34, local 213, en el edificio Usaquén Plaza: en noviembre de 2026 se mudó allí desde la carrera 7 y celebra la apertura del nuevo espacio el 21 y 22 de noviembre. En el directorio del Distrito Creativo Usaquén se presenta como una puerta de entrada al coleccionismo emergente: trabaja con artistas de corta y mediana trayectoria de todo el territorio colombiano.",
       "did_you_know": null,
       "observation_prompt": "Elige una obra y piensa: ¿qué la hace valer lo que vale? ¿El material, el tiempo, el nombre del artista o el lugar donde la ves?",
-      "image_path": null,
-      "image_credit": null,
+      "image_path": "images/places/umbral-galeria.jpg",
+      "image_credit": "Umbral Galería, Instagram @umbral_galeria",
       "sources": "Directorio Agenda Alterna Distritos Creativos BOG25, Secretaría de Cultura, Recreación y Deporte de Bogotá (sept. 2025); Instagram @umbral_galeria y ficha de Google Maps (consultados el 15 de noviembre de 2026)"
     },
     {

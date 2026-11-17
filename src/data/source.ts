@@ -70,9 +70,20 @@ export async function listRoutes(): Promise<Route[]> {
 
 export async function getRoute(slug: string): Promise<RouteWithPlaces | null> {
   const downloaded = readDownloadedRoute(slug);
-  if (downloaded) return resolve(downloaded.route, downloaded.localUri);
 
-  if (isRemoteConfigured()) return resolve(await fetchRoute(slug), remoteUri);
+  // Con conexión, una versión más nueva en el servidor gana sobre la descargada
+  // (si no, el celular se queda con paradas y audios viejos). Sin conexión se usa
+  // lo descargado.
+  if (isRemoteConfigured()) {
+    try {
+      const remote = await fetchRoute(slug);
+      if (!downloaded || remote.version > downloaded.route.version) return resolve(remote, remoteUri);
+    } catch (error) {
+      if (!downloaded) throw error;
+    }
+  }
+
+  if (downloaded) return resolve(downloaded.route, downloaded.localUri);
 
   const test = testRoute(slug);
   return test ? resolve(test, () => null) : null;
